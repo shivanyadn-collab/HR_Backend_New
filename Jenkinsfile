@@ -2,11 +2,10 @@ pipeline {
     agent any
 
     environment {
-    IMAGE_NAME = "hr-backend"
-    CONTAINER_NAME = "hr-backend"
-    HOST_PORT = "3003"
-    CONTAINER_PORT = "3000"
-}
+        IMAGE_NAME = "hr-backend"
+        CONTAINER_NAME = "hr-backend"
+        HOST_PORT = "3003"
+        CONTAINER_PORT = "3000"
     }
 
     stages {
@@ -32,24 +31,25 @@ pipeline {
             }
         }
 
-      stage('Run New Container') {
-    steps {
-        sh '''
-        docker run -d \
-        -p $HOST_PORT:$CONTAINER_PORT \
-        --name $CONTAINER_NAME \
-        $IMAGE_NAME
-        '''
-    }
-       }
+        stage('Run New Container') {
+            steps {
+                sh '''
+                docker run -d \
+                -p $HOST_PORT:$CONTAINER_PORT \
+                --name $CONTAINER_NAME \
+                $IMAGE_NAME
+                '''
+            }
+        }
     }
 
     post {
         success {
-            echo "✅ Backend deployed successfully using Docker"
+            echo "✅ Backend deployed successfully"
         }
         failure {
             echo "❌ Deployment failed"
         }
     }
 }
+
