@@ -30,7 +30,7 @@ export class CreateBudgetItemDto {
   committedAmount?: number
 
   @IsString()
-  month: string // YYYY-MM format
+  month: string 
 
   @IsOptional()
   @IsEnum(BudgetItemStatus)
