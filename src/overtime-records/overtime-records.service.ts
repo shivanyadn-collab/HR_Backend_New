@@ -47,7 +47,13 @@ export class OvertimeRecordsService {
     return this.formatResponse(record)
   }
 
-  async findAll(employeeId?: string, startDate?: string, endDate?: string, status?: string, search?: string) {
+  async findAll(
+    employeeId?: string,
+    startDate?: string,
+    endDate?: string,
+    status?: string,
+    search?: string,
+  ) {
     const where: any = {}
 
     if (employeeId) {
@@ -241,4 +247,3 @@ export class OvertimeRecordsService {
     }
   }
 }
-

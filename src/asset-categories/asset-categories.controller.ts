@@ -54,4 +54,3 @@ export class AssetCategoriesController {
     return this.assetCategoriesService.toggleActive(id)
   }
 }
-

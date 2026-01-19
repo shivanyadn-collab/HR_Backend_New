@@ -4,7 +4,7 @@ export enum FingerprintLogStatus {
   RECOGNIZED = 'RECOGNIZED',
   FAILED = 'FAILED',
   UNKNOWN = 'UNKNOWN',
-  DUPLICATE = 'DUPLICATE'
+  DUPLICATE = 'DUPLICATE',
 }
 
 export class CreateFingerprintLogDto {
@@ -43,4 +43,3 @@ export class CreateFingerprintLogDto {
   @IsString()
   remarks?: string
 }
-

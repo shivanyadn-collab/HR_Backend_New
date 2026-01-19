@@ -34,4 +34,3 @@ export class AssetItemsController {
     return this.service.remove(id)
   }
 }
-

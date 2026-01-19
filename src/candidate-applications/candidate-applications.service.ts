@@ -156,14 +156,15 @@ export class CandidateApplicationsService {
     }
 
     const updateData: any = { ...updateDto }
-    
+
     // Convert screeningScore to number if it's a string
     if (updateDto.screeningScore !== undefined && updateDto.screeningScore !== null) {
-      updateData.screeningScore = typeof updateDto.screeningScore === 'string' 
-        ? Number(updateDto.screeningScore) 
-        : updateDto.screeningScore
+      updateData.screeningScore =
+        typeof updateDto.screeningScore === 'string'
+          ? Number(updateDto.screeningScore)
+          : updateDto.screeningScore
     }
-    
+
     // Handle screenedDate if provided as string
     if (updateDto.screenedDate && typeof updateDto.screenedDate === 'string') {
       updateData.screenedDate = new Date(updateDto.screenedDate)
@@ -222,10 +223,11 @@ export class CandidateApplicationsService {
       screeningScore: application.screeningScore,
       screeningNotes: application.screeningNotes,
       screenedBy: application.screenedBy,
-      screenedDate: application.screenedDate ? application.screenedDate.toISOString().split('T')[0] : null,
+      screenedDate: application.screenedDate
+        ? application.screenedDate.toISOString().split('T')[0]
+        : null,
       createdAt: application.createdAt,
       updatedAt: application.updatedAt,
     }
   }
 }
-

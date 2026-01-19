@@ -1,5 +1,8 @@
 import { PartialType } from '@nestjs/mapped-types'
-import { CreateCandidateApplicationDto, CandidateApplicationStatus } from './create-candidate-application.dto'
+import {
+  CreateCandidateApplicationDto,
+  CandidateApplicationStatus,
+} from './create-candidate-application.dto'
 import { IsOptional, IsEnum, IsDateString } from 'class-validator'
 
 export class UpdateCandidateApplicationDto extends PartialType(CreateCandidateApplicationDto) {
@@ -11,4 +14,3 @@ export class UpdateCandidateApplicationDto extends PartialType(CreateCandidateAp
   @IsDateString()
   screenedDate?: string
 }
-

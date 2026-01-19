@@ -39,14 +39,17 @@ export class ProjectCategoriesService {
 
     // Fetch locations for the created category
     const locationIds = (created as any).locationIds || []
-    const locations = locationIds.length > 0 ? await this.prisma.location.findMany({
-      where: { id: { in: locationIds } },
-      select: {
-        id: true,
-        branchName: true,
-        branchCode: true,
-      },
-    }) : []
+    const locations =
+      locationIds.length > 0
+        ? await this.prisma.location.findMany({
+            where: { id: { in: locationIds } },
+            select: {
+              id: true,
+              branchName: true,
+              branchCode: true,
+            },
+          })
+        : []
 
     return {
       ...created,
@@ -82,15 +85,15 @@ export class ProjectCategoriesService {
       },
     })
 
-    const locationMap = new Map(locations.map(loc => [loc.id, loc]))
+    const locationMap = new Map(locations.map((loc) => [loc.id, loc]))
 
     // Calculate project count and attach locations for each category
     const categoriesWithCount = await Promise.all(
       categories.map(async (category: any) => {
-        const projectCount = await this.prisma.project.count({ 
-          where: { categoryId: category.id } 
+        const projectCount = await this.prisma.project.count({
+          where: { categoryId: category.id },
         })
-        
+
         // Map locationIds to location objects
         const categoryLocations = (category.locationIds || [])
           .map((id: string) => locationMap.get(id))
@@ -101,7 +104,7 @@ export class ProjectCategoriesService {
           projectCount,
           locations: categoryLocations,
         }
-      })
+      }),
     )
 
     return categoriesWithCount
@@ -116,20 +119,23 @@ export class ProjectCategoriesService {
       throw new NotFoundException('Project category not found')
     }
 
-    const projectCount = await this.prisma.project.count({ 
-      where: { categoryId: category.id } 
+    const projectCount = await this.prisma.project.count({
+      where: { categoryId: category.id },
     })
 
     // Fetch locations for this category
     const locationIds = (category as any).locationIds || []
-    const locations = locationIds.length > 0 ? await this.prisma.location.findMany({
-      where: { id: { in: locationIds } },
-      select: {
-        id: true,
-        branchName: true,
-        branchCode: true,
-      },
-    }) : []
+    const locations =
+      locationIds.length > 0
+        ? await this.prisma.location.findMany({
+            where: { id: { in: locationIds } },
+            select: {
+              id: true,
+              branchName: true,
+              branchCode: true,
+            },
+          })
+        : []
 
     return {
       ...category,
@@ -148,7 +154,10 @@ export class ProjectCategoriesService {
     }
 
     // Check if category code is being updated and if it conflicts
-    if (updateProjectCategoryDto.categoryCode && updateProjectCategoryDto.categoryCode !== category.categoryCode) {
+    if (
+      updateProjectCategoryDto.categoryCode &&
+      updateProjectCategoryDto.categoryCode !== category.categoryCode
+    ) {
       const existing = await this.prisma.projectCategory.findUnique({
         where: { categoryCode: updateProjectCategoryDto.categoryCode },
       })
@@ -176,25 +185,29 @@ export class ProjectCategoriesService {
       where: { id },
       data: {
         ...updateProjectCategoryDto,
-        locationIds: updateProjectCategoryDto.locationIds !== undefined 
-          ? (updateProjectCategoryDto.locationIds || [])
-          : undefined,
+        locationIds:
+          updateProjectCategoryDto.locationIds !== undefined
+            ? updateProjectCategoryDto.locationIds || []
+            : undefined,
       } as any,
     })
 
     // Fetch locations for the updated category
     const locationIds = (updated as any).locationIds || []
-    const locations = locationIds.length > 0 ? await this.prisma.location.findMany({
-      where: { id: { in: locationIds } },
-      select: {
-        id: true,
-        branchName: true,
-        branchCode: true,
-      },
-    }) : []
+    const locations =
+      locationIds.length > 0
+        ? await this.prisma.location.findMany({
+            where: { id: { in: locationIds } },
+            select: {
+              id: true,
+              branchName: true,
+              branchCode: true,
+            },
+          })
+        : []
 
-    const projectCount = await this.prisma.project.count({ 
-      where: { categoryId: updated.id } 
+    const projectCount = await this.prisma.project.count({
+      where: { categoryId: updated.id },
     })
 
     return {
@@ -240,17 +253,20 @@ export class ProjectCategoriesService {
 
     // Fetch locations for the updated category
     const locationIds = (updated as any).locationIds || []
-    const locations = locationIds.length > 0 ? await this.prisma.location.findMany({
-      where: { id: { in: locationIds } },
-      select: {
-        id: true,
-        branchName: true,
-        branchCode: true,
-      },
-    }) : []
+    const locations =
+      locationIds.length > 0
+        ? await this.prisma.location.findMany({
+            where: { id: { in: locationIds } },
+            select: {
+              id: true,
+              branchName: true,
+              branchCode: true,
+            },
+          })
+        : []
 
-    const projectCount = await this.prisma.project.count({ 
-      where: { categoryId: updated.id } 
+    const projectCount = await this.prisma.project.count({
+      where: { categoryId: updated.id },
     })
 
     return {
@@ -260,4 +276,3 @@ export class ProjectCategoriesService {
     }
   }
 }
-

@@ -31,7 +31,9 @@ export class FingerprintLogsService {
       data: {
         employeeMasterId: createDto.employeeMasterId,
         fingerprintDeviceId: createDto.fingerprintDeviceId,
-        recognitionTime: createDto.recognitionTime ? new Date(createDto.recognitionTime) : new Date(),
+        recognitionTime: createDto.recognitionTime
+          ? new Date(createDto.recognitionTime)
+          : new Date(),
         status: (createDto.status as any) || 'UNKNOWN',
         confidence: createDto.confidence || 0,
         fingerprintIndex: createDto.fingerprintIndex,
@@ -61,10 +63,10 @@ export class FingerprintLogsService {
     if (employeeMasterId) where.employeeMasterId = employeeMasterId
     if (status) {
       const statusMap: Record<string, string> = {
-        'Recognized': 'RECOGNIZED',
-        'Failed': 'FAILED',
-        'Unknown': 'UNKNOWN',
-        'Duplicate': 'DUPLICATE',
+        Recognized: 'RECOGNIZED',
+        Failed: 'FAILED',
+        Unknown: 'UNKNOWN',
+        Duplicate: 'DUPLICATE',
       }
       where.status = statusMap[status] || status
     }
@@ -85,7 +87,7 @@ export class FingerprintLogsService {
       take: limit || 100,
     })
 
-    return Promise.all(logs.map(log => this.formatResponse(log)))
+    return Promise.all(logs.map((log) => this.formatResponse(log)))
   }
 
   async findRecent(limit: number = 50) {
@@ -98,7 +100,7 @@ export class FingerprintLogsService {
       take: limit,
     })
 
-    return Promise.all(logs.map(log => this.formatResponse(log)))
+    return Promise.all(logs.map((log) => this.formatResponse(log)))
   }
 
   async findOne(id: string) {
@@ -129,7 +131,8 @@ export class FingerprintLogsService {
     const updateData: any = {}
     if (updateDto.status) updateData.status = updateDto.status
     if (updateDto.confidence !== undefined) updateData.confidence = updateDto.confidence
-    if (updateDto.fingerprintIndex !== undefined) updateData.fingerprintIndex = updateDto.fingerprintIndex
+    if (updateDto.fingerprintIndex !== undefined)
+      updateData.fingerprintIndex = updateDto.fingerprintIndex
     if (updateDto.remarks !== undefined) updateData.remarks = updateDto.remarks
 
     const updated = await this.prisma.fingerprintLog.update({
@@ -173,9 +176,9 @@ export class FingerprintLogsService {
     })
 
     const total = logs.length
-    const recognized = logs.filter(l => l.status === 'RECOGNIZED').length
-    const failed = logs.filter(l => l.status === 'FAILED').length
-    const unknown = logs.filter(l => l.status === 'UNKNOWN').length
+    const recognized = logs.filter((l) => l.status === 'RECOGNIZED').length
+    const failed = logs.filter((l) => l.status === 'FAILED').length
+    const unknown = logs.filter((l) => l.status === 'UNKNOWN').length
 
     return {
       total,
@@ -203,10 +206,10 @@ export class FingerprintLogsService {
     }
 
     const statusMap: Record<string, string> = {
-      'RECOGNIZED': 'Recognized',
-      'FAILED': 'Failed',
-      'UNKNOWN': 'Unknown',
-      'DUPLICATE': 'Duplicate',
+      RECOGNIZED: 'Recognized',
+      FAILED: 'Failed',
+      UNKNOWN: 'Unknown',
+      DUPLICATE: 'Duplicate',
     }
 
     return {
@@ -225,4 +228,3 @@ export class FingerprintLogsService {
     }
   }
 }
-

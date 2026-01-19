@@ -5,19 +5,19 @@ export enum FingerprintValidationAlertType {
   TEMPLATE_MISMATCH = 'TEMPLATE_MISMATCH',
   DUPLICATE_ENROLLMENT = 'DUPLICATE_ENROLLMENT',
   DEVICE_ERROR = 'DEVICE_ERROR',
-  COMMUNICATION_FAILURE = 'COMMUNICATION_FAILURE'
+  COMMUNICATION_FAILURE = 'COMMUNICATION_FAILURE',
 }
 
 export enum FingerprintValidationSeverity {
   HIGH = 'HIGH',
   MEDIUM = 'MEDIUM',
-  LOW = 'LOW'
+  LOW = 'LOW',
 }
 
 export enum FingerprintValidationAlertStatus {
   ACTIVE = 'ACTIVE',
   RESOLVED = 'RESOLVED',
-  FALSE_POSITIVE = 'FALSE_POSITIVE'
+  FALSE_POSITIVE = 'FALSE_POSITIVE',
 }
 
 export class CreateFingerprintValidationAlertDto {
@@ -58,4 +58,3 @@ export class CreateFingerprintValidationAlertDto {
   @IsString()
   remarks?: string
 }
-

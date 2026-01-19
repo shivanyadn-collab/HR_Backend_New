@@ -17,4 +17,3 @@ export class ContractLabourReportsController {
     return this.service.findAll(status, type, period, search)
   }
 }
-

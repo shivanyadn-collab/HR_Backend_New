@@ -66,7 +66,7 @@ export class PfRegisterService {
       const epfWages = Math.min(grossWages, 15000) // EPF wage ceiling
       const epsWages = Math.min(grossWages, 15000) // EPS wage ceiling
       const edliWages = Math.min(grossWages, 15000) // EDLI wage ceiling
-      
+
       // PF contribution rates: Employee 12%, Employer 12% (8.33% to EPS, 3.67% to EPF)
       const employeeContribution = Math.round(epfWages * 0.12)
       const employerEPF = Math.round(epfWages * 0.0367)
@@ -101,4 +101,3 @@ export class PfRegisterService {
     return records
   }
 }
-

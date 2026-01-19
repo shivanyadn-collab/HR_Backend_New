@@ -4,7 +4,7 @@ export enum FaceEnrollmentStatus {
   PENDING = 'PENDING',
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED'
+  FAILED = 'FAILED',
 }
 
 export class CreateFaceEnrollmentDto {
@@ -15,4 +15,3 @@ export class CreateFaceEnrollmentDto {
   @IsEnum(FaceEnrollmentStatus)
   status?: FaceEnrollmentStatus
 }
-

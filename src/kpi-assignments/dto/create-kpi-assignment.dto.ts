@@ -4,7 +4,7 @@ import { Type } from 'class-transformer'
 export enum KPIAssignmentStatus {
   ACTIVE = 'ACTIVE',
   COMPLETED = 'COMPLETED',
-  INACTIVE = 'INACTIVE'
+  INACTIVE = 'INACTIVE',
 }
 
 export class CreateKpiAssignmentDto {
@@ -29,4 +29,3 @@ export class CreateKpiAssignmentDto {
   @IsEnum(KPIAssignmentStatus)
   status?: KPIAssignmentStatus
 }
-

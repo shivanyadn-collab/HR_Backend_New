@@ -41,7 +41,13 @@ export class ProjectHoursService {
     return this.formatResponse(projectHours)
   }
 
-  async findAll(employeeId?: string, projectId?: string, startDate?: string, endDate?: string, search?: string) {
+  async findAll(
+    employeeId?: string,
+    projectId?: string,
+    startDate?: string,
+    endDate?: string,
+    search?: string,
+  ) {
     const where: any = {}
 
     if (employeeId) {
@@ -170,4 +176,3 @@ export class ProjectHoursService {
     }
   }
 }
-

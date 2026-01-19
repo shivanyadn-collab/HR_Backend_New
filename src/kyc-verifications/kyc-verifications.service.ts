@@ -158,7 +158,7 @@ export class KYCVerificationsService {
         }
 
         return await this.formatKYCResponse(kyc, departmentName, designationName)
-      })
+      }),
     )
 
     return formattedResults
@@ -229,7 +229,10 @@ export class KYCVerificationsService {
 
     if (updateKYCVerificationDto.verifiedDate !== undefined) {
       updateData.verifiedDate = new Date(updateKYCVerificationDto.verifiedDate)
-    } else if (updateKYCVerificationDto.verificationStatus === 'VERIFIED' && !kycVerification.verifiedDate) {
+    } else if (
+      updateKYCVerificationDto.verificationStatus === 'VERIFIED' &&
+      !kycVerification.verifiedDate
+    ) {
       updateData.verifiedDate = new Date()
     }
 
@@ -361,7 +364,9 @@ export class KYCVerificationsService {
 
     // Fetch verifiedBy names for documents
     const documentVerifiedByNames: { [key: string]: string | null } = {}
-    const uniqueUserIds = [...new Set(kyc.documents.map((doc: any) => doc.verifiedBy).filter(Boolean))] as string[]
+    const uniqueUserIds = [
+      ...new Set(kyc.documents.map((doc: any) => doc.verifiedBy).filter(Boolean)),
+    ] as string[]
 
     if (uniqueUserIds.length > 0) {
       try {
@@ -370,7 +375,7 @@ export class KYCVerificationsService {
           select: { id: true, name: true, email: true },
         })
 
-        const userMap = new Map(users.map(u => [u.id, u.name || u.email || null]))
+        const userMap = new Map(users.map((u) => [u.id, u.name || u.email || null]))
         kyc.documents.forEach((doc: any) => {
           if (doc.verifiedBy) {
             documentVerifiedByNames[doc.id] = userMap.get(doc.verifiedBy) || null
@@ -396,17 +401,27 @@ export class KYCVerificationsService {
         expiryDate: doc.expiryDate ? doc.expiryDate.toISOString().split('T')[0] : null,
         issuingAuthority: doc.issuingAuthority,
         documentFile: doc.documentFile,
-        status: doc.status === 'VERIFIED' ? 'Verified' :
-                doc.status === 'PENDING' ? 'Pending' :
-                doc.status === 'REJECTED' ? 'Rejected' : 'Expired',
+        status:
+          doc.status === 'VERIFIED'
+            ? 'Verified'
+            : doc.status === 'PENDING'
+              ? 'Pending'
+              : doc.status === 'REJECTED'
+                ? 'Rejected'
+                : 'Expired',
         verifiedBy: documentVerifiedByNames[doc.id] || doc.verifiedBy,
         verifiedDate: doc.verifiedDate ? doc.verifiedDate.toISOString().split('T')[0] : null,
         rejectionReason: doc.rejectionReason,
         remarks: doc.remarks,
       })),
-      verificationStatus: kyc.verificationStatus === 'VERIFIED' ? 'Verified' :
-                          kyc.verificationStatus === 'IN_PROGRESS' ? 'In Progress' :
-                          kyc.verificationStatus === 'REJECTED' ? 'Rejected' : 'Pending',
+      verificationStatus:
+        kyc.verificationStatus === 'VERIFIED'
+          ? 'Verified'
+          : kyc.verificationStatus === 'IN_PROGRESS'
+            ? 'In Progress'
+            : kyc.verificationStatus === 'REJECTED'
+              ? 'Rejected'
+              : 'Pending',
       submittedDate: kyc.submittedDate.toISOString().split('T')[0],
       verifiedDate: kyc.verifiedDate ? kyc.verifiedDate.toISOString().split('T')[0] : null,
       verifiedBy: verifiedByName || kyc.verifiedBy,
@@ -416,7 +431,12 @@ export class KYCVerificationsService {
     }
   }
 
-  async updateDocument(kycVerificationId: string, documentId: string, updateDocumentDto: UpdateKYCDocumentDto, verifiedBy?: string) {
+  async updateDocument(
+    kycVerificationId: string,
+    documentId: string,
+    updateDocumentDto: UpdateKYCDocumentDto,
+    verifiedBy?: string,
+  ) {
     // Verify KYC verification exists
     const kycVerification = await this.prisma.kYCVerification.findUnique({
       where: { id: kycVerificationId },
@@ -509,4 +529,3 @@ export class KYCVerificationsService {
     return await this.formatKYCResponse(updatedKYC, departmentName, designationName)
   }
 }
-

@@ -54,4 +54,3 @@ export class LeaveDeductionsController {
     return this.service.remove(id)
   }
 }
-

@@ -79,7 +79,13 @@ export class LeaveEncashmentsService {
     return this.formatResponse(encashment)
   }
 
-  async findAll(employeeId?: string, status?: string, startDate?: string, endDate?: string, search?: string) {
+  async findAll(
+    employeeId?: string,
+    status?: string,
+    startDate?: string,
+    endDate?: string,
+    search?: string,
+  ) {
     const where: any = {}
 
     if (employeeId) {
@@ -153,7 +159,10 @@ export class LeaveEncashmentsService {
 
     if (updateDto.status) {
       updateData.status = updateDto.status
-      if (updateDto.status === LeaveEncashmentStatus.APPROVED || updateDto.status === LeaveEncashmentStatus.PROCESSED) {
+      if (
+        updateDto.status === LeaveEncashmentStatus.APPROVED ||
+        updateDto.status === LeaveEncashmentStatus.PROCESSED
+      ) {
         updateData.approvedDate = new Date()
         if (updateDto.status === LeaveEncashmentStatus.PROCESSED) {
           updateData.processedDate = new Date()
@@ -265,12 +274,15 @@ export class LeaveEncashmentsService {
       requestDate: encashment.requestDate.toISOString().split('T')[0],
       status: encashment.status,
       approvedBy: encashment.approvedBy || null,
-      approvedDate: encashment.approvedDate ? encashment.approvedDate.toISOString().split('T')[0] : null,
-      processedDate: encashment.processedDate ? encashment.processedDate.toISOString().split('T')[0] : null,
+      approvedDate: encashment.approvedDate
+        ? encashment.approvedDate.toISOString().split('T')[0]
+        : null,
+      processedDate: encashment.processedDate
+        ? encashment.processedDate.toISOString().split('T')[0]
+        : null,
       rejectionReason: encashment.rejectionReason || null,
       createdAt: encashment.createdAt,
       updatedAt: encashment.updatedAt,
     }
   }
 }
-

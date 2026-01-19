@@ -21,39 +21,27 @@ import { ProjectDocumentsService } from './project-documents.service'
 import { CreateProjectDocumentDto } from './dto/create-project-document.dto'
 import { UpdateProjectDocumentDto } from './dto/update-project-document.dto'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
-import { diskStorage } from 'multer'
-import { extname, join } from 'path'
-import { existsSync, mkdirSync } from 'fs'
+import { BucketService } from '../bucket/bucket.service'
+import { extname } from 'path'
 
 @Controller('project-documents')
 @UseGuards(JwtAuthGuard)
 export class ProjectDocumentsController {
-  constructor(private readonly projectDocumentsService: ProjectDocumentsService) {}
+  constructor(
+    private readonly projectDocumentsService: ProjectDocumentsService,
+    private readonly bucketService: BucketService,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(
     FileInterceptor('file', {
-      storage: diskStorage({
-        destination: (req, file, cb) => {
-          const uploadPath = join(process.cwd(), 'uploads', 'project-documents')
-          if (!existsSync(uploadPath)) {
-            mkdirSync(uploadPath, { recursive: true })
-          }
-          cb(null, uploadPath)
-        },
-        filename: (req, file, cb) => {
-          const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9)
-          const ext = extname(file.originalname)
-          cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`)
-        },
-      }),
       limits: {
         fileSize: 50 * 1024 * 1024, // 50MB
       },
     }),
   )
-  create(
+  async create(
     @UploadedFile(
       new ParseFilePipe({
         validators: [
@@ -74,12 +62,17 @@ export class ProjectDocumentsController {
       throw new BadRequestException('category must be a string')
     }
 
+    try {
+      // Upload file to bucket
+      const uploadResult = await this.bucketService.uploadFile(file, 'project-documents')
+
     const createProjectDocumentDto: CreateProjectDocumentDto = {
       projectId: String(body.projectId),
       fileName: String(body.fileName || file.originalname),
       fileType: String(body.fileType || extname(file.originalname).slice(1) || 'unknown'),
-      fileSize: Number(file.size), // File size from multer is already a number
-      fileUrl: `/uploads/project-documents/${file.filename}`,
+        fileSize: Number(file.size),
+        fileUrl: uploadResult.url,
+        fileKey: uploadResult.key, // Store the bucket key for future operations
       category: String(body.category),
       description: body.description ? String(body.description) : undefined,
       version: body.version ? String(body.version) : undefined,
@@ -87,6 +80,9 @@ export class ProjectDocumentsController {
       isActive: body.isActive === 'true' || body.isActive === true || body.isActive === undefined,
     }
     return this.projectDocumentsService.create(createProjectDocumentDto)
+    } catch (error) {
+      throw new BadRequestException(`Failed to upload file: ${error.message}`)
+    }
   }
 
   @Get()

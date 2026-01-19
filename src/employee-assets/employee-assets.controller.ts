@@ -44,4 +44,3 @@ export class EmployeeAssetsController {
     return this.service.recalculateQuantities(id)
   }
 }
-

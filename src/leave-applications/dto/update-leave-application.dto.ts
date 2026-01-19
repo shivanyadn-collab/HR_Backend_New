@@ -36,4 +36,3 @@ export class UpdateLeaveApplicationDto {
   @IsString()
   rejectionReason?: string
 }
-

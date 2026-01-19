@@ -49,4 +49,3 @@ export class PushNotificationsController {
     return this.service.remove(id)
   }
 }
-

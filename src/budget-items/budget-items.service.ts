@@ -33,7 +33,9 @@ export class BudgetItemsService {
         month: createBudgetItemDto.month,
         status: createBudgetItemDto.status || BudgetItemStatus.PLANNED,
         approvedBy: createBudgetItemDto.approvedBy,
-        approvedDate: createBudgetItemDto.approvedDate ? new Date(createBudgetItemDto.approvedDate) : null,
+        approvedDate: createBudgetItemDto.approvedDate
+          ? new Date(createBudgetItemDto.approvedDate)
+          : null,
       },
       include: {
         project: true,
@@ -56,7 +58,7 @@ export class BudgetItemsService {
       orderBy: { createdAt: 'desc' },
     })
 
-    return budgetItems.map(item => this.formatBudgetItemResponse(item))
+    return budgetItems.map((item) => this.formatBudgetItemResponse(item))
   }
 
   async findOne(id: string) {
@@ -84,9 +86,12 @@ export class BudgetItemsService {
     }
 
     const updateData: any = { ...updateBudgetItemDto }
-    
+
     // Recalculate remaining amount if budgetedAmount or committedAmount changed
-    if (updateBudgetItemDto.budgetedAmount !== undefined || updateBudgetItemDto.committedAmount !== undefined) {
+    if (
+      updateBudgetItemDto.budgetedAmount !== undefined ||
+      updateBudgetItemDto.committedAmount !== undefined
+    ) {
       const budgetedAmount = updateBudgetItemDto.budgetedAmount ?? budgetItem.budgetedAmount
       const committedAmount = updateBudgetItemDto.committedAmount ?? budgetItem.committedAmount
       updateData.remainingAmount = budgetedAmount - committedAmount
@@ -135,10 +140,16 @@ export class BudgetItemsService {
       committedAmount: item.committedAmount,
       remainingAmount: item.remainingAmount,
       month: item.month,
-      status: item.status === BudgetItemStatus.PLANNED ? 'Planned' :
-              item.status === BudgetItemStatus.APPROVED ? 'Approved' :
-              item.status === BudgetItemStatus.IN_PROGRESS ? 'In Progress' :
-              item.status === BudgetItemStatus.COMPLETED ? 'Completed' : 'Cancelled',
+      status:
+        item.status === BudgetItemStatus.PLANNED
+          ? 'Planned'
+          : item.status === BudgetItemStatus.APPROVED
+            ? 'Approved'
+            : item.status === BudgetItemStatus.IN_PROGRESS
+              ? 'In Progress'
+              : item.status === BudgetItemStatus.COMPLETED
+                ? 'Completed'
+                : 'Cancelled',
       approvedBy: item.approvedBy,
       approvedDate: item.approvedDate ? item.approvedDate.toISOString().split('T')[0] : null,
       createdDate: item.createdAt.toISOString().split('T')[0],

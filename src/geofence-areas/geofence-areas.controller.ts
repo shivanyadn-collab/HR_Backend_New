@@ -43,4 +43,3 @@ export class GeofenceAreasController {
     return this.service.toggleStatus(id)
   }
 }
-

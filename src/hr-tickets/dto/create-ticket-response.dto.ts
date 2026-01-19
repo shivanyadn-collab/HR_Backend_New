@@ -20,4 +20,3 @@ export class CreateTicketResponseDto {
   @IsBoolean()
   isInternal?: boolean
 }
-

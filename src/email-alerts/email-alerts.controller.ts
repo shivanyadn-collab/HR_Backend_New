@@ -49,4 +49,3 @@ export class EmailAlertsController {
     return this.service.remove(id)
   }
 }
-

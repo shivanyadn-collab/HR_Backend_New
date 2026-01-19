@@ -19,4 +19,3 @@ export class UpdateOfferLetterDto extends PartialType(CreateOfferLetterDto) {
   @IsDateString()
   rejectedDate?: string
 }
-

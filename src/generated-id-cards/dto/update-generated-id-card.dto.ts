@@ -25,4 +25,3 @@ export class UpdateGeneratedIDCardDto {
   @IsOptional()
   printedBy?: string
 }
-

@@ -54,4 +54,3 @@ export class LeavePoliciesController {
     return this.leavePoliciesService.toggleActive(id)
   }
 }
-

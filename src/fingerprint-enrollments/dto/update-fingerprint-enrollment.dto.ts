@@ -1,5 +1,8 @@
 import { PartialType } from '@nestjs/mapped-types'
-import { CreateFingerprintEnrollmentDto, FingerprintEnrollmentStatus } from './create-fingerprint-enrollment.dto'
+import {
+  CreateFingerprintEnrollmentDto,
+  FingerprintEnrollmentStatus,
+} from './create-fingerprint-enrollment.dto'
 import { IsOptional, IsString, IsNumber, IsEnum, Min, Max } from 'class-validator'
 
 export class UpdateFingerprintEnrollmentDto extends PartialType(CreateFingerprintEnrollmentDto) {
@@ -17,4 +20,3 @@ export class UpdateFingerprintEnrollmentDto extends PartialType(CreateFingerprin
   @IsString()
   fingerprintTemplate?: string // Encrypted template data
 }
-

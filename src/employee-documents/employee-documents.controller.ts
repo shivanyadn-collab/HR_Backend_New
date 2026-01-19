@@ -10,18 +10,26 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common'
+import { FileInterceptor } from '@nestjs/platform-express'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { CurrentUser } from '../auth/decorators/current-user.decorator'
 import { UserResponseDto } from '../auth/dto/auth-response.dto'
 import { EmployeeDocumentsService } from './employee-documents.service'
 import { CreateEmployeeDocumentDto } from './dto/create-employee-document.dto'
 import { UpdateEmployeeDocumentDto } from './dto/update-employee-document.dto'
+import { BucketService } from '../bucket/bucket.service'
 
 @Controller('employee-documents')
 @UseGuards(JwtAuthGuard)
 export class EmployeeDocumentsController {
-  constructor(private readonly employeeDocumentsService: EmployeeDocumentsService) {}
+  constructor(
+    private readonly employeeDocumentsService: EmployeeDocumentsService,
+    private readonly bucketService: BucketService,
+  ) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
@@ -34,6 +42,37 @@ export class EmployeeDocumentsController {
       createEmployeeDocumentDto.uploadedBy = user.id
     }
     return this.employeeDocumentsService.create(createEmployeeDocumentDto)
+  }
+
+  @Post('upload')
+  @UseInterceptors(FileInterceptor('file'))
+  @HttpCode(HttpStatus.CREATED)
+  async uploadDocument(
+    @Body() createDto: Omit<CreateEmployeeDocumentDto, 'fileUrl' | 'fileKey' | 'fileSize' | 'uploadDate'>,
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user: UserResponseDto,
+  ) {
+    if (!file) {
+      throw new BadRequestException('File is required')
+    }
+
+    try {
+      // Upload file to S3 bucket
+      const uploadResult = await this.bucketService.uploadFile(file, 'employee-documents')
+
+      const completeDto: CreateEmployeeDocumentDto = {
+        ...createDto,
+        fileUrl: uploadResult.url,
+        fileKey: uploadResult.key,
+        fileSize: file.size,
+        uploadedBy: user.id,
+        uploadDate: new Date().toISOString(),
+      }
+
+      return this.employeeDocumentsService.create(completeDto)
+    } catch (error) {
+      throw new BadRequestException(`Failed to upload employee document: ${error.message}`)
+    }
   }
 
   @Get()
@@ -52,10 +91,7 @@ export class EmployeeDocumentsController {
   }
 
   @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateEmployeeDocumentDto: UpdateEmployeeDocumentDto,
-  ) {
+  update(@Param('id') id: string, @Body() updateEmployeeDocumentDto: UpdateEmployeeDocumentDto) {
     return this.employeeDocumentsService.update(id, updateEmployeeDocumentDto)
   }
 
@@ -75,4 +111,3 @@ export class EmployeeDocumentsController {
     await this.employeeDocumentsService.remove(id)
   }
 }
-

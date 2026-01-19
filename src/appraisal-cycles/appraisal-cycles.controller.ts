@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-  UseGuards,
-} from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common'
 import { AppraisalCyclesService } from './appraisal-cycles.service'
 import { CreateAppraisalCycleDto } from './dto/create-appraisal-cycle.dto'
 import { UpdateAppraisalCycleDto } from './dto/update-appraisal-cycle.dto'
@@ -25,10 +15,7 @@ export class AppraisalCyclesController {
   }
 
   @Get()
-  findAll(
-    @Query('status') status?: string,
-    @Query('search') search?: string,
-  ) {
+  findAll(@Query('status') status?: string, @Query('search') search?: string) {
     return this.appraisalCyclesService.findAll(status, search)
   }
 
@@ -47,4 +34,3 @@ export class AppraisalCyclesController {
     return this.appraisalCyclesService.remove(id)
   }
 }
-

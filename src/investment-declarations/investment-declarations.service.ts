@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateInvestmentDeclarationDto } from './dto/create-investment-declaration.dto';
-import { UpdateInvestmentDeclarationDto } from './dto/update-investment-declaration.dto';
+import { Injectable, NotFoundException } from '@nestjs/common'
+import { PrismaService } from '../prisma/prisma.service'
+import { CreateInvestmentDeclarationDto } from './dto/create-investment-declaration.dto'
+import { UpdateInvestmentDeclarationDto } from './dto/update-investment-declaration.dto'
 
 @Injectable()
 export class InvestmentDeclarationsService {
@@ -33,14 +33,14 @@ export class InvestmentDeclarationsService {
           },
         },
       },
-    });
-    return this.formatResponse(declaration);
+    })
+    return this.formatResponse(declaration)
   }
 
   async findAll(employeeId?: string, financialYear?: string) {
-    const where: any = {};
-    if (employeeId) where.employeeMasterId = employeeId;
-    if (financialYear) where.financialYear = financialYear;
+    const where: any = {}
+    if (employeeId) where.employeeMasterId = employeeId
+    if (financialYear) where.financialYear = financialYear
 
     const declarations = await this.prisma.investmentDeclaration.findMany({
       where,
@@ -55,8 +55,8 @@ export class InvestmentDeclarationsService {
         },
       },
       orderBy: [{ section: 'asc' }, { createdAt: 'desc' }],
-    });
-    return declarations.map(this.formatResponse);
+    })
+    return declarations.map(this.formatResponse)
   }
 
   async findOne(id: string) {
@@ -72,15 +72,15 @@ export class InvestmentDeclarationsService {
           },
         },
       },
-    });
+    })
     if (!declaration) {
-      throw new NotFoundException(`Investment Declaration with ID ${id} not found`);
+      throw new NotFoundException(`Investment Declaration with ID ${id} not found`)
     }
-    return this.formatResponse(declaration);
+    return this.formatResponse(declaration)
   }
 
   async update(id: string, updateDto: UpdateInvestmentDeclarationDto) {
-    await this.findOne(id);
+    await this.findOne(id)
     const declaration = await this.prisma.investmentDeclaration.update({
       where: { id },
       data: {
@@ -98,18 +98,18 @@ export class InvestmentDeclarationsService {
           },
         },
       },
-    });
-    return this.formatResponse(declaration);
+    })
+    return this.formatResponse(declaration)
   }
 
   async remove(id: string) {
-    await this.findOne(id);
-    await this.prisma.investmentDeclaration.delete({ where: { id } });
-    return { message: 'Investment Declaration deleted successfully' };
+    await this.findOne(id)
+    await this.prisma.investmentDeclaration.delete({ where: { id } })
+    return { message: 'Investment Declaration deleted successfully' }
   }
 
   async verify(id: string, verifiedBy: string, verifiedAmount: number, remarks?: string) {
-    await this.findOne(id);
+    await this.findOne(id)
     const declaration = await this.prisma.investmentDeclaration.update({
       where: { id },
       data: {
@@ -129,16 +129,16 @@ export class InvestmentDeclarationsService {
           },
         },
       },
-    });
-    return this.formatResponse(declaration);
+    })
+    return this.formatResponse(declaration)
   }
 
   private formatResponse(declaration: any) {
     return {
       id: declaration.id,
       employeeMasterId: declaration.employeeMasterId,
-      employeeName: declaration.employeeMaster 
-        ? `${declaration.employeeMaster.firstName} ${declaration.employeeMaster.lastName}` 
+      employeeName: declaration.employeeMaster
+        ? `${declaration.employeeMaster.firstName} ${declaration.employeeMaster.lastName}`
         : null,
       employeeCode: declaration.employeeMaster?.employeeCode,
       financialYear: declaration.financialYear,
@@ -154,6 +154,6 @@ export class InvestmentDeclarationsService {
       remarks: declaration.remarks,
       createdAt: declaration.createdAt,
       updatedAt: declaration.updatedAt,
-    };
+    }
   }
 }

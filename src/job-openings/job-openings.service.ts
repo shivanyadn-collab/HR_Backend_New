@@ -71,15 +71,15 @@ export class JobOpeningsService {
 
   async findAll(status?: string, departmentId?: string, search?: string) {
     const where: any = {}
-    
+
     if (status) {
       where.status = status.toUpperCase()
     }
-    
+
     if (departmentId) {
       where.departmentId = departmentId
     }
-    
+
     if (search) {
       where.OR = [
         { jobTitle: { contains: search, mode: 'insensitive' } },
@@ -101,7 +101,7 @@ export class JobOpeningsService {
     })
 
     // Format response
-    return jobs.map(job => ({
+    return jobs.map((job) => ({
       id: job.id,
       jobTitle: job.jobTitle,
       jobCode: job.jobCode,
@@ -178,7 +178,7 @@ export class JobOpeningsService {
 
   async update(id: string, updateDto: UpdateJobOpeningDto) {
     const job = await this.prisma.jobOpening.findUnique({ where: { id } })
-    
+
     if (!job) {
       throw new NotFoundException('Job opening not found')
     }
@@ -215,11 +215,11 @@ export class JobOpeningsService {
     }
 
     const updateData: any = { ...updateDto }
-    
+
     if (updateDto.postedDate) {
       updateData.postedDate = new Date(updateDto.postedDate)
     }
-    
+
     if (updateDto.closingDate !== undefined) {
       updateData.closingDate = updateDto.closingDate ? new Date(updateDto.closingDate) : null
     }
@@ -266,7 +266,7 @@ export class JobOpeningsService {
 
   async remove(id: string) {
     const job = await this.prisma.jobOpening.findUnique({ where: { id } })
-    
+
     if (!job) {
       throw new NotFoundException('Job opening not found')
     }
@@ -274,5 +274,3 @@ export class JobOpeningsService {
     return this.prisma.jobOpening.delete({ where: { id } })
   }
 }
-
-

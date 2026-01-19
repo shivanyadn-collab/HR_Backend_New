@@ -34,4 +34,3 @@ export class GeofenceProjectAssignmentsController {
     return this.service.remove(id)
   }
 }
-

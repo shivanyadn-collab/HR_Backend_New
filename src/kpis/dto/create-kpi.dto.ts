@@ -6,7 +6,7 @@ export enum KPIFrequency {
   WEEKLY = 'WEEKLY',
   MONTHLY = 'MONTHLY',
   QUARTERLY = 'QUARTERLY',
-  ANNUAL = 'ANNUAL'
+  ANNUAL = 'ANNUAL',
 }
 
 export class CreateKpiDto {
@@ -52,4 +52,3 @@ export class CreateKpiDto {
   @Type(() => Boolean)
   isActive?: boolean
 }
-

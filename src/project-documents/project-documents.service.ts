@@ -51,7 +51,7 @@ export class ProjectDocumentsService {
       orderBy: { createdAt: 'desc' },
     })
 
-    return documents.map(doc => this.formatDocumentResponse(doc))
+    return documents.map((doc) => this.formatDocumentResponse(doc))
   }
 
   async findOne(id: string) {

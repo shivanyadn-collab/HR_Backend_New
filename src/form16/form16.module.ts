@@ -1,7 +1,7 @@
-import { Module } from '@nestjs/common';
-import { Form16Service } from './form16.service';
-import { Form16Controller } from './form16.controller';
-import { PrismaModule } from '../prisma/prisma.module';
+import { Module } from '@nestjs/common'
+import { Form16Service } from './form16.service'
+import { Form16Controller } from './form16.controller'
+import { PrismaModule } from '../prisma/prisma.module'
 
 @Module({
   imports: [PrismaModule],

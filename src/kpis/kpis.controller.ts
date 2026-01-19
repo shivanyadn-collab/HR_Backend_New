@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-  UseGuards,
-} from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common'
 import { KpisService } from './kpis.service'
 import { CreateKpiDto } from './dto/create-kpi.dto'
 import { UpdateKpiDto } from './dto/update-kpi.dto'
@@ -48,4 +38,3 @@ export class KpisController {
     return this.kpisService.remove(id)
   }
 }
-

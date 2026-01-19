@@ -7,7 +7,7 @@ export enum AppraisalCycleStatus {
   EVALUATION = 'EVALUATION',
   REVIEW = 'REVIEW',
   COMPLETED = 'COMPLETED',
-  CLOSED = 'CLOSED'
+  CLOSED = 'CLOSED',
 }
 
 export class CreateAppraisalCycleDto {
@@ -42,4 +42,3 @@ export class CreateAppraisalCycleDto {
   @IsDateString()
   finalReviewDeadline?: string
 }
-

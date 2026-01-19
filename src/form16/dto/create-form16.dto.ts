@@ -1,37 +1,37 @@
-import { IsString, IsBoolean, IsOptional, IsDateString } from 'class-validator';
+import { IsString, IsBoolean, IsOptional, IsDateString } from 'class-validator'
 
 export class CreateForm16Dto {
   @IsString()
-  employeeMasterId: string;
+  employeeMasterId: string
 
   @IsString()
-  financialYear: string;
+  financialYear: string
 
   @IsBoolean()
   @IsOptional()
-  partA?: boolean;
+  partA?: boolean
 
   @IsBoolean()
   @IsOptional()
-  partB?: boolean;
+  partB?: boolean
 
   @IsDateString()
   @IsOptional()
-  generatedDate?: string;
+  generatedDate?: string
 
   @IsString()
   @IsOptional()
-  downloadUrl?: string;
+  downloadUrl?: string
 
   @IsString()
   @IsOptional()
-  fileName?: string;
+  fileName?: string
 
   @IsString()
   @IsOptional()
-  status?: string;
+  status?: string
 
   @IsString()
   @IsOptional()
-  remarks?: string;
+  remarks?: string
 }

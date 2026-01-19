@@ -39,4 +39,3 @@ export class CreateEmployeeAssetDto {
   @IsString()
   issuedBy?: string
 }
-

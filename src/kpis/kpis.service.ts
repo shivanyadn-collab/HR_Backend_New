@@ -61,7 +61,7 @@ export class KpisService {
       orderBy: { createdAt: 'desc' },
     })
 
-    return kpis.map(kpi => this.formatResponse(kpi))
+    return kpis.map((kpi) => this.formatResponse(kpi))
   }
 
   async findOne(id: string) {
@@ -147,4 +147,3 @@ export class KpisService {
     }
   }
 }
-

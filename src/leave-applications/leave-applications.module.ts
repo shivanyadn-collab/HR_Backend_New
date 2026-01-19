@@ -8,4 +8,3 @@ import { LeaveApplicationsController } from './leave-applications.controller'
   exports: [LeaveApplicationsService],
 })
 export class LeaveApplicationsModule {}
-

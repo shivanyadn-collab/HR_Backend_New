@@ -8,4 +8,3 @@ import { LeavePoliciesController } from './leave-policies.controller'
   exports: [LeavePoliciesService],
 })
 export class LeavePoliciesModule {}
-

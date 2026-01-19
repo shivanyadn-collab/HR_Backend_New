@@ -1,4 +1,12 @@
-import { IsString, IsDateString, IsOptional, IsEnum, IsArray, ValidateNested, IsIn } from 'class-validator'
+import {
+  IsString,
+  IsDateString,
+  IsOptional,
+  IsEnum,
+  IsArray,
+  ValidateNested,
+  IsIn,
+} from 'class-validator'
 import { Type } from 'class-transformer'
 
 export class CreateKYCDocumentDto {
@@ -52,4 +60,3 @@ export class CreateKYCVerificationDto {
   @Type(() => CreateKYCDocumentDto)
   documents: CreateKYCDocumentDto[]
 }
-

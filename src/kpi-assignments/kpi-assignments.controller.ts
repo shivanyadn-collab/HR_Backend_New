@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-  UseGuards,
-} from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common'
 import { KpiAssignmentsService } from './kpi-assignments.service'
 import { CreateKpiAssignmentDto } from './dto/create-kpi-assignment.dto'
 import { UpdateKpiAssignmentDto } from './dto/update-kpi-assignment.dto'
@@ -48,4 +38,3 @@ export class KpiAssignmentsController {
     return this.kpiAssignmentsService.remove(id)
   }
 }
-

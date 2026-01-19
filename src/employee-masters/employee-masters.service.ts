@@ -51,26 +51,48 @@ export class EmployeeMastersService {
         where: {
           OR: [
             { employeeCode: createEmployeeMasterDto.reportingManager },
-            { 
+            {
               OR: [
-                { firstName: { contains: createEmployeeMasterDto.reportingManager, mode: 'insensitive' } },
-                { lastName: { contains: createEmployeeMasterDto.reportingManager, mode: 'insensitive' } },
+                {
+                  firstName: {
+                    contains: createEmployeeMasterDto.reportingManager,
+                    mode: 'insensitive',
+                  },
+                },
+                {
+                  lastName: {
+                    contains: createEmployeeMasterDto.reportingManager,
+                    mode: 'insensitive',
+                  },
+                },
                 {
                   AND: [
-                    { firstName: { contains: createEmployeeMasterDto.reportingManager.split(' ')[0] || '', mode: 'insensitive' } },
-                    { lastName: { contains: createEmployeeMasterDto.reportingManager.split(' ')[1] || '', mode: 'insensitive' } },
-                  ]
-                }
-              ]
-            }
-          ]
+                    {
+                      firstName: {
+                        contains: createEmployeeMasterDto.reportingManager.split(' ')[0] || '',
+                        mode: 'insensitive',
+                      },
+                    },
+                    {
+                      lastName: {
+                        contains: createEmployeeMasterDto.reportingManager.split(' ')[1] || '',
+                        mode: 'insensitive',
+                      },
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
         },
       })
 
       if (manager) {
         reportingManagerId = manager.id
       } else {
-        throw new NotFoundException(`Reporting manager "${createEmployeeMasterDto.reportingManager}" not found`)
+        throw new NotFoundException(
+          `Reporting manager "${createEmployeeMasterDto.reportingManager}" not found`,
+        )
       }
     }
 
@@ -91,7 +113,9 @@ export class EmployeeMastersService {
       if (location) {
         workLocationId = location.id
       } else {
-        throw new NotFoundException(`Work location "${createEmployeeMasterDto.workLocation}" not found`)
+        throw new NotFoundException(
+          `Work location "${createEmployeeMasterDto.workLocation}" not found`,
+        )
       }
     }
 
@@ -103,15 +127,21 @@ export class EmployeeMastersService {
         email: createEmployeeMasterDto.email,
         phone: createEmployeeMasterDto.phone,
         alternatePhone: createEmployeeMasterDto.alternatePhone,
-        dateOfBirth: createEmployeeMasterDto.dateOfBirth ? new Date(createEmployeeMasterDto.dateOfBirth) : null,
+        dateOfBirth: createEmployeeMasterDto.dateOfBirth
+          ? new Date(createEmployeeMasterDto.dateOfBirth)
+          : null,
         gender: createEmployeeMasterDto.gender,
         maritalStatus: createEmployeeMasterDto.maritalStatus,
         bloodGroup: createEmployeeMasterDto.bloodGroup,
         departmentId: createEmployeeMasterDto.departmentId,
         designationId: createEmployeeMasterDto.designationId,
         employeeType: createEmployeeMasterDto.employeeType,
-        joiningDate: createEmployeeMasterDto.joiningDate ? new Date(createEmployeeMasterDto.joiningDate) : null,
-        confirmationDate: createEmployeeMasterDto.confirmationDate ? new Date(createEmployeeMasterDto.confirmationDate) : null,
+        joiningDate: createEmployeeMasterDto.joiningDate
+          ? new Date(createEmployeeMasterDto.joiningDate)
+          : null,
+        confirmationDate: createEmployeeMasterDto.confirmationDate
+          ? new Date(createEmployeeMasterDto.confirmationDate)
+          : null,
         reportingManagerId,
         workLocationId,
         shiftId: createEmployeeMasterDto.shiftId,
@@ -133,20 +163,36 @@ export class EmployeeMastersService {
         profilePhoto: createEmployeeMasterDto.profilePhoto,
         userId: createEmployeeMasterDto.userId,
         // Additional personal information - using type assertion until Prisma client is regenerated
-        ...(createEmployeeMasterDto.parentRelationType && { parentRelationType: createEmployeeMasterDto.parentRelationType }),
-        ...(createEmployeeMasterDto.parentName && { parentName: createEmployeeMasterDto.parentName }),
-        ...(createEmployeeMasterDto.motherName && { motherName: createEmployeeMasterDto.motherName }),
-        ...(createEmployeeMasterDto.nationality && { nationality: createEmployeeMasterDto.nationality }),
+        ...(createEmployeeMasterDto.parentRelationType && {
+          parentRelationType: createEmployeeMasterDto.parentRelationType,
+        }),
+        ...(createEmployeeMasterDto.parentName && {
+          parentName: createEmployeeMasterDto.parentName,
+        }),
+        ...(createEmployeeMasterDto.motherName && {
+          motherName: createEmployeeMasterDto.motherName,
+        }),
+        ...(createEmployeeMasterDto.nationality && {
+          nationality: createEmployeeMasterDto.nationality,
+        }),
         ...(createEmployeeMasterDto.religion && { religion: createEmployeeMasterDto.religion }),
-        ...(createEmployeeMasterDto.experience !== undefined && { experience: createEmployeeMasterDto.experience }),
+        ...(createEmployeeMasterDto.experience !== undefined && {
+          experience: createEmployeeMasterDto.experience,
+        }),
         ...(createEmployeeMasterDto.education && { education: createEmployeeMasterDto.education }),
         ...(createEmployeeMasterDto.languages && { languages: createEmployeeMasterDto.languages }),
         // Bank details
         ...(createEmployeeMasterDto.bankName && { bankName: createEmployeeMasterDto.bankName }),
-        ...(createEmployeeMasterDto.accountNumber && { accountNumber: createEmployeeMasterDto.accountNumber }),
+        ...(createEmployeeMasterDto.accountNumber && {
+          accountNumber: createEmployeeMasterDto.accountNumber,
+        }),
         ...(createEmployeeMasterDto.ifscCode && { ifscCode: createEmployeeMasterDto.ifscCode }),
-        ...(createEmployeeMasterDto.branchName && { branchName: createEmployeeMasterDto.branchName }),
-        ...(createEmployeeMasterDto.accountHolderName && { accountHolderName: createEmployeeMasterDto.accountHolderName }),
+        ...(createEmployeeMasterDto.branchName && {
+          branchName: createEmployeeMasterDto.branchName,
+        }),
+        ...(createEmployeeMasterDto.accountHolderName && {
+          accountHolderName: createEmployeeMasterDto.accountHolderName,
+        }),
       } as any,
       include: {
         user: {
@@ -202,15 +248,15 @@ export class EmployeeMastersService {
     if (status) {
       // Convert string status to enum value
       const statusMap: Record<string, EmployeeMasterStatus> = {
-        'Active': EmployeeMasterStatus.ACTIVE,
-        'Inactive': EmployeeMasterStatus.INACTIVE,
+        Active: EmployeeMasterStatus.ACTIVE,
+        Inactive: EmployeeMasterStatus.INACTIVE,
         'On Leave': EmployeeMasterStatus.ON_LEAVE,
-        'On_Leave': EmployeeMasterStatus.ON_LEAVE,
-        'Terminated': EmployeeMasterStatus.TERMINATED,
-        'ACTIVE': EmployeeMasterStatus.ACTIVE,
-        'INACTIVE': EmployeeMasterStatus.INACTIVE,
-        'ON_LEAVE': EmployeeMasterStatus.ON_LEAVE,
-        'TERMINATED': EmployeeMasterStatus.TERMINATED,
+        On_Leave: EmployeeMasterStatus.ON_LEAVE,
+        Terminated: EmployeeMasterStatus.TERMINATED,
+        ACTIVE: EmployeeMasterStatus.ACTIVE,
+        INACTIVE: EmployeeMasterStatus.INACTIVE,
+        ON_LEAVE: EmployeeMasterStatus.ON_LEAVE,
+        TERMINATED: EmployeeMasterStatus.TERMINATED,
       }
       const enumStatus = statusMap[status]
       if (enumStatus) {
@@ -275,7 +321,7 @@ export class EmployeeMastersService {
       orderBy: { createdAt: 'desc' },
     })
 
-    return Promise.all(employees.map(emp => this.formatEmployeeResponse(emp)))
+    return Promise.all(employees.map((emp) => this.formatEmployeeResponse(emp)))
   }
 
   async findOne(id: string) {
@@ -363,26 +409,48 @@ export class EmployeeMastersService {
           where: {
             OR: [
               { employeeCode: updateEmployeeMasterDto.reportingManager },
-              { 
+              {
                 OR: [
-                  { firstName: { contains: updateEmployeeMasterDto.reportingManager, mode: 'insensitive' } },
-                  { lastName: { contains: updateEmployeeMasterDto.reportingManager, mode: 'insensitive' } },
+                  {
+                    firstName: {
+                      contains: updateEmployeeMasterDto.reportingManager,
+                      mode: 'insensitive',
+                    },
+                  },
+                  {
+                    lastName: {
+                      contains: updateEmployeeMasterDto.reportingManager,
+                      mode: 'insensitive',
+                    },
+                  },
                   {
                     AND: [
-                      { firstName: { contains: (updateEmployeeMasterDto.reportingManager.split(' ')[0] || ''), mode: 'insensitive' } },
-                      { lastName: { contains: (updateEmployeeMasterDto.reportingManager.split(' ')[1] || ''), mode: 'insensitive' } },
-                    ]
-                  }
-                ]
-              }
-            ]
+                      {
+                        firstName: {
+                          contains: updateEmployeeMasterDto.reportingManager.split(' ')[0] || '',
+                          mode: 'insensitive',
+                        },
+                      },
+                      {
+                        lastName: {
+                          contains: updateEmployeeMasterDto.reportingManager.split(' ')[1] || '',
+                          mode: 'insensitive',
+                        },
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
           },
         })
 
         if (manager) {
           reportingManagerId = manager.id
         } else {
-          throw new NotFoundException(`Reporting manager "${updateEmployeeMasterDto.reportingManager}" not found`)
+          throw new NotFoundException(
+            `Reporting manager "${updateEmployeeMasterDto.reportingManager}" not found`,
+          )
         }
       }
     }
@@ -407,7 +475,9 @@ export class EmployeeMastersService {
         if (location) {
           workLocationId = location.id
         } else {
-          throw new NotFoundException(`Work location "${updateEmployeeMasterDto.workLocation}" not found`)
+          throw new NotFoundException(
+            `Work location "${updateEmployeeMasterDto.workLocation}" not found`,
+          )
         }
       }
     }
@@ -416,7 +486,7 @@ export class EmployeeMastersService {
     // Remove the string fields that we've converted to IDs
     delete updateData.reportingManager
     delete updateData.workLocation
-    
+
     // Set the converted IDs
     if (reportingManagerId !== undefined) {
       updateData.reportingManagerId = reportingManagerId
@@ -424,7 +494,7 @@ export class EmployeeMastersService {
     if (workLocationId !== undefined) {
       updateData.workLocationId = workLocationId
     }
-    
+
     if (updateEmployeeMasterDto.dateOfBirth) {
       updateData.dateOfBirth = new Date(updateEmployeeMasterDto.dateOfBirth)
     }
@@ -535,25 +605,33 @@ export class EmployeeMastersService {
       accountHolderName: emp.accountHolderName,
       employeeType: emp.employeeType,
       joiningDate: emp.joiningDate ? emp.joiningDate.toISOString().split('T')[0] : null,
-      confirmationDate: emp.confirmationDate ? emp.confirmationDate.toISOString().split('T')[0] : null,
+      confirmationDate: emp.confirmationDate
+        ? emp.confirmationDate.toISOString().split('T')[0]
+        : null,
       reportingManagerId: emp.reportingManagerId,
-      reportingManager: emp.reportingManager ? {
-        id: emp.reportingManager.id,
-        employeeCode: emp.reportingManager.employeeCode,
-        fullName: `${emp.reportingManager.firstName} ${emp.reportingManager.lastName}`,
-      } : null,
+      reportingManager: emp.reportingManager
+        ? {
+            id: emp.reportingManager.id,
+            employeeCode: emp.reportingManager.employeeCode,
+            fullName: `${emp.reportingManager.firstName} ${emp.reportingManager.lastName}`,
+          }
+        : null,
       workLocationId: emp.workLocationId,
-      workLocation: emp.workLocation ? {
-        id: emp.workLocation.id,
-        branchName: emp.workLocation.branchName,
-        branchCode: emp.workLocation.branchCode,
-      } : null,
+      workLocation: emp.workLocation
+        ? {
+            id: emp.workLocation.id,
+            branchName: emp.workLocation.branchName,
+            branchCode: emp.workLocation.branchCode,
+          }
+        : null,
       shiftId: emp.shiftId,
-      shift: emp.shift ? {
-        id: emp.shift.id,
-        shiftName: emp.shift.shiftName,
-        shiftCode: emp.shift.shiftCode,
-      } : null,
+      shift: emp.shift
+        ? {
+            id: emp.shift.id,
+            shiftName: emp.shift.shiftName,
+            shiftCode: emp.shift.shiftCode,
+          }
+        : null,
       salaryTemplateId: emp.salaryTemplateId,
       panNumber: emp.panNumber,
       aadharNumber: emp.aadharNumber,
@@ -568,14 +646,35 @@ export class EmployeeMastersService {
       emergencyContactName: emp.emergencyContactName,
       emergencyContactRelation: emp.emergencyContactRelation,
       emergencyContactPhone: emp.emergencyContactPhone,
-      status: emp.status === EmployeeMasterStatus.ACTIVE ? 'Active' :
-              emp.status === EmployeeMasterStatus.INACTIVE ? 'Inactive' :
-              emp.status === EmployeeMasterStatus.ON_LEAVE ? 'On Leave' : 'Terminated',
+      status:
+        emp.status === EmployeeMasterStatus.ACTIVE
+          ? 'Active'
+          : emp.status === EmployeeMasterStatus.INACTIVE
+            ? 'Inactive'
+            : emp.status === EmployeeMasterStatus.ON_LEAVE
+              ? 'On Leave'
+              : 'Terminated',
       profilePhoto: emp.profilePhoto,
       createdDate: emp.createdAt.toISOString().split('T')[0],
       updatedDate: emp.updatedAt ? emp.updatedAt.toISOString().split('T')[0] : null,
       createdAt: emp.createdAt,
       updatedAt: emp.updatedAt,
     }
+  }
+
+  async updateProfilePhoto(id: string, profilePhotoUrl: string) {
+    const employee = await this.prisma.employeeMaster.update({
+      where: { id },
+      data: { profilePhoto: profilePhotoUrl },
+    })
+    return this.formatEmployeeResponse(employee)
+  }
+
+  async removeProfilePhoto(id: string) {
+    const employee = await this.prisma.employeeMaster.update({
+      where: { id },
+      data: { profilePhoto: null },
+    })
+    return this.formatEmployeeResponse(employee)
   }
 }

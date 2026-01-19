@@ -1,9 +1,4 @@
-import {
-  Controller,
-  Get,
-  Query,
-  UseGuards,
-} from '@nestjs/common'
+import { Controller, Get, Query, UseGuards } from '@nestjs/common'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { EsicRegisterService } from './esic-register.service'
 
@@ -21,4 +16,3 @@ export class EsicRegisterController {
     return this.esicRegisterService.findAll(status, month, search)
   }
 }
-

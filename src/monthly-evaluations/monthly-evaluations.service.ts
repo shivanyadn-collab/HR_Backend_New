@@ -70,7 +70,7 @@ export class MonthlyEvaluationsService {
       orderBy: { evaluationMonth: 'desc' },
     })
 
-    return evaluations.map(evaluation => this.formatResponse(evaluation))
+    return evaluations.map((evaluation) => this.formatResponse(evaluation))
   }
 
   async findOne(id: string) {
@@ -107,11 +107,11 @@ export class MonthlyEvaluationsService {
     }
 
     const updateData: any = { ...updateDto }
-    
+
     if (updateDto.evaluatedDate) {
       updateData.evaluatedDate = new Date(updateDto.evaluatedDate)
     }
-    
+
     if (updateDto.approvedDate) {
       updateData.approvedDate = new Date(updateDto.approvedDate)
     }
@@ -145,7 +145,7 @@ export class MonthlyEvaluationsService {
 
   private formatResponse(evaluation: any) {
     const employee = evaluation.employeeMaster
-    
+
     if (!employee) {
       // If employeeMaster is not loaded, return minimal data
       return {
@@ -169,14 +169,14 @@ export class MonthlyEvaluationsService {
         updatedAt: evaluation.updatedAt.toISOString(),
       }
     }
-    
+
     const firstName = employee.firstName || ''
     const lastName = employee.lastName || ''
     // Construct full name, never use employeeId
     const fullName = `${firstName} ${lastName}`.trim()
     const employeeName = fullName || employee.employeeCode || 'Unknown Employee'
     const employeeCode = employee.employeeCode || ''
-    
+
     return {
       id: evaluation.id,
       employeeId: evaluation.employeeMasterId, // Keep for internal use, but never display
@@ -199,4 +199,3 @@ export class MonthlyEvaluationsService {
     }
   }
 }
-

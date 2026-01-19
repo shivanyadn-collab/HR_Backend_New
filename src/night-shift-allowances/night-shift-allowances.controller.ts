@@ -53,4 +53,3 @@ export class NightShiftAllowancesController {
     return this.service.remove(id)
   }
 }
-

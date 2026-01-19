@@ -38,7 +38,10 @@ export class UserRoleAssignmentsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserRoleAssignmentDto: UpdateUserRoleAssignmentDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateUserRoleAssignmentDto: UpdateUserRoleAssignmentDto,
+  ) {
     return this.userRoleAssignmentsService.update(id, updateUserRoleAssignmentDto)
   }
 
@@ -48,4 +51,3 @@ export class UserRoleAssignmentsController {
     return this.userRoleAssignmentsService.remove(id)
   }
 }
-

@@ -17,6 +17,10 @@ export class CreateProjectDocumentDto {
   @IsString()
   fileUrl?: string
 
+  @IsOptional()
+  @IsString()
+  fileKey?: string
+
   @IsString()
   category: string
 
@@ -36,4 +40,3 @@ export class CreateProjectDocumentDto {
   @IsBoolean()
   isActive?: boolean
 }
-

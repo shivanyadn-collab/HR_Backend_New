@@ -103,7 +103,7 @@ export class ProjectsService {
 
   async findAll(status?: ProjectStatus) {
     const where = status ? { status } : {}
-    
+
     const projects = await this.prisma.project.findMany({
       where,
       include: {
@@ -152,7 +152,7 @@ export class ProjectsService {
     })
 
     // Format all projects with team size calculations
-    return await Promise.all(projects.map(project => this.formatProjectResponse(project)))
+    return await Promise.all(projects.map((project) => this.formatProjectResponse(project)))
   }
 
   async findOne(id: string) {
@@ -258,7 +258,9 @@ export class ProjectsService {
       data: {
         ...(updateProjectDto.name && { name: updateProjectDto.name }),
         ...(updateProjectDto.code && { code: updateProjectDto.code }),
-        ...(updateProjectDto.description !== undefined && { description: updateProjectDto.description }),
+        ...(updateProjectDto.description !== undefined && {
+          description: updateProjectDto.description,
+        }),
         ...(updateProjectDto.status && { status: updateProjectDto.status }),
         ...(updateProjectDto.startDate && { startDate: new Date(updateProjectDto.startDate) }),
         ...(updateProjectDto.endDate && { endDate: new Date(updateProjectDto.endDate) }),
@@ -267,7 +269,9 @@ export class ProjectsService {
         ...(updateProjectDto.budget !== undefined && { budget: updateProjectDto.budget }),
         ...(updateProjectDto.spent !== undefined && { spent: updateProjectDto.spent }),
         ...(updateProjectDto.progress !== undefined && { progress: updateProjectDto.progress }),
-        ...(updateProjectDto.clientName !== undefined && { clientName: updateProjectDto.clientName }),
+        ...(updateProjectDto.clientName !== undefined && {
+          clientName: updateProjectDto.clientName,
+        }),
         ...(updateProjectDto.location !== undefined && { location: updateProjectDto.location }),
       },
       include: {
@@ -348,14 +352,14 @@ export class ProjectsService {
         projectId: project.id,
       },
     })
-    
+
     // Also count employees directly assigned to project via Employee.projectId
     const directEmployeeCount = await this.prisma.employee.count({
       where: {
         projectId: project.id,
       },
     })
-    
+
     // Use the maximum count (in case employees are assigned both ways, we don't double count)
     // EmployeeAssignment is the preferred method, but we also count direct assignments
     const teamSize = Math.max(assignmentCount, directEmployeeCount)
@@ -371,11 +375,13 @@ export class ProjectsService {
       createdAt: project.createdAt,
       updatedAt: project.updatedAt,
       categoryId: project.categoryId || null,
-      category: project.category ? {
-        id: project.category.id,
-        categoryName: project.category.categoryName,
-        categoryCode: project.category.categoryCode,
-      } : null,
+      category: project.category
+        ? {
+            id: project.category.id,
+            categoryName: project.category.categoryName,
+            categoryCode: project.category.categoryCode,
+          }
+        : null,
       priority: project.priority || null,
       budget: project.budget || null,
       spent: project.spent || null,
@@ -385,12 +391,13 @@ export class ProjectsService {
       projectManager: projectManager,
       teamSize: teamSize,
       isActive: project.status === ProjectStatus.ACTIVE,
-      users: project.users?.map((up: any) => ({
-        id: up.user.id,
-        name: up.user.name,
-        email: up.user.email,
-        role: up.user.role,
-      })) || [],
+      users:
+        project.users?.map((up: any) => ({
+          id: up.user.id,
+          name: up.user.name,
+          email: up.user.email,
+          role: up.user.role,
+        })) || [],
       employees: project.employees || [],
     }
   }

@@ -7,4 +7,3 @@ export class UpdateManagerReviewDto extends PartialType(CreateManagerReviewDto) 
   @IsDateString()
   approvedDate?: string
 }
-

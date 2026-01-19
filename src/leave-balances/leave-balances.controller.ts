@@ -39,10 +39,7 @@ export class LeaveBalancesController {
   }
 
   @Get('employee')
-  findByEmployee(
-    @Query('employeeId') employeeId: string,
-    @Query('year') year?: string,
-  ) {
+  findByEmployee(@Query('employeeId') employeeId: string, @Query('year') year?: string) {
     const yearNum = year ? parseInt(year, 10) : undefined
     return this.leaveBalancesService.findByEmployee(employeeId, yearNum)
   }
@@ -63,4 +60,3 @@ export class LeaveBalancesController {
     return this.leaveBalancesService.remove(id)
   }
 }
-

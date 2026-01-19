@@ -1,4 +1,13 @@
-import { IsString, IsOptional, IsInt, IsEnum, IsDateString, IsNumber, Min, Max } from 'class-validator'
+import {
+  IsString,
+  IsOptional,
+  IsInt,
+  IsEnum,
+  IsDateString,
+  IsNumber,
+  Min,
+  Max,
+} from 'class-validator'
 
 export enum JobEmploymentType {
   FULL_TIME = 'FULL_TIME',
@@ -100,4 +109,3 @@ export class CreateJobOpeningDto {
   @IsString()
   createdBy?: string
 }
-

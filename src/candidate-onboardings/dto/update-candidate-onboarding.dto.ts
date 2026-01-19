@@ -11,4 +11,3 @@ export class UpdateCandidateOnboardingDto extends PartialType(CreateCandidateOnb
   @IsDateString()
   completedDate?: string
 }
-

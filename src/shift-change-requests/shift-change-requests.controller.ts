@@ -49,12 +49,18 @@ export class ShiftChangeRequestsController {
 
   @Patch(':id/approve')
   approve(@Param('id') id: string, @Body() body?: { approvedBy?: string }) {
-    return this.shiftChangeRequestsService.update(id, { status: 'APPROVED' as any, approvedBy: body?.approvedBy })
+    return this.shiftChangeRequestsService.update(id, {
+      status: 'APPROVED' as any,
+      approvedBy: body?.approvedBy,
+    })
   }
 
   @Patch(':id/reject')
   reject(@Param('id') id: string, @Body() body: { rejectionReason?: string }) {
-    return this.shiftChangeRequestsService.update(id, { status: 'REJECTED' as any, rejectionReason: body.rejectionReason })
+    return this.shiftChangeRequestsService.update(id, {
+      status: 'REJECTED' as any,
+      rejectionReason: body.rejectionReason,
+    })
   }
 
   @Patch(':id/cancel')

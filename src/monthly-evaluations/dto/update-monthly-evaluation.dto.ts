@@ -11,4 +11,3 @@ export class UpdateMonthlyEvaluationDto extends PartialType(CreateMonthlyEvaluat
   @IsDateString()
   approvedDate?: string
 }
-

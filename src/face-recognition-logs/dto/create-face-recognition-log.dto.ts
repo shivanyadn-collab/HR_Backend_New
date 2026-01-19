@@ -3,7 +3,7 @@ import { IsString, IsOptional, IsNumber, IsEnum, IsDateString, Min, Max } from '
 export enum FaceRecognitionStatus {
   RECOGNIZED = 'RECOGNIZED',
   FAILED = 'FAILED',
-  UNKNOWN = 'UNKNOWN'
+  UNKNOWN = 'UNKNOWN',
 }
 
 export class CreateFaceRecognitionLogDto {
@@ -39,4 +39,3 @@ export class CreateFaceRecognitionLogDto {
   @IsString()
   remarks?: string
 }
-

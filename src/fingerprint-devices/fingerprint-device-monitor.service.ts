@@ -5,7 +5,7 @@ import { FingerprintLogsService } from '../fingerprint-logs/fingerprint-logs.ser
 
 /**
  * Fingerprint Device Monitor Service
- * 
+ *
  * This service periodically connects to fingerprint devices and syncs attendance logs.
  * It runs as a background task and automatically fetches new attendance records.
  */
@@ -42,14 +42,17 @@ export class FingerprintDeviceMonitorService implements OnModuleInit, OnModuleDe
 
     this.isMonitoring = true
     this.logger.log('Starting fingerprint device monitoring...')
-    
+
     // Run initial sync
     this.syncAllDevices()
-    
+
     // Schedule periodic sync every 5 minutes
-    this.monitoringInterval = setInterval(() => {
-      this.syncAllDevices()
-    }, 5 * 60 * 1000) // 5 minutes
+    this.monitoringInterval = setInterval(
+      () => {
+        this.syncAllDevices()
+      },
+      5 * 60 * 1000,
+    ) // 5 minutes
   }
 
   /**
@@ -83,9 +86,7 @@ export class FingerprintDeviceMonitorService implements OnModuleInit, OnModuleDe
       this.logger.log(`Syncing attendance from ${devices.length} devices...`)
 
       // Sync each device in parallel
-      await Promise.allSettled(
-        devices.map(device => this.syncDevice(device.id))
-      )
+      await Promise.allSettled(devices.map((device) => this.syncDevice(device.id)))
     } catch (error) {
       this.logger.error('Error syncing all devices:', error)
     }
@@ -158,9 +159,7 @@ export class FingerprintDeviceMonitorService implements OnModuleInit, OnModuleDe
         take: 1000,
       })
 
-      const existingTimestamps = new Set(
-        existingLogs.map(log => log.recognitionTime.getTime())
-      )
+      const existingTimestamps = new Set(existingLogs.map((log) => log.recognitionTime.getTime()))
 
       // Process and save new logs
       let syncedCount = 0
@@ -177,7 +176,7 @@ export class FingerprintDeviceMonitorService implements OnModuleInit, OnModuleDe
 
           // Find employee by user ID (device user ID should match employee code or enrollment)
           let employeeMasterId: string | null = null
-          
+
           // Try to find employee by matching device user ID with employee code
           if (deviceLog.userId) {
             // First, try to find by employee code (device user ID is often the employee code)
@@ -222,7 +221,12 @@ export class FingerprintDeviceMonitorService implements OnModuleInit, OnModuleDe
             employeeMasterId: employeeMasterId || undefined,
             recognitionTime: logTimestamp.toISOString(),
             status: status as any,
-            confidence: deviceLog.verify !== undefined ? (deviceLog.verify === 0 || deviceLog.verify === 1 ? 95 : 0) : 0,
+            confidence:
+              deviceLog.verify !== undefined
+                ? deviceLog.verify === 0 || deviceLog.verify === 1
+                  ? 95
+                  : 0
+                : 0,
             fingerprintIndex: deviceLog.fingerIndex || undefined,
             location: device.location,
             remarks: `Synced from device. User ID: ${deviceLog.userId}, State: ${deviceLog.state}, Verify: ${deviceLog.verify}`,
@@ -235,7 +239,7 @@ export class FingerprintDeviceMonitorService implements OnModuleInit, OnModuleDe
       }
 
       this.logger.log(
-        `Device ${device.deviceName}: Synced ${syncedCount} logs, skipped ${skippedCount} duplicates`
+        `Device ${device.deviceName}: Synced ${syncedCount} logs, skipped ${skippedCount} duplicates`,
       )
 
       return {
@@ -272,4 +276,3 @@ export class FingerprintDeviceMonitorService implements OnModuleInit, OnModuleDe
     }
   }
 }
-

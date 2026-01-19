@@ -44,4 +44,3 @@ export class UpdateGeofenceAreaDto {
   @IsBoolean()
   isEnabled?: boolean
 }
-

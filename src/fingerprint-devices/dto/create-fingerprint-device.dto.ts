@@ -1,9 +1,18 @@
-import { IsString, IsOptional, IsNumber, IsBoolean, IsEnum, Min, Max, Matches } from 'class-validator'
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsBoolean,
+  IsEnum,
+  Min,
+  Max,
+  Matches,
+} from 'class-validator'
 
 export enum FingerprintDeviceStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
-  OFFLINE = 'OFFLINE'
+  OFFLINE = 'OFFLINE',
 }
 
 export class CreateFingerprintDeviceDto {
@@ -63,4 +72,3 @@ export class CreateFingerprintDeviceDto {
   @IsString()
   platform?: string // e.g., "ZLM60_TFT"
 }
-

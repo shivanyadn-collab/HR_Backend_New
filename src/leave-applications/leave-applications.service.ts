@@ -66,7 +66,7 @@ export class LeaveApplicationsService {
       if (!leaveBalance || leaveBalance.available < totalDays) {
         const available = leaveBalance?.available || 0
         throw new BadRequestException(
-          `Insufficient leave balance. Available: ${available} days, Requested: ${totalDays} days`
+          `Insufficient leave balance. Available: ${available} days, Requested: ${totalDays} days`,
         )
       }
     }
@@ -153,7 +153,13 @@ export class LeaveApplicationsService {
     return this.formatResponse(updated)
   }
 
-  async findAll(employeeMasterId?: string, status?: string, startDate?: string, endDate?: string, search?: string) {
+  async findAll(
+    employeeMasterId?: string,
+    status?: string,
+    startDate?: string,
+    endDate?: string,
+    search?: string,
+  ) {
     const where: any = {}
 
     if (employeeMasterId) {
@@ -329,7 +335,9 @@ export class LeaveApplicationsService {
       status: application.status,
       appliedDate: application.appliedDate.toISOString().split('T')[0],
       approvedBy: application.approvedBy || null,
-      approvedDate: application.approvedDate ? application.approvedDate.toISOString().split('T')[0] : null,
+      approvedDate: application.approvedDate
+        ? application.approvedDate.toISOString().split('T')[0]
+        : null,
       rejectionReason: application.rejectionReason || null,
       attachmentUrl: application.attachmentUrl || null,
       attachmentName: application.attachmentName || null,
@@ -338,4 +346,3 @@ export class LeaveApplicationsService {
     }
   }
 }
-

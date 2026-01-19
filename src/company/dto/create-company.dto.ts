@@ -69,4 +69,3 @@ export class CreateCompanyDto {
   @IsString()
   logoUrl?: string
 }
-

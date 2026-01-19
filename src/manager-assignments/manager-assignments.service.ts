@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common'
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateManagerAssignmentDto } from './dto/create-manager-assignment.dto'
 import { UpdateManagerAssignmentDto } from './dto/update-manager-assignment.dto'
@@ -62,7 +67,9 @@ export class ManagerAssignmentsService {
         userId: createManagerAssignmentDto.userId,
         projectId: createManagerAssignmentDto.projectId,
         startDate: new Date(createManagerAssignmentDto.startDate),
-        endDate: createManagerAssignmentDto.endDate ? new Date(createManagerAssignmentDto.endDate) : null,
+        endDate: createManagerAssignmentDto.endDate
+          ? new Date(createManagerAssignmentDto.endDate)
+          : null,
         status: createManagerAssignmentDto.status || ManagerAssignmentStatus.ACTIVE,
         assignedBy: createManagerAssignmentDto.assignedBy || null,
         previousManagerId: createManagerAssignmentDto.previousManagerId || null,
@@ -146,7 +153,7 @@ export class ManagerAssignmentsService {
       },
     })
 
-    return assignments.map(assignment => this.formatAssignmentResponse(assignment))
+    return assignments.map((assignment) => this.formatAssignmentResponse(assignment))
   }
 
   async findOne(id: string) {
@@ -197,7 +204,10 @@ export class ManagerAssignmentsService {
     }
 
     // If changing manager, handle previous manager logic
-    if (updateManagerAssignmentDto.userId && updateManagerAssignmentDto.userId !== assignment.userId) {
+    if (
+      updateManagerAssignmentDto.userId &&
+      updateManagerAssignmentDto.userId !== assignment.userId
+    ) {
       // Check if new user is a PROJECT_MANAGER
       const user = await this.prisma.user.findUnique({
         where: { id: updateManagerAssignmentDto.userId },
@@ -211,7 +221,10 @@ export class ManagerAssignmentsService {
       updateManagerAssignmentDto.previousManagerId = assignment.userId
 
       // If assigning to same project, deactivate other active assignments
-      if (updateManagerAssignmentDto.projectId === assignment.projectId || !updateManagerAssignmentDto.projectId) {
+      if (
+        updateManagerAssignmentDto.projectId === assignment.projectId ||
+        !updateManagerAssignmentDto.projectId
+      ) {
         await this.prisma.managerAssignment.updateMany({
           where: {
             projectId: assignment.projectId,
@@ -229,14 +242,24 @@ export class ManagerAssignmentsService {
       where: { id },
       data: {
         ...(updateManagerAssignmentDto.userId && { userId: updateManagerAssignmentDto.userId }),
-        ...(updateManagerAssignmentDto.projectId && { projectId: updateManagerAssignmentDto.projectId }),
-        ...(updateManagerAssignmentDto.startDate && { startDate: new Date(updateManagerAssignmentDto.startDate) }),
+        ...(updateManagerAssignmentDto.projectId && {
+          projectId: updateManagerAssignmentDto.projectId,
+        }),
+        ...(updateManagerAssignmentDto.startDate && {
+          startDate: new Date(updateManagerAssignmentDto.startDate),
+        }),
         ...(updateManagerAssignmentDto.endDate !== undefined && {
-          endDate: updateManagerAssignmentDto.endDate ? new Date(updateManagerAssignmentDto.endDate) : null,
+          endDate: updateManagerAssignmentDto.endDate
+            ? new Date(updateManagerAssignmentDto.endDate)
+            : null,
         }),
         ...(updateManagerAssignmentDto.status && { status: updateManagerAssignmentDto.status }),
-        ...(updateManagerAssignmentDto.assignedBy && { assignedBy: updateManagerAssignmentDto.assignedBy }),
-        ...(updateManagerAssignmentDto.previousManagerId && { previousManagerId: updateManagerAssignmentDto.previousManagerId }),
+        ...(updateManagerAssignmentDto.assignedBy && {
+          assignedBy: updateManagerAssignmentDto.assignedBy,
+        }),
+        ...(updateManagerAssignmentDto.previousManagerId && {
+          previousManagerId: updateManagerAssignmentDto.previousManagerId,
+        }),
       },
       include: {
         user: {
@@ -296,9 +319,15 @@ export class ManagerAssignmentsService {
       projectCode: assignment.project.code,
       startDate: assignment.startDate ? assignment.startDate.toISOString().split('T')[0] : null,
       endDate: assignment.endDate ? assignment.endDate.toISOString().split('T')[0] : null,
-      status: assignment.status === ManagerAssignmentStatus.ACTIVE ? 'Active' : 
-              assignment.status === ManagerAssignmentStatus.COMPLETED ? 'Completed' : 'On Hold',
-      assignedDate: assignment.assignedDate ? assignment.assignedDate.toISOString().split('T')[0] : null,
+      status:
+        assignment.status === ManagerAssignmentStatus.ACTIVE
+          ? 'Active'
+          : assignment.status === ManagerAssignmentStatus.COMPLETED
+            ? 'Completed'
+            : 'On Hold',
+      assignedDate: assignment.assignedDate
+        ? assignment.assignedDate.toISOString().split('T')[0]
+        : null,
       assignedBy: assignment.assignedBy || null,
       previousManager: assignment.previousManager?.name || null,
       createdAt: assignment.createdAt,

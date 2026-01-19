@@ -35,7 +35,13 @@ export class LeaveApplicationsController {
     @Query('endDate') endDate?: string,
     @Query('search') search?: string,
   ) {
-    return this.leaveApplicationsService.findAll(employeeMasterId, status, startDate, endDate, search)
+    return this.leaveApplicationsService.findAll(
+      employeeMasterId,
+      status,
+      startDate,
+      endDate,
+      search,
+    )
   }
 
   @Get(':id')
@@ -69,4 +75,3 @@ export class LeaveApplicationsController {
     return this.leaveApplicationsService.remove(id)
   }
 }
-

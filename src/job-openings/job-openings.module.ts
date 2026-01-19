@@ -8,5 +8,3 @@ import { JobOpeningsController } from './job-openings.controller'
   exports: [JobOpeningsService],
 })
 export class JobOpeningsModule {}
-
-

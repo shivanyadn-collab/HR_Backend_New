@@ -1,4 +1,13 @@
-import { IsString, IsOptional, IsEnum, IsNumber, Min, Max, IsUUID, IsDateString } from 'class-validator'
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsNumber,
+  Min,
+  Max,
+  IsUUID,
+  IsDateString,
+} from 'class-validator'
 import { Type } from 'class-transformer'
 
 export enum InterviewRoundType {
@@ -111,4 +120,3 @@ export class CreateInterviewDto {
   @IsString()
   feedbackStatus?: string
 }
-

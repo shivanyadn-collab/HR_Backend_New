@@ -23,4 +23,3 @@ export class CreateGeneratedIDCardDto {
   @IsOptional()
   qrCode?: string
 }
-

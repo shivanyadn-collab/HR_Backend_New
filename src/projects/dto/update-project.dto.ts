@@ -1,4 +1,13 @@
-import { IsString, IsOptional, IsEnum, IsDateString, IsNumber, MinLength, Min, Max } from 'class-validator'
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsDateString,
+  IsNumber,
+  MinLength,
+  Min,
+  Max,
+} from 'class-validator'
 import { ProjectStatus } from '@prisma/client'
 
 export class UpdateProjectDto {
@@ -64,4 +73,3 @@ export class UpdateProjectDto {
   @IsString()
   location?: string
 }
-

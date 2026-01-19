@@ -18,7 +18,9 @@ export class AssetItemsService {
         purchaseDate: createDto.purchaseDate ? new Date(createDto.purchaseDate) : null,
         purchaseCost: createDto.purchaseCost,
         warrantyPeriod: createDto.warrantyPeriod,
-        warrantyExpiryDate: createDto.warrantyExpiryDate ? new Date(createDto.warrantyExpiryDate) : null,
+        warrantyExpiryDate: createDto.warrantyExpiryDate
+          ? new Date(createDto.warrantyExpiryDate)
+          : null,
         totalQuantity: createDto.totalQuantity,
         allocatedQuantity: 0,
         availableQuantity: createDto.totalQuantity,
@@ -48,7 +50,7 @@ export class AssetItemsService {
       orderBy: { createdAt: 'desc' },
     })
 
-    return items.map(item => this.formatResponse(item))
+    return items.map((item) => this.formatResponse(item))
   }
 
   async findOne(id: string) {
@@ -79,7 +81,9 @@ export class AssetItemsService {
         purchaseDate: updateDto.purchaseDate ? new Date(updateDto.purchaseDate) : undefined,
         purchaseCost: updateDto.purchaseCost,
         warrantyPeriod: updateDto.warrantyPeriod,
-        warrantyExpiryDate: updateDto.warrantyExpiryDate ? new Date(updateDto.warrantyExpiryDate) : undefined,
+        warrantyExpiryDate: updateDto.warrantyExpiryDate
+          ? new Date(updateDto.warrantyExpiryDate)
+          : undefined,
         totalQuantity,
         availableQuantity,
         isActive: updateDto.isActive,
@@ -108,7 +112,9 @@ export class AssetItemsService {
       purchaseDate: item.purchaseDate ? item.purchaseDate.toISOString().split('T')[0] : null,
       purchaseCost: item.purchaseCost,
       warrantyPeriod: item.warrantyPeriod,
-      warrantyExpiryDate: item.warrantyExpiryDate ? item.warrantyExpiryDate.toISOString().split('T')[0] : null,
+      warrantyExpiryDate: item.warrantyExpiryDate
+        ? item.warrantyExpiryDate.toISOString().split('T')[0]
+        : null,
       totalQuantity: item.totalQuantity,
       allocatedQuantity: item.allocatedQuantity,
       availableQuantity: item.availableQuantity,
@@ -118,4 +124,3 @@ export class AssetItemsService {
     }
   }
 }
-

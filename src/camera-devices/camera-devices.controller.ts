@@ -15,10 +15,7 @@ export class CameraDevicesController {
   }
 
   @Get()
-  findAll(
-    @Query('status') status?: string,
-    @Query('search') search?: string,
-  ) {
+  findAll(@Query('status') status?: string, @Query('search') search?: string) {
     return this.service.findAll(status, search)
   }
 
@@ -47,4 +44,3 @@ export class CameraDevicesController {
     return this.service.remove(id)
   }
 }
-

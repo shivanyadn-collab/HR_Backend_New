@@ -8,4 +8,3 @@ import { LocationsController } from './locations.controller'
   exports: [LocationsService],
 })
 export class LocationsModule {}
-

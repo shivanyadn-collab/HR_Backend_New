@@ -54,4 +54,3 @@ export class RolesController {
     return this.rolesService.toggleActive(id)
   }
 }
-

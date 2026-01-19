@@ -69,4 +69,3 @@ export class AttendanceRegularizationsController {
     return this.service.remove(id)
   }
 }
-

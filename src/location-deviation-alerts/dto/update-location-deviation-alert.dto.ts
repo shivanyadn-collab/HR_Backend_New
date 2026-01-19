@@ -14,4 +14,3 @@ export class UpdateLocationDeviationAlertDto {
   @IsString()
   remarks?: string
 }
-

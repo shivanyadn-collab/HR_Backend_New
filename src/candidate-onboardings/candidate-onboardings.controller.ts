@@ -38,7 +38,10 @@ export class CandidateOnboardingsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCandidateOnboardingDto: UpdateCandidateOnboardingDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateCandidateOnboardingDto: UpdateCandidateOnboardingDto,
+  ) {
     return this.candidateOnboardingsService.update(id, updateCandidateOnboardingDto)
   }
 

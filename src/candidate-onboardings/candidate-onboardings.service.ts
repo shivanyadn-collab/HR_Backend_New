@@ -139,14 +139,16 @@ export class CandidateOnboardingsService {
 
     const updateData: any = {}
 
-    if (updateDto.offerAcceptedDate) updateData.offerAcceptedDate = new Date(updateDto.offerAcceptedDate)
+    if (updateDto.offerAcceptedDate)
+      updateData.offerAcceptedDate = new Date(updateDto.offerAcceptedDate)
     if (updateDto.joiningDate) updateData.joiningDate = new Date(updateDto.joiningDate)
     if (updateDto.employeeId !== undefined) updateData.employeeId = updateDto.employeeId
     if (updateDto.employeeCode !== undefined) updateData.employeeCode = updateDto.employeeCode
     if (updateDto.onboardingStatus) updateData.onboardingStatus = updateDto.onboardingStatus
     if (updateDto.currentStep !== undefined) updateData.currentStep = updateDto.currentStep
     if (updateDto.totalSteps !== undefined) updateData.totalSteps = updateDto.totalSteps
-    if (updateDto.documentsSubmitted !== undefined) updateData.documentsSubmitted = updateDto.documentsSubmitted
+    if (updateDto.documentsSubmitted !== undefined)
+      updateData.documentsSubmitted = updateDto.documentsSubmitted
     if (updateDto.totalDocuments !== undefined) updateData.totalDocuments = updateDto.totalDocuments
     if (updateDto.notes !== undefined) updateData.notes = updateDto.notes
     if (updateDto.completedDate) {

@@ -16,4 +16,3 @@ export class EnrollFingerprintDto {
   @IsString()
   fingerprintTemplate?: string // Template data from device
 }
-

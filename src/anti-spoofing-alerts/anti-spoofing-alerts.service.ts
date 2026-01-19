@@ -76,18 +76,18 @@ export class AntiSpoofingAlertsService {
     }
     if (severity) {
       const severityMap: Record<string, string> = {
-        'High': 'HIGH',
-        'Medium': 'MEDIUM',
-        'Low': 'LOW',
+        High: 'HIGH',
+        Medium: 'MEDIUM',
+        Low: 'LOW',
       }
       where.severity = severityMap[severity] || severity
     }
     if (status) {
       const statusMap: Record<string, string> = {
-        'Active': 'ACTIVE',
-        'Resolved': 'RESOLVED',
+        Active: 'ACTIVE',
+        Resolved: 'RESOLVED',
         'False Positive': 'FALSE_POSITIVE',
-        'active': 'ACTIVE',
+        active: 'ACTIVE',
       }
       where.status = statusMap[status] || status
     }
@@ -107,7 +107,7 @@ export class AntiSpoofingAlertsService {
       orderBy: { alertTime: 'desc' },
     })
 
-    return Promise.all(alerts.map(alert => this.formatResponse(alert)))
+    return Promise.all(alerts.map((alert) => this.formatResponse(alert)))
   }
 
   async findOne(id: string) {
@@ -208,23 +208,23 @@ export class AntiSpoofingAlertsService {
 
   private async formatResponse(alert: any) {
     const typeMap: Record<string, string> = {
-      'PHOTO_DETECTION': 'Photo Detection',
-      'VIDEO_REPLAY': 'Video Replay',
-      'MASK_DETECTION': 'Mask Detection',
-      'MODEL_3D': '3D Model',
-      'LIVENESS_FAILURE': 'Liveness Failure',
+      PHOTO_DETECTION: 'Photo Detection',
+      VIDEO_REPLAY: 'Video Replay',
+      MASK_DETECTION: 'Mask Detection',
+      MODEL_3D: '3D Model',
+      LIVENESS_FAILURE: 'Liveness Failure',
     }
 
     const severityMap: Record<string, string> = {
-      'HIGH': 'High',
-      'MEDIUM': 'Medium',
-      'LOW': 'Low',
+      HIGH: 'High',
+      MEDIUM: 'Medium',
+      LOW: 'Low',
     }
 
     const statusMap: Record<string, string> = {
-      'ACTIVE': 'Active',
-      'RESOLVED': 'Resolved',
-      'FALSE_POSITIVE': 'False Positive',
+      ACTIVE: 'Active',
+      RESOLVED: 'Resolved',
+      FALSE_POSITIVE: 'False Positive',
     }
 
     let departmentName = 'Not assigned'
@@ -270,4 +270,3 @@ export class AntiSpoofingAlertsService {
     }
   }
 }
-

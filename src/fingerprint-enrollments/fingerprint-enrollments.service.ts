@@ -58,10 +58,10 @@ export class FingerprintEnrollmentsService {
     if (deviceId) where.fingerprintDeviceId = deviceId
     if (status) {
       const statusMap: Record<string, string> = {
-        'Pending': 'PENDING',
+        Pending: 'PENDING',
         'In Progress': 'IN_PROGRESS',
-        'Completed': 'COMPLETED',
-        'Failed': 'FAILED',
+        Completed: 'COMPLETED',
+        Failed: 'FAILED',
       }
       where.status = statusMap[status] || status
     }
@@ -92,7 +92,7 @@ export class FingerprintEnrollmentsService {
           where: { id: enrollment.fingerprintDeviceId },
         })
         return await this.formatResponse(enrollment, employee!, device!)
-      })
+      }),
     )
   }
 
@@ -109,7 +109,11 @@ export class FingerprintEnrollmentsService {
       throw new NotFoundException('Fingerprint enrollment not found')
     }
 
-    return await this.formatResponse(enrollment, enrollment.employeeMaster, enrollment.fingerprintDevice)
+    return await this.formatResponse(
+      enrollment,
+      enrollment.employeeMaster,
+      enrollment.fingerprintDevice,
+    )
   }
 
   async findByEmployeeId(employeeMasterId: string, deviceId?: string) {
@@ -138,7 +142,7 @@ export class FingerprintEnrollmentsService {
     return Promise.all(
       enrollments.map(async (enrollment) => {
         return await this.formatResponse(enrollment, employee, enrollment.fingerprintDevice)
-      })
+      }),
     )
   }
 
@@ -158,7 +162,8 @@ export class FingerprintEnrollmentsService {
     const updateData: any = {}
     if (updateDto.status) updateData.status = updateDto.status
     if (updateDto.qualityScore !== undefined) updateData.qualityScore = updateDto.qualityScore
-    if (updateDto.fingerprintTemplate !== undefined) updateData.fingerprintTemplate = updateDto.fingerprintTemplate
+    if (updateDto.fingerprintTemplate !== undefined)
+      updateData.fingerprintTemplate = updateDto.fingerprintTemplate
 
     if (updateDto.status === 'COMPLETED' && !enrollment.completedDate) {
       updateData.completedDate = new Date()
@@ -169,7 +174,11 @@ export class FingerprintEnrollmentsService {
       data: updateData,
     })
 
-    return await this.formatResponse(updated, enrollment.employeeMaster, enrollment.fingerprintDevice)
+    return await this.formatResponse(
+      updated,
+      enrollment.employeeMaster,
+      enrollment.fingerprintDevice,
+    )
   }
 
   async enrollFingerprint(enrollDto: EnrollFingerprintDto) {
@@ -213,12 +222,17 @@ export class FingerprintEnrollmentsService {
     try {
       // Connect to device
       const handle = await this.sdkWrapper.connect(device)
-      
+
       // Add user to device (if not already added)
       // Use employee code as user ID on device
       const userId = parseInt(employee.employeeCode) || 0
       if (userId > 0) {
-        await this.sdkWrapper.addUser(device.id, userId, `${employee.firstName} ${employee.lastName}`, 0)
+        await this.sdkWrapper.addUser(
+          device.id,
+          userId,
+          `${employee.firstName} ${employee.lastName}`,
+          0,
+        )
       }
 
       // Enroll fingerprint on device
@@ -226,7 +240,7 @@ export class FingerprintEnrollmentsService {
       const fingerprintTemplate = await this.sdkWrapper.enrollFingerprint(
         device.id,
         userId,
-        fingerIndex
+        fingerIndex,
       )
 
       // Update enrollment with template and mark as completed
@@ -243,7 +257,11 @@ export class FingerprintEnrollmentsService {
         data: updateData,
       })
 
-      return await this.formatResponse(updated, enrollment.employeeMaster, enrollment.fingerprintDevice)
+      return await this.formatResponse(
+        updated,
+        enrollment.employeeMaster,
+        enrollment.fingerprintDevice,
+      )
     } catch (error) {
       // Update enrollment status to FAILED on error
       await this.prisma.fingerprintEnrollment.update({
@@ -318,4 +336,3 @@ export class FingerprintEnrollmentsService {
     return statusMap[status] || status
   }
 }
-

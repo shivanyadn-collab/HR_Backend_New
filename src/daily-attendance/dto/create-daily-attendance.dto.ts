@@ -41,4 +41,3 @@ export class CreateDailyAttendanceDto {
   @IsString()
   remarks?: string
 }
-

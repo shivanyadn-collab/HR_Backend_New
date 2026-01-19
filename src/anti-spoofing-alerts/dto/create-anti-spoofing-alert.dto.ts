@@ -5,19 +5,19 @@ export enum AntiSpoofingAlertType {
   VIDEO_REPLAY = 'VIDEO_REPLAY',
   MASK_DETECTION = 'MASK_DETECTION',
   MODEL_3D = 'MODEL_3D',
-  LIVENESS_FAILURE = 'LIVENESS_FAILURE'
+  LIVENESS_FAILURE = 'LIVENESS_FAILURE',
 }
 
 export enum AntiSpoofingSeverity {
   HIGH = 'HIGH',
   MEDIUM = 'MEDIUM',
-  LOW = 'LOW'
+  LOW = 'LOW',
 }
 
 export enum AntiSpoofingAlertStatus {
   ACTIVE = 'ACTIVE',
   RESOLVED = 'RESOLVED',
-  FALSE_POSITIVE = 'FALSE_POSITIVE'
+  FALSE_POSITIVE = 'FALSE_POSITIVE',
 }
 
 export class CreateAntiSpoofingAlertDto {
@@ -62,4 +62,3 @@ export class CreateAntiSpoofingAlertDto {
   @IsString()
   remarks?: string
 }
-

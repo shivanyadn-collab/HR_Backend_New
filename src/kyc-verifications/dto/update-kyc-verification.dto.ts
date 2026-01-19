@@ -19,4 +19,3 @@ export class UpdateKYCVerificationDto extends PartialType(CreateKYCVerificationD
   @IsString()
   overallRemarks?: string
 }
-

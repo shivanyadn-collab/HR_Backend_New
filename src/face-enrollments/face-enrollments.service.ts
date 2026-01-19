@@ -48,10 +48,10 @@ export class FaceEnrollmentsService {
     if (status) {
       // Map frontend status to backend enum
       const statusMap: Record<string, string> = {
-        'Pending': 'PENDING',
+        Pending: 'PENDING',
         'In Progress': 'IN_PROGRESS',
-        'Completed': 'COMPLETED',
-        'Failed': 'FAILED',
+        Completed: 'COMPLETED',
+        Failed: 'FAILED',
       }
       where.status = statusMap[status] || status
     }
@@ -79,7 +79,7 @@ export class FaceEnrollmentsService {
           where: { id: enrollment.employeeMasterId },
         })
         return await this.formatResponse(enrollment, employee!)
-      })
+      }),
     )
   }
 
@@ -189,9 +189,11 @@ export class FaceEnrollmentsService {
       select: { qualityScore: true },
     })
 
-    const avgQualityScore = images
-      .filter(img => img.qualityScore !== null)
-      .reduce((sum, img) => sum + (img.qualityScore || 0), 0) / images.filter(img => img.qualityScore !== null).length
+    const avgQualityScore =
+      images
+        .filter((img) => img.qualityScore !== null)
+        .reduce((sum, img) => sum + (img.qualityScore || 0), 0) /
+      images.filter((img) => img.qualityScore !== null).length
 
     const updateData: any = {
       faceImages: imageCount,
@@ -248,7 +250,7 @@ export class FaceEnrollmentsService {
       throw new NotFoundException('Face enrollment not found')
     }
 
-    const images = enrollment.faceImagesData.map(img => ({
+    const images = enrollment.faceImagesData.map((img) => ({
       id: img.id,
       imageUrl: img.imageUrl,
       imageName: img.imageName,
@@ -259,7 +261,7 @@ export class FaceEnrollmentsService {
 
     return {
       enrollmentId: id,
-      images: images.map(img => img.imageUrl),
+      images: images.map((img) => img.imageUrl),
       imageDetails: images,
     }
   }
@@ -291,7 +293,8 @@ export class FaceEnrollmentsService {
       designation: designationName,
       enrollmentDate: enrollment.enrollmentDate.toISOString().split('T')[0],
       status: this.mapStatus(enrollment.status),
-      faceImages: enrollment.faceImages || (enrollment.faceImagesData ? enrollment.faceImagesData.length : 0),
+      faceImages:
+        enrollment.faceImages || (enrollment.faceImagesData ? enrollment.faceImagesData.length : 0),
       qualityScore: enrollment.qualityScore || undefined,
       lastUpdated: enrollment.updatedAt.toISOString(),
       completedDate: enrollment.completedDate?.toISOString(),
@@ -324,4 +327,3 @@ export class FaceEnrollmentsService {
     return statusMap[status] || status
   }
 }
-

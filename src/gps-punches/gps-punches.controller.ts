@@ -23,7 +23,14 @@ export class GPSPunchesController {
     @Query('endDate') endDate?: string,
     @Query('search') search?: string,
   ) {
-    return this.service.findAll(employeeMasterId, punchType, status, projectId, startDate, endDate, search)
+    return this.service.findAll(
+      employeeMasterId,
+      punchType,
+      status,
+      projectId,
+      startDate,
+      endDate,
+      search,
+    )
   }
 }
-

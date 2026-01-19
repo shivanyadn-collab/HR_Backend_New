@@ -49,4 +49,3 @@ export class WhatsAppNotificationsController {
     return this.service.remove(id)
   }
 }
-

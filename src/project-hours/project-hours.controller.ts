@@ -54,4 +54,3 @@ export class ProjectHoursController {
     return this.service.remove(id)
   }
 }
-

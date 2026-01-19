@@ -59,11 +59,13 @@ export class HRTicketsController {
 
   @Post(':id/responses')
   @HttpCode(HttpStatus.CREATED)
-  addResponse(@Param('id') id: string, @Body() createDto: Omit<CreateTicketResponseDto, 'ticketId'>) {
+  addResponse(
+    @Param('id') id: string,
+    @Body() createDto: Omit<CreateTicketResponseDto, 'ticketId'>,
+  ) {
     return this.hrTicketsService.addResponse({
       ...createDto,
       ticketId: id,
     })
   }
 }
-

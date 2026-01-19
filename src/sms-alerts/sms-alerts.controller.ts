@@ -49,4 +49,3 @@ export class SMSAlertsController {
     return this.service.remove(id)
   }
 }
-

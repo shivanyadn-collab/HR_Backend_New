@@ -50,9 +50,13 @@ export class EmployeeAssetsService {
         assetItemId: createDto.assetItemId,
         serialNumber: createDto.serialNumber,
         issueDate: createDto.issueDate ? new Date(createDto.issueDate) : new Date(),
-        expectedReturnDate: createDto.expectedReturnDate ? new Date(createDto.expectedReturnDate) : null,
+        expectedReturnDate: createDto.expectedReturnDate
+          ? new Date(createDto.expectedReturnDate)
+          : null,
         condition: createDto.condition || 'Excellent',
-        warrantyExpiryDate: createDto.warrantyExpiryDate ? new Date(createDto.warrantyExpiryDate) : assetItem.warrantyExpiryDate,
+        warrantyExpiryDate: createDto.warrantyExpiryDate
+          ? new Date(createDto.warrantyExpiryDate)
+          : assetItem.warrantyExpiryDate,
         location: createDto.location || 'Office',
         remarks: createDto.remarks,
         issuedBy: createDto.issuedBy,
@@ -120,7 +124,7 @@ export class EmployeeAssetsService {
         }
 
         return this.formatResponse(a, departmentName, designationName)
-      })
+      }),
     )
 
     return formattedAssets
@@ -175,10 +179,14 @@ export class EmployeeAssetsService {
       data: {
         assetItemId: updateDto.assetItemId,
         serialNumber: updateDto.serialNumber,
-        expectedReturnDate: updateDto.expectedReturnDate ? new Date(updateDto.expectedReturnDate) : undefined,
+        expectedReturnDate: updateDto.expectedReturnDate
+          ? new Date(updateDto.expectedReturnDate)
+          : undefined,
         status: updateDto.status,
         condition: updateDto.condition,
-        warrantyExpiryDate: updateDto.warrantyExpiryDate ? new Date(updateDto.warrantyExpiryDate) : undefined,
+        warrantyExpiryDate: updateDto.warrantyExpiryDate
+          ? new Date(updateDto.warrantyExpiryDate)
+          : undefined,
         location: updateDto.location,
         remarks: updateDto.remarks,
         returnDate: updateDto.returnDate ? new Date(updateDto.returnDate) : undefined,
@@ -202,7 +210,7 @@ export class EmployeeAssetsService {
           availableQuantity: { increment: 1 },
         },
       })
-    } 
+    }
     // Handle re-issue: RETURNED -> ISSUED (or any other status -> ISSUED)
     else if (asset.status !== 'ISSUED' && updateDto.status === 'ISSUED') {
       // Asset is being issued: decrement available, increment allocated
@@ -225,7 +233,7 @@ export class EmployeeAssetsService {
     }
     // Handle status change from RETURNED to another status (like DAMAGED, LOST)
     // Don't change quantities in this case as it was already returned
-    
+
     // Recalculate quantities to ensure sync (handles any edge cases)
     // This ensures quantities are always correct even if there were inconsistencies
     await this.recalculateQuantities(asset.assetItemId)
@@ -286,14 +294,25 @@ export class EmployeeAssetsService {
       serialNumber: asset.serialNumber,
       issueDate: asset.issueDate.toISOString().split('T')[0],
       returnDate: asset.returnDate ? asset.returnDate.toISOString().split('T')[0] : null,
-      expectedReturnDate: asset.expectedReturnDate ? asset.expectedReturnDate.toISOString().split('T')[0] : null,
-      status: asset.status === 'ISSUED' ? 'Issued' :
-              asset.status === 'RETURNED' ? 'Returned' :
-              asset.status === 'LOST' ? 'Lost' :
-              asset.status === 'DAMAGED' ? 'Damaged' :
-              asset.status === 'UNDER_REPAIR' ? 'Under Repair' : 'Expired',
+      expectedReturnDate: asset.expectedReturnDate
+        ? asset.expectedReturnDate.toISOString().split('T')[0]
+        : null,
+      status:
+        asset.status === 'ISSUED'
+          ? 'Issued'
+          : asset.status === 'RETURNED'
+            ? 'Returned'
+            : asset.status === 'LOST'
+              ? 'Lost'
+              : asset.status === 'DAMAGED'
+                ? 'Damaged'
+                : asset.status === 'UNDER_REPAIR'
+                  ? 'Under Repair'
+                  : 'Expired',
       condition: asset.condition,
-      warrantyExpiryDate: asset.warrantyExpiryDate ? asset.warrantyExpiryDate.toISOString().split('T')[0] : null,
+      warrantyExpiryDate: asset.warrantyExpiryDate
+        ? asset.warrantyExpiryDate.toISOString().split('T')[0]
+        : null,
       location: asset.location,
       remarks: asset.remarks,
       issuedBy: asset.issuedBy,
@@ -343,4 +362,3 @@ export class EmployeeAssetsService {
     }
   }
 }
-

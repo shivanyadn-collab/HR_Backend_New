@@ -4,19 +4,19 @@ export enum LocationAlertType {
   OUTSIDE_GEOFENCE = 'OUTSIDE_GEOFENCE',
   NO_GPS_SIGNAL = 'NO_GPS_SIGNAL',
   LOCATION_MISMATCH = 'LOCATION_MISMATCH',
-  ROUTE_DEVIATION = 'ROUTE_DEVIATION'
+  ROUTE_DEVIATION = 'ROUTE_DEVIATION',
 }
 
 export enum LocationAlertSeverity {
   HIGH = 'HIGH',
   MEDIUM = 'MEDIUM',
-  LOW = 'LOW'
+  LOW = 'LOW',
 }
 
 export enum LocationAlertStatus {
   ACTIVE = 'ACTIVE',
   RESOLVED = 'RESOLVED',
-  FALSE_POSITIVE = 'FALSE_POSITIVE'
+  FALSE_POSITIVE = 'FALSE_POSITIVE',
 }
 
 export class CreateLocationDeviationAlertDto {
@@ -77,4 +77,3 @@ export class CreateLocationDeviationAlertDto {
   @IsString()
   remarks?: string
 }
-

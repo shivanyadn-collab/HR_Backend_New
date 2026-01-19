@@ -72,4 +72,3 @@ export class CreateCandidateApplicationDto {
   @IsString()
   screenedBy?: string
 }
-

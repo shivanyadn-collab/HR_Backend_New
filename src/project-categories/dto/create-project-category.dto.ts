@@ -23,4 +23,3 @@ export class CreateProjectCategoryDto {
   @IsBoolean()
   isActive?: boolean
 }
-

@@ -102,7 +102,7 @@ export class GeneratedIDCardsService {
         }
 
         return this.formatResponse(c, departmentName, designationName)
-      })
+      }),
     )
 
     return formattedCards
@@ -206,8 +206,8 @@ export class GeneratedIDCardsService {
       photoUrl: card.photoUrl,
       issueDate: card.issueDate.toISOString().split('T')[0],
       expiryDate: card.expiryDate ? card.expiryDate.toISOString().split('T')[0] : null,
-      status: card.status === 'ACTIVE' ? 'Active' :
-              card.status === 'EXPIRED' ? 'Expired' : 'Cancelled',
+      status:
+        card.status === 'ACTIVE' ? 'Active' : card.status === 'EXPIRED' ? 'Expired' : 'Cancelled',
       qrCode: card.qrCode,
       printedDate: card.printedDate ? card.printedDate.toISOString().split('T')[0] : null,
       printedBy: card.printedBy,
@@ -216,4 +216,3 @@ export class GeneratedIDCardsService {
     }
   }
 }
-

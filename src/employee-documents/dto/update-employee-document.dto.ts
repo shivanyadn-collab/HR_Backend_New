@@ -31,4 +31,3 @@ export class UpdateEmployeeDocumentDto extends PartialType(CreateEmployeeDocumen
   @IsBoolean()
   isConfidential?: boolean
 }
-

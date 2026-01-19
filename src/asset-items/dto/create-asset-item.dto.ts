@@ -40,4 +40,3 @@ export class CreateAssetItemDto {
   @IsBoolean()
   isActive?: boolean
 }
-

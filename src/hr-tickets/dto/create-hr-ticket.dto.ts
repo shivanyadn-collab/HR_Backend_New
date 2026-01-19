@@ -31,4 +31,3 @@ export class CreateHRTicketDto {
   @IsString()
   relatedTo?: string
 }
-

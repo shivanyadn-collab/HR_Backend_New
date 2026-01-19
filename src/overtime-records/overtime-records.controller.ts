@@ -64,4 +64,3 @@ export class OvertimeRecordsController {
     return this.service.remove(id)
   }
 }
-

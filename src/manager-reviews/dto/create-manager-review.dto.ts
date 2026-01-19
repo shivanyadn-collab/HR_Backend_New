@@ -1,10 +1,19 @@
-import { IsString, IsNumber, IsEnum, IsOptional, IsUUID, IsDateString, Min, Max } from 'class-validator'
+import {
+  IsString,
+  IsNumber,
+  IsEnum,
+  IsOptional,
+  IsUUID,
+  IsDateString,
+  Min,
+  Max,
+} from 'class-validator'
 import { Type } from 'class-transformer'
 
 export enum ReviewStatus {
   DRAFT = 'DRAFT',
   SUBMITTED = 'SUBMITTED',
-  APPROVED = 'APPROVED'
+  APPROVED = 'APPROVED',
 }
 
 export class CreateManagerReviewDto {
@@ -73,4 +82,3 @@ export class CreateManagerReviewDto {
   @IsDateString()
   submittedDate?: string
 }
-

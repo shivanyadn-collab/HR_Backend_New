@@ -5,4 +5,3 @@ export enum OfferLetterStatus {
   REJECTED = 'REJECTED',
   EXPIRED = 'EXPIRED',
 }
-

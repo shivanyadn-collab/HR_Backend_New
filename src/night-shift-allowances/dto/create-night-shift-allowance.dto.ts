@@ -21,4 +21,3 @@ export class CreateNightShiftAllowanceDto {
   @IsNumber()
   allowanceAmount?: number
 }
-

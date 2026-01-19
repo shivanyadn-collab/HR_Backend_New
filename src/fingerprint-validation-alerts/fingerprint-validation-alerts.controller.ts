@@ -24,14 +24,19 @@ export class FingerprintValidationAlertsController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
   ) {
-    return this.service.findAll(fingerprintDeviceId, employeeMasterId, alertType, severity, status, startDate, endDate)
+    return this.service.findAll(
+      fingerprintDeviceId,
+      employeeMasterId,
+      alertType,
+      severity,
+      status,
+      startDate,
+      endDate,
+    )
   }
 
   @Get('statistics')
-  getStatistics(
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
-  ) {
+  getStatistics(@Query('startDate') startDate?: string, @Query('endDate') endDate?: string) {
     return this.service.getStatistics(startDate, endDate)
   }
 
@@ -46,18 +51,12 @@ export class FingerprintValidationAlertsController {
   }
 
   @Patch(':id/resolve')
-  resolve(
-    @Param('id') id: string,
-    @Body() body: { resolvedBy?: string; remarks?: string },
-  ) {
+  resolve(@Param('id') id: string, @Body() body: { resolvedBy?: string; remarks?: string }) {
     return this.service.resolve(id, body.resolvedBy, body.remarks)
   }
 
   @Patch(':id/mark-false-positive')
-  markFalsePositive(
-    @Param('id') id: string,
-    @Body() body: { remarks?: string },
-  ) {
+  markFalsePositive(@Param('id') id: string, @Body() body: { remarks?: string }) {
     return this.service.markFalsePositive(id, body.remarks)
   }
 
@@ -66,4 +65,3 @@ export class FingerprintValidationAlertsController {
     return this.service.remove(id)
   }
 }
-

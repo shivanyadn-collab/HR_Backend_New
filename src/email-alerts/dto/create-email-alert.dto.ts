@@ -30,4 +30,3 @@ export class CreateEmailAlertDto {
   @IsDateString()
   scheduledDate?: string
 }
-

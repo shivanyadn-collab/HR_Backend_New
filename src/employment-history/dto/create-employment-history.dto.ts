@@ -68,4 +68,3 @@ export class CreateEmploymentHistoryDto {
   @IsString()
   remarks?: string
 }
-

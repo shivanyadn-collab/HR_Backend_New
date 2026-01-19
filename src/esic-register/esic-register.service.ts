@@ -65,7 +65,7 @@ export class EsicRegisterService {
       // Calculate ESIC contributions based on salary template
       const grossWages = this.calculateGrossWages(emp.salaryTemplate)
       const esicWages = Math.min(grossWages, 21000) // ESIC wage ceiling
-      
+
       // ESIC contribution rates: Employee 0.75%, Employer 3.25%
       const employeeContribution = Math.round(esicWages * 0.0075)
       const employerContribution = Math.round(esicWages * 0.0325)
@@ -96,4 +96,3 @@ export class EsicRegisterService {
     return records
   }
 }
-

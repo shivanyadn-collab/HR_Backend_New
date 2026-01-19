@@ -55,4 +55,3 @@ export class HolidaysController {
     return this.holidaysService.toggleActive(id)
   }
 }
-

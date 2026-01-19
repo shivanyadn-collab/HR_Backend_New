@@ -11,4 +11,3 @@ export class CreateLeaveEncashmentDto {
   @Min(1)
   daysToEncash: number
 }
-

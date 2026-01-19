@@ -33,4 +33,3 @@ export class CreateUniformAllocationDto {
   @IsOptional()
   issuedBy?: string
 }
-

@@ -54,7 +54,7 @@ export class AttendanceLogsService {
 
       const date = new Date(log.recognitionTime)
       const dateKey = `${log.employeeMasterId}_${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
-      
+
       if (!attendanceMap.has(dateKey)) {
         const employee = log.employeeMaster
         let departmentName = 'Not assigned'
@@ -78,9 +78,7 @@ export class AttendanceLogsService {
           id: dateKey,
           employeeId: log.employeeMasterId,
           employeeCode: employee?.employeeCode || '',
-          employeeName: employee
-            ? `${employee.firstName} ${employee.lastName}`
-            : 'Unknown',
+          employeeName: employee ? `${employee.firstName} ${employee.lastName}` : 'Unknown',
           department: departmentName,
           designation: designationName,
           recognitionTime: log.recognitionTime.toISOString(),
@@ -96,12 +94,13 @@ export class AttendanceLogsService {
 
       const attendance = attendanceMap.get(dateKey)
       attendance.logs.push(log)
-      
+
       // Update check-in (first recognition of the day)
       if (!attendance.checkInTime || log.recognitionTime < new Date(attendance.checkInTime)) {
         attendance.checkInTime = log.recognitionTime.toISOString()
         attendance.recognitionTime = log.recognitionTime.toISOString()
-        attendance.cameraLocation = log.location || log.cameraDevice?.location || attendance.cameraLocation
+        attendance.cameraLocation =
+          log.location || log.cameraDevice?.location || attendance.cameraLocation
         attendance.confidence = log.confidence
       }
 
@@ -112,7 +111,7 @@ export class AttendanceLogsService {
     }
 
     // Calculate working hours and determine status
-    const attendanceRecords = Array.from(attendanceMap.values()).map(record => {
+    const attendanceRecords = Array.from(attendanceMap.values()).map((record) => {
       if (record.checkInTime && record.checkOutTime) {
         const checkIn = new Date(record.checkInTime)
         const checkOut = new Date(record.checkOutTime)
@@ -170,30 +169,23 @@ export class AttendanceLogsService {
     // Filter by status if provided
     let filtered = attendanceRecords
     if (status && status !== 'all') {
-      filtered = filtered.filter(record => record.status === status)
+      filtered = filtered.filter((record) => record.status === status)
     }
 
-    return filtered.sort((a, b) => 
-      new Date(b.recognitionTime).getTime() - new Date(a.recognitionTime).getTime()
+    return filtered.sort(
+      (a, b) => new Date(b.recognitionTime).getTime() - new Date(a.recognitionTime).getTime(),
     )
   }
 
   async getAttendanceStatistics(startDate?: string, endDate?: string) {
-    const logs = await this.getAttendanceLogs(
-      undefined,
-      undefined,
-      undefined,
-      startDate,
-      endDate,
-    )
+    const logs = await this.getAttendanceLogs(undefined, undefined, undefined, startDate, endDate)
 
     const total = logs.length
-    const present = logs.filter(l => l.status === 'Present').length
-    const late = logs.filter(l => l.status === 'Late').length
-    const early = logs.filter(l => l.status === 'Early Departure').length
-    const absent = logs.filter(l => l.status === 'Absent').length
+    const present = logs.filter((l) => l.status === 'Present').length
+    const late = logs.filter((l) => l.status === 'Late').length
+    const early = logs.filter((l) => l.status === 'Early Departure').length
+    const absent = logs.filter((l) => l.status === 'Absent').length
 
     return { total, present, late, early, absent }
   }
 }
-

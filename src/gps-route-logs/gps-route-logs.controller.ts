@@ -24,4 +24,3 @@ export class GPSRouteLogsController {
     return this.service.findOne(id)
   }
 }
-

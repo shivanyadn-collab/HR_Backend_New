@@ -34,4 +34,3 @@ export class UniformItemsController {
     return this.service.remove(id)
   }
 }
-

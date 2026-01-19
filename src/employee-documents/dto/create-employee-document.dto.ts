@@ -21,6 +21,10 @@ export class CreateEmployeeDocumentDto {
   fileUrl?: string
 
   @IsOptional()
+  @IsString()
+  fileKey?: string
+
+  @IsOptional()
   @IsDateString()
   uploadDate?: string
 
@@ -48,4 +52,3 @@ export class CreateEmployeeDocumentDto {
   @IsBoolean()
   isConfidential?: boolean
 }
-

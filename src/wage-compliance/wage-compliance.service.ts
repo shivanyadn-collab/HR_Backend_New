@@ -61,20 +61,20 @@ export class WageComplianceService {
 
     // Minimum wage by state and category (simplified - should come from a configuration table)
     const minimumWageMap: Record<string, Record<string, number>> = {
-      'Maharashtra': {
-        'Skilled': 15000,
+      Maharashtra: {
+        Skilled: 15000,
         'Semi-Skilled': 13000,
-        'Unskilled': 12000,
+        Unskilled: 12000,
       },
-      'Karnataka': {
-        'Skilled': 14000,
+      Karnataka: {
+        Skilled: 14000,
         'Semi-Skilled': 12000,
-        'Unskilled': 11000,
+        Unskilled: 11000,
       },
       'Tamil Nadu': {
-        'Skilled': 14500,
+        Skilled: 14500,
         'Semi-Skilled': 12500,
-        'Unskilled': 11500,
+        Unskilled: 11500,
       },
     }
 
@@ -85,8 +85,8 @@ export class WageComplianceService {
       const category = emp.designation?.designationName?.toLowerCase().includes('unskilled')
         ? 'Unskilled'
         : emp.designation?.designationName?.toLowerCase().includes('semi')
-        ? 'Semi-Skilled'
-        : 'Skilled'
+          ? 'Semi-Skilled'
+          : 'Skilled'
       const applicableMinimumWage = minimumWageMap[empState]?.[category] || 12000
       const difference = actualWagePaid - applicableMinimumWage
       const complianceStatus = difference >= 0 ? 'Compliant' : 'Non-Compliant'
@@ -105,9 +105,10 @@ export class WageComplianceService {
         actualWagePaid,
         difference,
         complianceStatus,
-        remarks: difference >= 0 
-          ? 'Wage is above minimum wage requirement' 
-          : 'Wage is below minimum wage requirement. Action required.',
+        remarks:
+          difference >= 0
+            ? 'Wage is above minimum wage requirement'
+            : 'Wage is below minimum wage requirement. Action required.',
       }
     })
 
@@ -124,4 +125,3 @@ export class WageComplianceService {
     return records
   }
 }
-

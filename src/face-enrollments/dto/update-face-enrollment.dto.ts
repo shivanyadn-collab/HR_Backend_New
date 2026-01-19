@@ -13,4 +13,3 @@ export class UpdateFaceEnrollmentDto extends PartialType(CreateFaceEnrollmentDto
   @Max(100)
   qualityScore?: number
 }
-

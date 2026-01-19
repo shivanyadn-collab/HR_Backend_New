@@ -64,7 +64,7 @@ export class PromotionRecommendationsService {
       orderBy: { recommendationDate: 'desc' },
     })
 
-    return recommendations.map(rec => this.formatResponse(rec))
+    return recommendations.map((rec) => this.formatResponse(rec))
   }
 
   async findOne(id: string) {
@@ -92,7 +92,7 @@ export class PromotionRecommendationsService {
     }
 
     const updateData: any = { ...updateDto }
-    
+
     if (updateDto.approvedDate) {
       updateData.approvedDate = new Date(updateDto.approvedDate)
     }
@@ -128,7 +128,8 @@ export class PromotionRecommendationsService {
     return {
       id: recommendation.id,
       employeeId: recommendation.employeeMasterId,
-      employeeName: `${recommendation.employeeMaster?.firstName || ''} ${recommendation.employeeMaster?.lastName || ''}`.trim(),
+      employeeName:
+        `${recommendation.employeeMaster?.firstName || ''} ${recommendation.employeeMaster?.lastName || ''}`.trim(),
       employeeCode: recommendation.employeeMaster?.employeeCode,
       currentDepartment: recommendation.currentDepartment,
       currentDesignation: recommendation.currentDesignation,
@@ -150,4 +151,3 @@ export class PromotionRecommendationsService {
     }
   }
 }
-

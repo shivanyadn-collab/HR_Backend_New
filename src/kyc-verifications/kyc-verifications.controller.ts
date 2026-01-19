@@ -51,7 +51,10 @@ export class KYCVerificationsController {
     @CurrentUser() user: UserResponseDto,
   ) {
     // If verifying, set verifiedBy
-    if (updateKYCVerificationDto.verificationStatus === 'VERIFIED' && !updateKYCVerificationDto.verifiedBy) {
+    if (
+      updateKYCVerificationDto.verificationStatus === 'VERIFIED' &&
+      !updateKYCVerificationDto.verifiedBy
+    ) {
       updateKYCVerificationDto.verifiedBy = user.id
     }
     return this.kycVerificationsService.update(id, updateKYCVerificationDto)
@@ -69,7 +72,12 @@ export class KYCVerificationsController {
     @Body() updateDocumentDto: UpdateKYCDocumentDto,
     @CurrentUser() user: UserResponseDto,
   ) {
-    return this.kycVerificationsService.updateDocument(kycId, documentId, updateDocumentDto, user.id)
+    return this.kycVerificationsService.updateDocument(
+      kycId,
+      documentId,
+      updateDocumentDto,
+      user.id,
+    )
   }
 
   @Delete(':id')
@@ -78,4 +86,3 @@ export class KYCVerificationsController {
     await this.kycVerificationsService.remove(id)
   }
 }
-

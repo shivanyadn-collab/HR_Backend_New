@@ -39,4 +39,3 @@ export class UniformAllocationsController {
     return this.service.remove(id)
   }
 }
-

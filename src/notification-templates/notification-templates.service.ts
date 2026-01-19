@@ -25,12 +25,7 @@ export class NotificationTemplatesService {
     return this.formatResponse(template)
   }
 
-  async findAll(
-    notificationType?: string,
-    category?: string,
-    isActive?: boolean,
-    search?: string,
-  ) {
+  async findAll(notificationType?: string, category?: string, isActive?: boolean, search?: string) {
     const where: any = {}
 
     if (notificationType) {
@@ -171,4 +166,3 @@ export class NotificationTemplatesService {
     }
   }
 }
-

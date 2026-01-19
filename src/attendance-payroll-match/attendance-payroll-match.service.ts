@@ -50,7 +50,7 @@ export class AttendancePayrollMatchService {
     // 1. A payroll table/record for the month
     // 2. Salary template with working days
     // 3. Monthly payroll processing records
-    
+
     // Placeholder: Return attendance days as default (you should replace this)
     return this.calculateAttendanceDays(employeeId, month)
   }
@@ -187,4 +187,3 @@ export class AttendancePayrollMatchService {
     return matchRecords
   }
 }
-

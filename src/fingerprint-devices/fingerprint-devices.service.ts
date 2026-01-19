@@ -57,12 +57,12 @@ export class FingerprintDevicesService {
 
   async findAll(status?: string, search?: string) {
     const where: any = {}
-    
+
     if (status && status !== 'all') {
       const statusMap: Record<string, string> = {
-        'Active': 'ACTIVE',
-        'Inactive': 'INACTIVE',
-        'Offline': 'OFFLINE',
+        Active: 'ACTIVE',
+        Inactive: 'INACTIVE',
+        Offline: 'OFFLINE',
       }
       where.status = statusMap[status] || status
     }
@@ -83,7 +83,7 @@ export class FingerprintDevicesService {
       orderBy: { createdAt: 'desc' },
     })
 
-    return devices.map(device => this.formatResponse(device))
+    return devices.map((device) => this.formatResponse(device))
   }
 
   async findOne(id: string) {
@@ -171,10 +171,12 @@ export class FingerprintDevicesService {
     if (updateDto.ipAddress !== undefined) updateData.ipAddress = updateDto.ipAddress
     if (updateDto.port !== undefined) updateData.port = updateDto.port
     if (updateDto.status !== undefined) updateData.status = updateDto.status
-    if (updateDto.recognitionAccuracy !== undefined) updateData.recognitionAccuracy = updateDto.recognitionAccuracy
+    if (updateDto.recognitionAccuracy !== undefined)
+      updateData.recognitionAccuracy = updateDto.recognitionAccuracy
     if (updateDto.isEnabled !== undefined) updateData.isEnabled = updateDto.isEnabled
     if (updateDto.model !== undefined) updateData.model = updateDto.model
-    if (updateDto.firmwareVersion !== undefined) updateData.firmwareVersion = updateDto.firmwareVersion
+    if (updateDto.firmwareVersion !== undefined)
+      updateData.firmwareVersion = updateDto.firmwareVersion
     if (updateDto.algorithm !== undefined) updateData.algorithm = updateDto.algorithm
     if (updateDto.platform !== undefined) updateData.platform = updateDto.platform
 
@@ -233,9 +235,9 @@ export class FingerprintDevicesService {
 
   private formatResponse(device: any) {
     const statusMap: Record<string, string> = {
-      'ACTIVE': 'Active',
-      'INACTIVE': 'Inactive',
-      'OFFLINE': 'Offline',
+      ACTIVE: 'Active',
+      INACTIVE: 'Inactive',
+      OFFLINE: 'Offline',
     }
 
     return {
@@ -260,4 +262,3 @@ export class FingerprintDevicesService {
     }
   }
 }
-

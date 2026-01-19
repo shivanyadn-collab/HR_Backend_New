@@ -38,4 +38,3 @@ export class GeneratedIDCardsController {
     return this.service.remove(id)
   }
 }
-

@@ -50,7 +50,7 @@ export class GeofenceProjectAssignmentsService {
       orderBy: { assignedDate: 'desc' },
     })
 
-    return assignments.map(assignment => ({
+    return assignments.map((assignment) => ({
       id: assignment.id,
       projectId: assignment.projectId,
       projectName: assignment.project.name,
@@ -120,4 +120,3 @@ export class GeofenceProjectAssignmentsService {
     })
   }
 }
-

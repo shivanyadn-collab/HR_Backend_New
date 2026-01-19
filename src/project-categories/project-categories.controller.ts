@@ -54,4 +54,3 @@ export class ProjectCategoriesController {
     return this.projectCategoriesService.toggleActive(id)
   }
 }
-

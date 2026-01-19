@@ -44,4 +44,3 @@ export class CreateLeavePolicyDto {
   @Min(1)
   maxConsecutiveDays?: number
 }
-

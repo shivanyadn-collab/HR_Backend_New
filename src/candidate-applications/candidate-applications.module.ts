@@ -8,4 +8,3 @@ import { CandidateApplicationsController } from './candidate-applications.contro
   exports: [CandidateApplicationsService],
 })
 export class CandidateApplicationsModule {}
-

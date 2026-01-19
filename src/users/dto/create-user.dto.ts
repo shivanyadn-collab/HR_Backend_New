@@ -37,4 +37,3 @@ export class CreateUserDto {
   @IsString({ each: true })
   projectIds?: string[]
 }
-

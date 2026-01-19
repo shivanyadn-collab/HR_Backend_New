@@ -1,7 +1,7 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
-import { CreateForm16Dto } from './dto/create-form16.dto';
-import { UpdateForm16Dto } from './dto/update-form16.dto';
+import { Injectable, NotFoundException } from '@nestjs/common'
+import { PrismaService } from '../prisma/prisma.service'
+import { CreateForm16Dto } from './dto/create-form16.dto'
+import { UpdateForm16Dto } from './dto/update-form16.dto'
 
 @Injectable()
 export class Form16Service {
@@ -14,7 +14,9 @@ export class Form16Service {
         financialYear: createForm16Dto.financialYear,
         partA: createForm16Dto.partA ?? false,
         partB: createForm16Dto.partB ?? false,
-        generatedDate: createForm16Dto.generatedDate ? new Date(createForm16Dto.generatedDate) : null,
+        generatedDate: createForm16Dto.generatedDate
+          ? new Date(createForm16Dto.generatedDate)
+          : null,
         downloadUrl: createForm16Dto.downloadUrl,
         fileName: createForm16Dto.fileName,
         status: (createForm16Dto.status as any) || 'PENDING',
@@ -30,14 +32,14 @@ export class Form16Service {
           },
         },
       },
-    });
-    return this.formatResponse(form16);
+    })
+    return this.formatResponse(form16)
   }
 
   async findAll(employeeId?: string, financialYear?: string) {
-    const where: any = {};
-    if (employeeId) where.employeeMasterId = employeeId;
-    if (financialYear) where.financialYear = financialYear;
+    const where: any = {}
+    if (employeeId) where.employeeMasterId = employeeId
+    if (financialYear) where.financialYear = financialYear
 
     const form16s = await this.prisma.form16.findMany({
       where,
@@ -52,8 +54,8 @@ export class Form16Service {
         },
       },
       orderBy: { financialYear: 'desc' },
-    });
-    return form16s.map(this.formatResponse);
+    })
+    return form16s.map(this.formatResponse)
   }
 
   async findOne(id: string) {
@@ -69,20 +71,22 @@ export class Form16Service {
           },
         },
       },
-    });
+    })
     if (!form16) {
-      throw new NotFoundException(`Form16 with ID ${id} not found`);
+      throw new NotFoundException(`Form16 with ID ${id} not found`)
     }
-    return this.formatResponse(form16);
+    return this.formatResponse(form16)
   }
 
   async update(id: string, updateForm16Dto: UpdateForm16Dto) {
-    await this.findOne(id);
+    await this.findOne(id)
     const form16 = await this.prisma.form16.update({
       where: { id },
       data: {
         ...updateForm16Dto,
-        generatedDate: updateForm16Dto.generatedDate ? new Date(updateForm16Dto.generatedDate) : undefined,
+        generatedDate: updateForm16Dto.generatedDate
+          ? new Date(updateForm16Dto.generatedDate)
+          : undefined,
         status: updateForm16Dto.status as any,
       },
       include: {
@@ -95,30 +99,30 @@ export class Form16Service {
           },
         },
       },
-    });
-    return this.formatResponse(form16);
+    })
+    return this.formatResponse(form16)
   }
 
   async remove(id: string) {
-    await this.findOne(id);
-    await this.prisma.form16.delete({ where: { id } });
-    return { message: 'Form16 deleted successfully' };
+    await this.findOne(id)
+    await this.prisma.form16.delete({ where: { id } })
+    return { message: 'Form16 deleted successfully' }
   }
 
   async getDownloadUrl(id: string) {
-    const form16 = await this.findOne(id);
+    const form16 = await this.findOne(id)
     if (form16.downloadUrl) {
-      return { fileUrl: form16.downloadUrl };
+      return { fileUrl: form16.downloadUrl }
     }
-    return { fileUrl: null, message: 'Form 16 not yet available for download' };
+    return { fileUrl: null, message: 'Form 16 not yet available for download' }
   }
 
   private formatResponse(form16: any) {
     return {
       id: form16.id,
       employeeMasterId: form16.employeeMasterId,
-      employeeName: form16.employeeMaster 
-        ? `${form16.employeeMaster.firstName} ${form16.employeeMaster.lastName}` 
+      employeeName: form16.employeeMaster
+        ? `${form16.employeeMaster.firstName} ${form16.employeeMaster.lastName}`
         : null,
       employeeCode: form16.employeeMaster?.employeeCode,
       financialYear: form16.financialYear,
@@ -131,6 +135,6 @@ export class Form16Service {
       remarks: form16.remarks,
       createdAt: form16.createdAt,
       updatedAt: form16.updatedAt,
-    };
+    }
   }
 }

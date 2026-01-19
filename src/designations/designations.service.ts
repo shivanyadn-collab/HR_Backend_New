@@ -40,7 +40,7 @@ export class DesignationsService {
         createdAt: 'desc',
       },
     })
-    
+
     // Calculate actual employee count for each designation from EmployeeMaster
     const designationsWithCounts = await Promise.all(
       designations.map(async (des) => {
@@ -51,7 +51,7 @@ export class DesignationsService {
             status: 'ACTIVE', // EmployeeMasterStatus enum value
           },
         })
-        
+
         // Update the designation's employeeCount in database if it's different
         if (des.employeeCount !== employeeCount) {
           await this.prisma.designation.update({
@@ -59,14 +59,14 @@ export class DesignationsService {
             data: { employeeCount },
           })
         }
-        
+
         return {
           ...des,
           employeeCount, // Use calculated count
         }
-      })
+      }),
     )
-    
+
     return designationsWithCounts
   }
 
@@ -86,7 +86,7 @@ export class DesignationsService {
         status: 'ACTIVE', // EmployeeMasterStatus enum value
       },
     })
-    
+
     // Update the designation's employeeCount in database if it's different
     if (designation.employeeCount !== employeeCount) {
       await this.prisma.designation.update({
@@ -111,7 +111,10 @@ export class DesignationsService {
     }
 
     // Check if designation code is being updated and if it conflicts
-    if (updateDesignationDto.designationCode && updateDesignationDto.designationCode !== designation.designationCode) {
+    if (
+      updateDesignationDto.designationCode &&
+      updateDesignationDto.designationCode !== designation.designationCode
+    ) {
       const existing = await this.prisma.designation.findUnique({
         where: { designationCode: updateDesignationDto.designationCode },
       })
@@ -156,4 +159,3 @@ export class DesignationsService {
     })
   }
 }
-

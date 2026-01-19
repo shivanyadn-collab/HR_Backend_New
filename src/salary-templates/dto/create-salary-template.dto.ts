@@ -1,4 +1,16 @@
-import { IsString, IsOptional, IsBoolean, IsArray, ValidateNested, IsNumber, IsEnum, MinLength, MaxLength, Matches, ArrayMinSize } from 'class-validator'
+import {
+  IsString,
+  IsOptional,
+  IsBoolean,
+  IsArray,
+  ValidateNested,
+  IsNumber,
+  IsEnum,
+  MinLength,
+  MaxLength,
+  Matches,
+  ArrayMinSize,
+} from 'class-validator'
 import { Type, Transform } from 'class-transformer'
 
 class SalaryComponentDto {
@@ -40,7 +52,9 @@ export class CreateSalaryTemplateDto {
   @IsString()
   @MinLength(1, { message: 'Template code cannot be empty' })
   @MaxLength(20, { message: 'Template code cannot exceed 20 characters' })
-  @Matches(/^[A-Z0-9-_]+$/, { message: 'Template code can only contain uppercase letters, numbers, hyphens, and underscores' })
+  @Matches(/^[A-Z0-9-_]+$/, {
+    message: 'Template code can only contain uppercase letters, numbers, hyphens, and underscores',
+  })
   templateCode: string
 
   @IsString()
@@ -63,4 +77,3 @@ export class CreateSalaryTemplateDto {
   @IsBoolean()
   isActive?: boolean
 }
-

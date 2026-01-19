@@ -38,4 +38,3 @@ export class CreateOvertimeRecordDto {
   @IsString()
   projectId?: string
 }
-

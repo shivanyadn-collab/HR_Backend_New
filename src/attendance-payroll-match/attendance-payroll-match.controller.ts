@@ -16,4 +16,3 @@ export class AttendancePayrollMatchController {
     return this.service.findAll(status, month, search)
   }
 }
-

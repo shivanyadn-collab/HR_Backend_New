@@ -6,4 +6,3 @@ export class UpdateGeofenceProjectAssignmentDto {
   @IsEnum(GeofenceAssignmentStatus)
   status?: GeofenceAssignmentStatus
 }
-

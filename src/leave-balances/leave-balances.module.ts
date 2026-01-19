@@ -8,4 +8,3 @@ import { LeaveBalancesController } from './leave-balances.controller'
   exports: [LeaveBalancesService],
 })
 export class LeaveBalancesModule {}
-

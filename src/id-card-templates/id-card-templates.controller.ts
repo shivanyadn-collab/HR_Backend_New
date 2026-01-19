@@ -34,4 +34,3 @@ export class IDCardTemplatesController {
     return this.service.remove(id)
   }
 }
-

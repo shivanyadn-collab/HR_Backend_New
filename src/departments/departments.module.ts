@@ -8,4 +8,3 @@ import { DepartmentsController } from './departments.controller'
   exports: [DepartmentsService],
 })
 export class DepartmentsModule {}
-

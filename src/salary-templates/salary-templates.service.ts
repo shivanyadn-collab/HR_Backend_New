@@ -11,6 +11,9 @@ interface SalaryCalculationContext {
   Conveyance?: number
   LTA?: number
   Medical?: number
+  PF?: number
+  ESIC?: number
+  Gratuity?: number
   [key: string]: number | undefined
 }
 
@@ -68,13 +71,16 @@ export class SalaryTemplatesService {
         }
       }
 
-      // Replace common salary variables (case insensitive)
+      // Replace common salary variables (case insensitive) - order matters (longer names first)
+      processedExpression = processedExpression.replace(/\bConveyance\b/gi, context.Conveyance?.toString() || '0')
+      processedExpression = processedExpression.replace(/\bMedical\b/gi, context.Medical?.toString() || '0')
+      processedExpression = processedExpression.replace(/\bGratuity\b/gi, context.Gratuity?.toString() || '0')
       processedExpression = processedExpression.replace(/\bCTC\b/gi, context.CTC?.toString() || '0')
       processedExpression = processedExpression.replace(/\bBasic\b/gi, context.Basic?.toString() || '0')
       processedExpression = processedExpression.replace(/\bHRA\b/gi, context.HRA?.toString() || '0')
-      processedExpression = processedExpression.replace(/\bConveyance\b/gi, context.Conveyance?.toString() || '0')
       processedExpression = processedExpression.replace(/\bLTA\b/gi, context.LTA?.toString() || '0')
-      processedExpression = processedExpression.replace(/\bMedical\b/gi, context.Medical?.toString() || '0')
+      processedExpression = processedExpression.replace(/\bPF\b/gi, context.PF?.toString() || '0')
+      processedExpression = processedExpression.replace(/\bESIC\b/gi, context.ESIC?.toString() || '0')
 
       // Evaluate the mathematical expression
       // Note: In production, you'd want to use a safer expression evaluator
@@ -94,38 +100,80 @@ export class SalaryTemplatesService {
 
   /**
    * Calculate all components for a salary template
+   * Handles dependencies and calculates in the correct order
    */
   calculateSalaryComponents(components: any[], ctc: number): any[] {
     const context: SalaryCalculationContext = { CTC: ctc }
-    const calculatedComponents = []
+    const calculatedComponents: any[] = []
+    const remainingComponents = [...components]
+    let maxIterations = components.length * 2 // Prevent infinite loops
+    let iterations = 0
 
-    // First pass: calculate components that don't depend on others
-    for (const component of components) {
-      if (!component.formula) {
-        // Fixed value component
-        calculatedComponents.push({
-          ...component,
-          calculatedValue: typeof component.value === 'number' ? component.value : 0
-        })
-        // Add to context for other formulas to reference
-        context[component.name] = typeof component.value === 'number' ? component.value : 0
+    // Calculate components iteratively until all are resolved
+    while (remainingComponents.length > 0 && iterations < maxIterations) {
+      iterations++
+      let progressMade = false
+
+      for (let i = remainingComponents.length - 1; i >= 0; i--) {
+        const component = remainingComponents[i]
+
+        try {
+          let calculatedValue: number
+
+          if (!component.formula) {
+            // Fixed value component
+            calculatedValue = typeof component.value === 'number' ? component.value : 0
+          } else {
+            // Try to evaluate formula
+            calculatedValue = this.evaluateFormula(component.formula, context)
+          }
+
+          // If calculation succeeded, add to results
+          calculatedComponents.push({
+            ...component,
+            calculatedValue,
+          })
+
+          // Add to context for other formulas to reference
+          // Use component name as key (normalized)
+          const componentKey = component.name.replace(/\s+/g, '') // Remove spaces for key
+          context[componentKey] = calculatedValue
+          context[component.name] = calculatedValue
+
+          // Remove from remaining
+          remainingComponents.splice(i, 1)
+          progressMade = true
+        } catch (error) {
+          // If formula depends on components not yet calculated, skip for now
+          // This allows for dependency resolution
+          if (iterations >= maxIterations - 1) {
+            // Last iteration - calculate with available values or use default
+            const calculatedValue = component.value && typeof component.value === 'number' 
+              ? component.value 
+              : 0
+            calculatedComponents.push({
+              ...component,
+              calculatedValue,
+            })
+            remainingComponents.splice(i, 1)
+            progressMade = true
+          }
+        }
+      }
+
+      if (!progressMade) {
+        // No progress made, break to avoid infinite loop
+        break
       }
     }
 
-    // Second pass: calculate formula-based components
-    for (const component of components) {
-      if (component.formula) {
-        const calculatedValue = this.evaluateFormula(component.formula, context)
-        calculatedComponents.push({
-          ...component,
-          calculatedValue
-        })
-        // Add to context for other formulas to reference
-        context[component.name] = calculatedValue
-      }
-    }
+    // Sort by original order
+    const sortedComponents = components.map((original) => {
+      const calculated = calculatedComponents.find((c) => c.name === original.name)
+      return calculated || { ...original, calculatedValue: 0 }
+    })
 
-    return calculatedComponents
+    return sortedComponents
   }
 
   async create(createSalaryTemplateDto: CreateSalaryTemplateDto) {
@@ -171,7 +219,7 @@ export class SalaryTemplatesService {
           ...template,
           employeeCount, // Use calculated count
         }
-      })
+      }),
     )
 
     return templatesWithCounts
@@ -209,7 +257,7 @@ export class SalaryTemplatesService {
           ...template,
           employeeCount,
         }
-      })
+      }),
     )
 
     return templatesWithCounts
@@ -248,7 +296,10 @@ export class SalaryTemplatesService {
     }
 
     // Check if template code is being updated and if it conflicts
-    if (updateSalaryTemplateDto.templateCode && updateSalaryTemplateDto.templateCode !== template.templateCode) {
+    if (
+      updateSalaryTemplateDto.templateCode &&
+      updateSalaryTemplateDto.templateCode !== template.templateCode
+    ) {
       const existing = await this.prisma.salaryTemplate.findUnique({
         where: { templateCode: updateSalaryTemplateDto.templateCode },
       })
@@ -287,7 +338,9 @@ export class SalaryTemplatesService {
     })
 
     if (employeeCount > 0) {
-      throw new BadRequestException(`Cannot delete template. ${employeeCount} active employee(s) are using this template.`)
+      throw new BadRequestException(
+        `Cannot delete template. ${employeeCount} active employee(s) are using this template.`,
+      )
     }
 
     return this.prisma.salaryTemplate.delete({
@@ -343,9 +396,15 @@ export class SalaryTemplatesService {
     const calculatedComponents = this.calculateSalaryComponents(components, ctc)
 
     // Calculate totals
-    const earnings = calculatedComponents.filter(c => c.type === 'earning' && c.isActive !== false)
-    const deductions = calculatedComponents.filter(c => c.type === 'deduction' && c.isActive !== false)
-    const contributions = calculatedComponents.filter(c => c.type === 'contribution' && c.isActive !== false)
+    const earnings = calculatedComponents.filter(
+      (c) => c.type === 'earning' && c.isActive !== false,
+    )
+    const deductions = calculatedComponents.filter(
+      (c) => c.type === 'deduction' && c.isActive !== false,
+    )
+    const contributions = calculatedComponents.filter(
+      (c) => c.type === 'contribution' && c.isActive !== false,
+    )
 
     const totalEarnings = earnings.reduce((sum, c) => sum + (c.calculatedValue || 0), 0)
     const totalDeductions = deductions.reduce((sum, c) => sum + (c.calculatedValue || 0), 0)
@@ -361,9 +420,8 @@ export class SalaryTemplatesService {
         totalDeductions,
         totalContributions,
         netSalary: totalEarnings - totalDeductions,
-        grossSalary: totalEarnings
-      }
+        grossSalary: totalEarnings,
+      },
     }
   }
 }
-

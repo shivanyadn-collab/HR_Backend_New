@@ -19,4 +19,3 @@ export class UpdateAppraisalCycleDto extends PartialType(CreateAppraisalCycleDto
   @Type(() => Number)
   pendingEvaluations?: number
 }
-

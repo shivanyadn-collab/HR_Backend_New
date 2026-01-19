@@ -6,7 +6,7 @@ export enum PromotionStatus {
   UNDER_REVIEW = 'UNDER_REVIEW',
   APPROVED = 'APPROVED',
   REJECTED = 'REJECTED',
-  ON_HOLD = 'ON_HOLD'
+  ON_HOLD = 'ON_HOLD',
 }
 
 export class CreatePromotionRecommendationDto {
@@ -49,4 +49,3 @@ export class CreatePromotionRecommendationDto {
   @IsEnum(PromotionStatus)
   status?: PromotionStatus
 }
-

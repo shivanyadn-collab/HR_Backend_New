@@ -37,7 +37,13 @@ export class CheckInOutLogsService {
     return this.formatResponse(log)
   }
 
-  async findAll(employeeId?: string, startDate?: string, endDate?: string, status?: string, search?: string) {
+  async findAll(
+    employeeId?: string,
+    startDate?: string,
+    endDate?: string,
+    status?: string,
+    search?: string,
+  ) {
     const where: any = {}
 
     if (employeeId) {
@@ -111,8 +117,12 @@ export class CheckInOutLogsService {
         ...(updateDto.logDate && { logDate: new Date(updateDto.logDate) }),
         ...(updateDto.checkInTime !== undefined && { checkInTime: updateDto.checkInTime }),
         ...(updateDto.checkOutTime !== undefined && { checkOutTime: updateDto.checkOutTime }),
-        ...(updateDto.checkInLocation !== undefined && { checkInLocation: updateDto.checkInLocation }),
-        ...(updateDto.checkOutLocation !== undefined && { checkOutLocation: updateDto.checkOutLocation }),
+        ...(updateDto.checkInLocation !== undefined && {
+          checkInLocation: updateDto.checkInLocation,
+        }),
+        ...(updateDto.checkOutLocation !== undefined && {
+          checkOutLocation: updateDto.checkOutLocation,
+        }),
         ...(updateDto.checkInMethod && { checkInMethod: updateDto.checkInMethod }),
         ...(updateDto.checkOutMethod !== undefined && { checkOutMethod: updateDto.checkOutMethod }),
         ...(updateDto.workingHours !== undefined && { workingHours: updateDto.workingHours }),
@@ -161,4 +171,3 @@ export class CheckInOutLogsService {
     }
   }
 }
-

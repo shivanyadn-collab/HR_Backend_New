@@ -116,16 +116,20 @@ export class NightShiftAllowancesService {
         ...(updateDto.date && { date: new Date(updateDto.date) }),
         ...(updateDto.shiftStartTime !== undefined && { shiftStartTime: updateDto.shiftStartTime }),
         ...(updateDto.shiftEndTime !== undefined && { shiftEndTime: updateDto.shiftEndTime }),
-        ...(updateDto.allowanceAmount !== undefined && { allowanceAmount: updateDto.allowanceAmount }),
-        ...(updateDto.hoursWorked !== undefined && { hoursWorked: updateDto.hoursWorked }),
-        ...(updateDto.shiftStartTime !== undefined && updateDto.shiftEndTime !== undefined && !updateDto.hoursWorked && {
-          hoursWorked: (() => {
-            const start = new Date(`2000-01-01T${updateDto.shiftStartTime}`)
-            const end = new Date(`2000-01-01T${updateDto.shiftEndTime}`)
-            if (end < start) end.setDate(end.getDate() + 1)
-            return (end.getTime() - start.getTime()) / (1000 * 60 * 60)
-          })(),
+        ...(updateDto.allowanceAmount !== undefined && {
+          allowanceAmount: updateDto.allowanceAmount,
         }),
+        ...(updateDto.hoursWorked !== undefined && { hoursWorked: updateDto.hoursWorked }),
+        ...(updateDto.shiftStartTime !== undefined &&
+          updateDto.shiftEndTime !== undefined &&
+          !updateDto.hoursWorked && {
+            hoursWorked: (() => {
+              const start = new Date(`2000-01-01T${updateDto.shiftStartTime}`)
+              const end = new Date(`2000-01-01T${updateDto.shiftEndTime}`)
+              if (end < start) end.setDate(end.getDate() + 1)
+              return (end.getTime() - start.getTime()) / (1000 * 60 * 60)
+            })(),
+          }),
       },
       include: {
         employeeMaster: true,
@@ -167,4 +171,3 @@ export class NightShiftAllowancesService {
     }
   }
 }
-

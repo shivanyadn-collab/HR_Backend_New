@@ -1,4 +1,13 @@
-import { IsString, IsOptional, IsNumber, IsBoolean, IsEnum, Min, Max, Matches } from 'class-validator'
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsBoolean,
+  IsEnum,
+  Min,
+  Max,
+  Matches,
+} from 'class-validator'
 import { PartialType } from '@nestjs/mapped-types'
 import { CreateCameraDeviceDto, CameraDeviceStatus } from './create-camera-device.dto'
 
@@ -48,4 +57,3 @@ export class UpdateCameraDeviceDto extends PartialType(CreateCameraDeviceDto) {
   @IsString()
   firmwareVersion?: string
 }
-

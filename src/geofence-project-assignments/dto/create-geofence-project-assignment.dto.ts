@@ -2,7 +2,7 @@ import { IsString, IsEnum, IsOptional } from 'class-validator'
 
 export enum GeofenceAssignmentStatus {
   ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE'
+  INACTIVE = 'INACTIVE',
 }
 
 export class CreateGeofenceProjectAssignmentDto {
@@ -20,4 +20,3 @@ export class CreateGeofenceProjectAssignmentDto {
   @IsEnum(GeofenceAssignmentStatus)
   status?: GeofenceAssignmentStatus
 }
-

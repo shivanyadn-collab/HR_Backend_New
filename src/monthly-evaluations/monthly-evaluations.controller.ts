@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-  UseGuards,
-} from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common'
 import { MonthlyEvaluationsService } from './monthly-evaluations.service'
 import { CreateMonthlyEvaluationDto } from './dto/create-monthly-evaluation.dto'
 import { UpdateMonthlyEvaluationDto } from './dto/update-monthly-evaluation.dto'
@@ -48,4 +38,3 @@ export class MonthlyEvaluationsController {
     return this.monthlyEvaluationsService.remove(id)
   }
 }
-

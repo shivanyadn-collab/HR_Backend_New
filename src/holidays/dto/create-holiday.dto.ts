@@ -25,4 +25,3 @@ export class CreateHolidayDto {
   @Min(2000)
   year: number
 }
-

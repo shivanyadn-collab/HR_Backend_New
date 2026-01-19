@@ -10,7 +10,7 @@ export class CompanyService {
   async create(createCompanyDto: CreateCompanyDto) {
     // Check if company already exists (we'll only allow one company for now)
     const existingCompany = await this.prisma.company.findFirst()
-    
+
     if (existingCompany) {
       // Update existing company instead
       return this.update(existingCompany.id, createCompanyDto)
@@ -53,11 +53,39 @@ export class CompanyService {
   async updateProfile(updateCompanyDto: UpdateCompanyDto) {
     // Get or create company
     const existingCompany = await this.prisma.company.findFirst()
-    
+
     if (existingCompany) {
       return this.update(existingCompany.id, updateCompanyDto)
     } else {
       return this.create(updateCompanyDto as CreateCompanyDto)
     }
+  }
+
+  async updateLogo(logoUrl: string) {
+    // Get existing company
+    const existingCompany = await this.prisma.company.findFirst()
+
+    if (!existingCompany) {
+      throw new NotFoundException('Company not found. Please create company profile first.')
+    }
+
+    return this.prisma.company.update({
+      where: { id: existingCompany.id },
+      data: { logoUrl },
+    })
+  }
+
+  async removeLogo() {
+    // Get existing company
+    const existingCompany = await this.prisma.company.findFirst()
+
+    if (!existingCompany) {
+      throw new NotFoundException('Company not found.')
+    }
+
+    return this.prisma.company.update({
+      where: { id: existingCompany.id },
+      data: { logoUrl: null },
+    })
   }
 }

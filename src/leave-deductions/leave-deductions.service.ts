@@ -33,7 +33,13 @@ export class LeaveDeductionsService {
     return this.formatResponse(deduction)
   }
 
-  async findAll(employeeId?: string, leaveType?: string, startDate?: string, endDate?: string, search?: string) {
+  async findAll(
+    employeeId?: string,
+    leaveType?: string,
+    startDate?: string,
+    endDate?: string,
+    search?: string,
+  ) {
     const where: any = {}
 
     if (employeeId) {
@@ -150,4 +156,3 @@ export class LeaveDeductionsService {
     }
   }
 }
-

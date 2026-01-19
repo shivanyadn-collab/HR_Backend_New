@@ -40,10 +40,7 @@ export class FaceRecognitionLogsController {
   }
 
   @Get('statistics')
-  getStatistics(
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
-  ) {
+  getStatistics(@Query('startDate') startDate?: string, @Query('endDate') endDate?: string) {
     return this.service.getStatistics(startDate, endDate)
   }
 
@@ -67,4 +64,3 @@ export class FaceRecognitionLogsController {
     return this.service.remove(id)
   }
 }
-

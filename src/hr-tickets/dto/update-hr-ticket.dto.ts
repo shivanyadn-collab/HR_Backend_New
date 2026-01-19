@@ -20,4 +20,3 @@ export class UpdateHRTicketDto {
   @Max(5)
   satisfactionRating?: number
 }
-

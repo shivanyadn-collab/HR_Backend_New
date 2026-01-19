@@ -95,7 +95,7 @@ export class GPSRouteLogsService {
           waypoints: route.waypoints.length,
           status: route.status,
         }
-      })
+      }),
     )
 
     return routesWithDetails
@@ -157,7 +157,7 @@ export class GPSRouteLogsService {
       endLongitude: route.endLongitude,
       totalDistance: route.totalDistance,
       totalDuration: route.totalDuration,
-      waypoints: route.waypoints.map(wp => ({
+      waypoints: route.waypoints.map((wp) => ({
         id: wp.id,
         timestamp: wp.timestamp.toISOString().split('T')[1].split('.')[0],
         latitude: wp.latitude,
@@ -169,4 +169,3 @@ export class GPSRouteLogsService {
     }
   }
 }
-

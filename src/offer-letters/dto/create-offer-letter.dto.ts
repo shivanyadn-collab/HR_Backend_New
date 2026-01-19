@@ -44,4 +44,3 @@ export class CreateOfferLetterDto {
   @IsString()
   notes?: string
 }
-

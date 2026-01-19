@@ -11,4 +11,3 @@ import { FingerprintDevicesModule } from '../fingerprint-devices/fingerprint-dev
   exports: [FingerprintEnrollmentsService],
 })
 export class FingerprintEnrollmentsModule {}
-

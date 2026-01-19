@@ -19,10 +19,7 @@ export class FingerprintDevicesController {
   }
 
   @Get()
-  findAll(
-    @Query('status') status?: string,
-    @Query('search') search?: string,
-  ) {
+  findAll(@Query('status') status?: string, @Query('search') search?: string) {
     return this.service.findAll(status, search)
   }
 
@@ -49,22 +46,22 @@ export class FingerprintDevicesController {
   @Post(':id/test-connection')
   async testConnection(@Param('id') id: string) {
     const device = await this.service.findOne(id)
-    
+
     try {
       // Try to connect to device
       const monitorService = this.monitorService as any
       const result = await monitorService.syncDevice(id)
-      
+
       return {
         success: result.success,
-        message: result.success 
+        message: result.success
           ? `Successfully connected to device at ${device.ipAddress}:${device.port}`
           : `Connection failed: ${result.error}`,
         device: {
           ipAddress: device.ipAddress,
           port: device.port,
           status: device.status,
-        }
+        },
       }
     } catch (error: any) {
       return {
@@ -74,7 +71,7 @@ export class FingerprintDevicesController {
           ipAddress: device.ipAddress,
           port: device.port,
           status: device.status,
-        }
+        },
       }
     }
   }
@@ -104,4 +101,3 @@ export class FingerprintDevicesController {
     return this.service.remove(id)
   }
 }
-

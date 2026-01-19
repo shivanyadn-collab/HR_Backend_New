@@ -26,11 +26,7 @@ export class DailyAttendanceService {
   }
 
   // Generate/sync attendance records for an employee from startDate to endDate
-  async generateAttendanceRecords(
-    employeeMasterId: string,
-    startDate: string,
-    endDate: string,
-  ) {
+  async generateAttendanceRecords(employeeMasterId: string, startDate: string, endDate: string) {
     // Verify employee exists
     const employee = await this.prisma.employeeMaster.findUnique({
       where: { id: employeeMasterId },
@@ -57,9 +53,7 @@ export class DailyAttendanceService {
       },
     })
 
-    const holidayDates = new Set(
-      holidays.map((h) => h.holidayDate.toISOString().split('T')[0]),
-    )
+    const holidayDates = new Set(holidays.map((h) => h.holidayDate.toISOString().split('T')[0]))
 
     // Get existing GPS punches for the date range
     const gpsPunches = await this.prisma.gPSPunch.findMany({
@@ -97,9 +91,7 @@ export class DailyAttendanceService {
       },
     })
 
-    const existingDates = new Set(
-      existingRecords.map((r) => r.date.toISOString().split('T')[0]),
-    )
+    const existingDates = new Set(existingRecords.map((r) => r.date.toISOString().split('T')[0]))
 
     const results: any[] = []
     const currentDate = new Date(start)
@@ -121,9 +113,7 @@ export class DailyAttendanceService {
       // Check if it's a holiday
       if (holidayDates.has(dateStr)) {
         status = AttendanceStatus.HOLIDAY
-        const holiday = holidays.find(
-          (h) => h.holidayDate.toISOString().split('T')[0] === dateStr,
-        )
+        const holiday = holidays.find((h) => h.holidayDate.toISOString().split('T')[0] === dateStr)
         remarks = holiday?.holidayName || 'Holiday'
       }
       // Check if it's a weekoff
@@ -138,9 +128,7 @@ export class DailyAttendanceService {
           (a, b) => a.punchTime.getTime() - b.punchTime.getTime(),
         )
         const firstIn = sortedPunches.find((p) => p.punchType === 'IN')
-        const lastOut = [...sortedPunches]
-          .reverse()
-          .find((p) => p.punchType === 'OUT')
+        const lastOut = [...sortedPunches].reverse().find((p) => p.punchType === 'OUT')
 
         if (firstIn) {
           checkIn = firstIn.punchTime.toTimeString().split(' ')[0]
@@ -242,7 +230,13 @@ export class DailyAttendanceService {
     return this.formatResponse(attendance)
   }
 
-  async findAll(employeeId?: string, date?: string, status?: string, departmentId?: string, search?: string) {
+  async findAll(
+    employeeId?: string,
+    date?: string,
+    status?: string,
+    departmentId?: string,
+    search?: string,
+  ) {
     const where: any = {}
 
     if (employeeId) {
@@ -363,4 +357,3 @@ export class DailyAttendanceService {
     }
   }
 }
-

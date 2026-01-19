@@ -37,7 +37,9 @@ export class KpiAssignmentsService {
     })
 
     if (existing) {
-      throw new ConflictException('KPI already assigned to this employee for this evaluation period')
+      throw new ConflictException(
+        'KPI already assigned to this employee for this evaluation period',
+      )
     }
 
     const assignment = await this.prisma.kPIAssignment.create({
@@ -88,7 +90,7 @@ export class KpiAssignmentsService {
       orderBy: { assignedDate: 'desc' },
     })
 
-    return assignments.map(assignment => this.formatResponse(assignment))
+    return assignments.map((assignment) => this.formatResponse(assignment))
   }
 
   async findOne(id: string) {
@@ -148,7 +150,8 @@ export class KpiAssignmentsService {
     return {
       id: assignment.id,
       employeeId: assignment.employeeMasterId,
-      employeeName: `${assignment.employeeMaster?.firstName || ''} ${assignment.employeeMaster?.lastName || ''}`.trim(),
+      employeeName:
+        `${assignment.employeeMaster?.firstName || ''} ${assignment.employeeMaster?.lastName || ''}`.trim(),
       employeeCode: assignment.employeeMaster?.employeeCode,
       department: assignment.employeeMaster?.departmentId,
       designation: assignment.employeeMaster?.designationId,
@@ -166,4 +169,3 @@ export class KpiAssignmentsService {
     }
   }
 }
-

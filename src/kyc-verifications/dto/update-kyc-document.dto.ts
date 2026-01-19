@@ -21,4 +21,3 @@ export class UpdateKYCDocumentDto {
   @IsString()
   remarks?: string
 }
-

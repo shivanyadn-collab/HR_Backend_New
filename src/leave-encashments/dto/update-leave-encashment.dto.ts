@@ -14,4 +14,3 @@ export class UpdateLeaveEncashmentDto {
   @IsString()
   approvedBy?: string
 }
-

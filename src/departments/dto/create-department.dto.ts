@@ -36,4 +36,3 @@ export class CreateDepartmentDto {
   @IsString()
   locationId?: string
 }
-

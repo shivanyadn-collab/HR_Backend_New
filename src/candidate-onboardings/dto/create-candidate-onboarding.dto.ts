@@ -1,4 +1,13 @@
-import { IsString, IsOptional, IsEnum, IsNumber, IsDateString, IsUUID, Min, Max } from 'class-validator'
+import {
+  IsString,
+  IsOptional,
+  IsEnum,
+  IsNumber,
+  IsDateString,
+  IsUUID,
+  Min,
+  Max,
+} from 'class-validator'
 
 export enum OnboardingStatus {
   PENDING = 'PENDING',
@@ -55,4 +64,3 @@ export class CreateCandidateOnboardingDto {
   @IsString()
   notes?: string
 }
-

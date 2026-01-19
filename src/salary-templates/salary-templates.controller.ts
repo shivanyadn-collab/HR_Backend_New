@@ -60,11 +60,7 @@ export class SalaryTemplatesController {
   }
 
   @Post(':id/calculate')
-  calculateSalary(
-    @Param('id') id: string,
-    @Body('ctc') ctc: number
-  ) {
+  calculateSalary(@Param('id') id: string, @Body('ctc') ctc: number) {
     return this.salaryTemplatesService.calculateSalary(id, ctc)
   }
 }
-

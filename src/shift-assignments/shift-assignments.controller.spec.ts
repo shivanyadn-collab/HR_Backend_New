@@ -1,18 +1,18 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { ShiftAssignmentsController } from './shift-assignments.controller';
+import { Test, TestingModule } from '@nestjs/testing'
+import { ShiftAssignmentsController } from './shift-assignments.controller'
 
 describe('ShiftAssignmentsController', () => {
-  let controller: ShiftAssignmentsController;
+  let controller: ShiftAssignmentsController
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ShiftAssignmentsController],
-    }).compile();
+    }).compile()
 
-    controller = module.get<ShiftAssignmentsController>(ShiftAssignmentsController);
-  });
+    controller = module.get<ShiftAssignmentsController>(ShiftAssignmentsController)
+  })
 
   it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
-});
+    expect(controller).toBeDefined()
+  })
+})

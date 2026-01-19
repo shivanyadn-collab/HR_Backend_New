@@ -200,4 +200,3 @@ export class CreateEmployeeMasterDto {
   @IsString()
   accountHolderName?: string
 }
-

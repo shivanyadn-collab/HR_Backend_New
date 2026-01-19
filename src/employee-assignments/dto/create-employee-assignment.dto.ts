@@ -36,4 +36,3 @@ export class CreateEmployeeAssignmentDto {
   @IsString()
   assignedBy?: string
 }
-

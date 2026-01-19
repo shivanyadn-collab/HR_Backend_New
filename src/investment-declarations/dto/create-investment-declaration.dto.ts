@@ -1,47 +1,47 @@
-import { IsString, IsNumber, IsBoolean, IsOptional, IsDateString } from 'class-validator';
+import { IsString, IsNumber, IsBoolean, IsOptional, IsDateString } from 'class-validator'
 
 export class CreateInvestmentDeclarationDto {
   @IsString()
-  employeeMasterId: string;
+  employeeMasterId: string
 
   @IsString()
-  financialYear: string;
+  financialYear: string
 
   @IsString()
-  section: string;
+  section: string
 
   @IsString()
-  particulars: string;
+  particulars: string
 
   @IsNumber()
   @IsOptional()
-  declaredAmount?: number;
+  declaredAmount?: number
 
   @IsBoolean()
   @IsOptional()
-  proofSubmitted?: boolean;
+  proofSubmitted?: boolean
 
   @IsNumber()
   @IsOptional()
-  verifiedAmount?: number;
+  verifiedAmount?: number
 
   @IsString()
   @IsOptional()
-  status?: string;
+  status?: string
 
   @IsString()
   @IsOptional()
-  proofDocumentUrl?: string;
+  proofDocumentUrl?: string
 
   @IsString()
   @IsOptional()
-  verifiedBy?: string;
+  verifiedBy?: string
 
   @IsDateString()
   @IsOptional()
-  verifiedDate?: string;
+  verifiedDate?: string
 
   @IsString()
   @IsOptional()
-  remarks?: string;
+  remarks?: string
 }

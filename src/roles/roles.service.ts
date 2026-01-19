@@ -43,7 +43,7 @@ export class RolesService {
     })
 
     // Transform to include userCount
-    return roles.map(role => ({
+    return roles.map((role) => ({
       ...role,
       userCount: role._count.userAssignments,
     }))
@@ -120,7 +120,7 @@ export class RolesService {
 
     if (role._count.userAssignments > 0) {
       throw new BadRequestException(
-        `Cannot delete role. ${role._count.userAssignments} user(s) are assigned to this role.`
+        `Cannot delete role. ${role._count.userAssignments} user(s) are assigned to this role.`,
       )
     }
 
@@ -144,4 +144,3 @@ export class RolesService {
     })
   }
 }
-

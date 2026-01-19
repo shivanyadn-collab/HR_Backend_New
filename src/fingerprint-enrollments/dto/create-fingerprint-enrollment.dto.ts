@@ -4,7 +4,7 @@ export enum FingerprintEnrollmentStatus {
   PENDING = 'PENDING',
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED'
+  FAILED = 'FAILED',
 }
 
 export class CreateFingerprintEnrollmentDto {
@@ -24,4 +24,3 @@ export class CreateFingerprintEnrollmentDto {
   @IsEnum(FingerprintEnrollmentStatus)
   status?: FingerprintEnrollmentStatus
 }
-

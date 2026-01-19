@@ -57,7 +57,9 @@ export class EmployeeDocumentsService {
         fileSize: createEmployeeDocumentDto.fileSize,
         fileUrl: createEmployeeDocumentDto.fileUrl,
         uploadDate,
-        expiryDate: createEmployeeDocumentDto.expiryDate ? new Date(createEmployeeDocumentDto.expiryDate) : null,
+        expiryDate: createEmployeeDocumentDto.expiryDate
+          ? new Date(createEmployeeDocumentDto.expiryDate)
+          : null,
         uploadedBy: createEmployeeDocumentDto.uploadedBy,
         status: createEmployeeDocumentDto.status || 'ACTIVE',
         description: createEmployeeDocumentDto.description,
@@ -80,7 +82,7 @@ export class EmployeeDocumentsService {
     })
 
     // Fetch user name if uploadedBy exists
-    let userMap = new Map<string, string>()
+    const userMap = new Map<string, string>()
     if (document.uploadedBy) {
       const user = await this.prisma.user.findUnique({
         where: { id: document.uploadedBy },
@@ -94,7 +96,12 @@ export class EmployeeDocumentsService {
     return this.formatDocumentResponse(document, departmentName, designationName, userMap)
   }
 
-  async findAll(employeeMasterId?: string, documentCategory?: string, status?: string, search?: string) {
+  async findAll(
+    employeeMasterId?: string,
+    documentCategory?: string,
+    status?: string,
+    search?: string,
+  ) {
     const where: any = {}
 
     if (employeeMasterId) {
@@ -152,18 +159,19 @@ export class EmployeeDocumentsService {
 
     // Fetch user names for uploadedBy fields
     const userIds: string[] = documents
-      .map(doc => doc.uploadedBy)
+      .map((doc) => doc.uploadedBy)
       .filter((id): id is string => id !== null && id !== undefined)
     const uniqueUserIds = [...new Set(userIds)]
-    
-    const users = uniqueUserIds.length > 0
-      ? await this.prisma.user.findMany({
-          where: { id: { in: uniqueUserIds } },
-          select: { id: true, name: true },
-        })
-      : []
-    
-    const userMap = new Map(users.map(u => [u.id, u.name]))
+
+    const users =
+      uniqueUserIds.length > 0
+        ? await this.prisma.user.findMany({
+            where: { id: { in: uniqueUserIds } },
+            select: { id: true, name: true },
+          })
+        : []
+
+    const userMap = new Map(users.map((u) => [u.id, u.name]))
 
     // Format each response with department and designation names
     const formattedResults = await Promise.all(
@@ -186,7 +194,7 @@ export class EmployeeDocumentsService {
         }
 
         return this.formatDocumentResponse(doc, departmentName, designationName, userMap)
-      })
+      }),
     )
 
     return formattedResults
@@ -233,7 +241,7 @@ export class EmployeeDocumentsService {
     }
 
     // Fetch user name if uploadedBy exists
-    let userMap = new Map<string, string>()
+    const userMap = new Map<string, string>()
     if (document.uploadedBy) {
       const user = await this.prisma.user.findUnique({
         where: { id: document.uploadedBy },
@@ -267,7 +275,9 @@ export class EmployeeDocumentsService {
     }
 
     if (updateEmployeeDocumentDto.expiryDate !== undefined) {
-      updateData.expiryDate = updateEmployeeDocumentDto.expiryDate ? new Date(updateEmployeeDocumentDto.expiryDate) : null
+      updateData.expiryDate = updateEmployeeDocumentDto.expiryDate
+        ? new Date(updateEmployeeDocumentDto.expiryDate)
+        : null
     }
 
     if (updateEmployeeDocumentDto.status !== undefined) {
@@ -287,7 +297,11 @@ export class EmployeeDocumentsService {
     }
 
     // Check if document is expired
-    if (document.expiryDate && new Date(document.expiryDate) < new Date() && updateData.status !== 'EXPIRED') {
+    if (
+      document.expiryDate &&
+      new Date(document.expiryDate) < new Date() &&
+      updateData.status !== 'EXPIRED'
+    ) {
       updateData.status = 'EXPIRED'
     }
 
@@ -328,7 +342,7 @@ export class EmployeeDocumentsService {
     }
 
     // Fetch user name if uploadedBy exists
-    let userMap = new Map<string, string>()
+    const userMap = new Map<string, string>()
     if (updated.uploadedBy) {
       const user = await this.prisma.user.findUnique({
         where: { id: updated.uploadedBy },
@@ -388,7 +402,7 @@ export class EmployeeDocumentsService {
     }
 
     // Fetch user name if uploadedBy exists
-    let userMap = new Map<string, string>()
+    const userMap = new Map<string, string>()
     if (updated.uploadedBy) {
       const user = await this.prisma.user.findUnique({
         where: { id: updated.uploadedBy },
@@ -448,7 +462,7 @@ export class EmployeeDocumentsService {
     }
 
     // Fetch user name if uploadedBy exists
-    let userMap = new Map<string, string>()
+    const userMap = new Map<string, string>()
     if (updated.uploadedBy) {
       const user = await this.prisma.user.findUnique({
         where: { id: updated.uploadedBy },
@@ -476,7 +490,12 @@ export class EmployeeDocumentsService {
     })
   }
 
-  private formatDocumentResponse(doc: any, departmentName: string, designationName: string, userMap?: Map<string, string>) {
+  private formatDocumentResponse(
+    doc: any,
+    departmentName: string,
+    designationName: string,
+    userMap?: Map<string, string>,
+  ) {
     // Get uploaded by name if available
     let uploadedByName = 'System'
     if (doc.uploadedBy) {
@@ -502,8 +521,8 @@ export class EmployeeDocumentsService {
       uploadDate: doc.uploadDate.toISOString().split('T')[0],
       expiryDate: doc.expiryDate ? doc.expiryDate.toISOString().split('T')[0] : null,
       uploadedBy: uploadedByName,
-      status: doc.status === 'ACTIVE' ? 'Active' :
-              doc.status === 'ARCHIVED' ? 'Archived' : 'Expired',
+      status:
+        doc.status === 'ACTIVE' ? 'Active' : doc.status === 'ARCHIVED' ? 'Archived' : 'Expired',
       description: doc.description,
       fileUrl: doc.fileUrl,
       version: doc.version,
@@ -513,4 +532,3 @@ export class EmployeeDocumentsService {
     }
   }
 }
-

@@ -76,4 +76,3 @@ export class CreateIDCardTemplateDto {
   @IsOptional()
   showEmployeePhoto?: boolean
 }
-

@@ -27,4 +27,3 @@ export class CreateWhatsAppNotificationDto {
   @IsDateString()
   scheduledDate?: string
 }
-

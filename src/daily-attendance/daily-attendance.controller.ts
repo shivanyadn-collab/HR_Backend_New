@@ -30,9 +30,7 @@ export class DailyAttendanceController {
   // Generate attendance records for an employee for a date range
   @Post('generate')
   @HttpCode(HttpStatus.OK)
-  generateRecords(
-    @Body() body: { employeeMasterId: string; startDate: string; endDate: string },
-  ) {
+  generateRecords(@Body() body: { employeeMasterId: string; startDate: string; endDate: string }) {
     return this.service.generateAttendanceRecords(
       body.employeeMasterId,
       body.startDate,
@@ -67,4 +65,3 @@ export class DailyAttendanceController {
     return this.service.remove(id)
   }
 }
-

@@ -54,4 +54,3 @@ export class DepartmentsController {
     return this.departmentsService.toggleActive(id)
   }
 }
-

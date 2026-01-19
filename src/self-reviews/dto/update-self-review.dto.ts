@@ -7,4 +7,3 @@ export class UpdateSelfReviewDto extends PartialType(CreateSelfReviewDto) {
   @IsDateString()
   reviewedDate?: string
 }
-

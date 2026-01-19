@@ -4,12 +4,12 @@ export enum GeofenceType {
   OFFICE = 'OFFICE',
   PROJECT_SITE = 'PROJECT_SITE',
   CLIENT_LOCATION = 'CLIENT_LOCATION',
-  OTHER = 'OTHER'
+  OTHER = 'OTHER',
 }
 
 export enum GeofenceStatus {
   ACTIVE = 'ACTIVE',
-  INACTIVE = 'INACTIVE'
+  INACTIVE = 'INACTIVE',
 }
 
 export class CreateGeofenceAreaDto {
@@ -48,4 +48,3 @@ export class CreateGeofenceAreaDto {
   @IsBoolean()
   isEnabled?: boolean
 }
-

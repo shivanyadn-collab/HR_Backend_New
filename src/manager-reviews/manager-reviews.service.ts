@@ -77,7 +77,7 @@ export class ManagerReviewsService {
       orderBy: { submittedDate: 'desc' },
     })
 
-    return reviews.map(review => this.formatResponse(review))
+    return reviews.map((review) => this.formatResponse(review))
   }
 
   async findOne(id: string) {
@@ -106,11 +106,11 @@ export class ManagerReviewsService {
     }
 
     const updateData: any = { ...updateDto }
-    
+
     if (updateDto.submittedDate) {
       updateData.submittedDate = new Date(updateDto.submittedDate)
     }
-    
+
     if (updateDto.approvedDate) {
       updateData.approvedDate = new Date(updateDto.approvedDate)
     }
@@ -147,10 +147,13 @@ export class ManagerReviewsService {
     return {
       id: review.id,
       employeeId: review.employeeMasterId,
-      employeeName: `${review.employeeMaster?.firstName || ''} ${review.employeeMaster?.lastName || ''}`.trim(),
+      employeeName:
+        `${review.employeeMaster?.firstName || ''} ${review.employeeMaster?.lastName || ''}`.trim(),
       employeeCode: review.employeeMaster?.employeeCode,
-      department: review.employeeMaster?.department?.departmentName || review.employeeMaster?.departmentId,
-      designation: review.employeeMaster?.designation?.designationName || review.employeeMaster?.designationId,
+      department:
+        review.employeeMaster?.department?.departmentName || review.employeeMaster?.departmentId,
+      designation:
+        review.employeeMaster?.designation?.designationName || review.employeeMaster?.designationId,
       managerId: review.managerId,
       managerName: `${review.manager?.firstName || ''} ${review.manager?.lastName || ''}`.trim(),
       reviewPeriod: review.reviewPeriod,
@@ -172,4 +175,3 @@ export class ManagerReviewsService {
     }
   }
 }
-

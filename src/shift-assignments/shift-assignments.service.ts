@@ -52,7 +52,9 @@ export class ShiftAssignmentsService {
         shiftId: createShiftAssignmentDto.shiftId,
         assignmentType: createShiftAssignmentDto.assignmentType,
         startDate: new Date(createShiftAssignmentDto.startDate),
-        endDate: createShiftAssignmentDto.endDate ? new Date(createShiftAssignmentDto.endDate) : null,
+        endDate: createShiftAssignmentDto.endDate
+          ? new Date(createShiftAssignmentDto.endDate)
+          : null,
         isRecurring: createShiftAssignmentDto.isRecurring || false,
         recurringPattern: createShiftAssignmentDto.recurringPattern,
         isActive: createShiftAssignmentDto.isActive !== false,
@@ -88,14 +90,14 @@ export class ShiftAssignmentsService {
     })
 
     // Fetch shift details for each assignment
-    const shiftIds = [...new Set(assignments.map(a => a.shiftId))]
+    const shiftIds = [...new Set(assignments.map((a) => a.shiftId))]
     const shifts = await this.prisma.shift.findMany({
       where: { id: { in: shiftIds } },
     })
-    const shiftMap = new Map(shifts.map(s => [s.id, s]))
+    const shiftMap = new Map(shifts.map((s) => [s.id, s]))
 
-    return assignments.map(assignment => 
-      this.formatAssignmentResponse(assignment, shiftMap.get(assignment.shiftId))
+    return assignments.map((assignment) =>
+      this.formatAssignmentResponse(assignment, shiftMap.get(assignment.shiftId)),
     )
   }
 
@@ -133,7 +135,9 @@ export class ShiftAssignmentsService {
       updateData.startDate = new Date(updateShiftAssignmentDto.startDate)
     }
     if (updateShiftAssignmentDto.endDate !== undefined) {
-      updateData.endDate = updateShiftAssignmentDto.endDate ? new Date(updateShiftAssignmentDto.endDate) : null
+      updateData.endDate = updateShiftAssignmentDto.endDate
+        ? new Date(updateShiftAssignmentDto.endDate)
+        : null
     }
 
     const updated = await this.prisma.shiftAssignment.update({

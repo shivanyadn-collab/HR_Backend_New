@@ -64,4 +64,3 @@ export class NotificationTemplatesController {
     return this.service.remove(id)
   }
 }
-

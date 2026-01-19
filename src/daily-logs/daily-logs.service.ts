@@ -76,7 +76,7 @@ export class DailyLogsService {
   async findAll(projectId?: string, employeeId?: string, startDate?: string, endDate?: string) {
     const where: any = {}
     if (projectId) where.projectId = projectId
-    
+
     // Handle employeeId - could be Employee ID or EmployeeMaster ID
     if (employeeId) {
       // First try to find Employee with this ID
@@ -106,7 +106,7 @@ export class DailyLogsService {
         return []
       }
     }
-    
+
     if (startDate || endDate) {
       where.logDate = {}
       if (startDate) where.logDate.gte = new Date(startDate)
@@ -122,7 +122,7 @@ export class DailyLogsService {
       orderBy: { logDate: 'desc' },
     })
 
-    return dailyLogs.map(log => this.formatDailyLogResponse(log))
+    return dailyLogs.map((log) => this.formatDailyLogResponse(log))
   }
 
   async findOne(id: string) {
@@ -235,9 +235,14 @@ export class DailyLogsService {
       hoursWorked: log.hoursWorked,
       taskDescription: log.taskDescription,
       activityType: log.activityType,
-      status: log.status === DailyLogStatus.COMPLETED ? 'Completed' :
-              log.status === DailyLogStatus.IN_PROGRESS ? 'In Progress' :
-              log.status === DailyLogStatus.BLOCKED ? 'Blocked' : 'On Hold',
+      status:
+        log.status === DailyLogStatus.COMPLETED
+          ? 'Completed'
+          : log.status === DailyLogStatus.IN_PROGRESS
+            ? 'In Progress'
+            : log.status === DailyLogStatus.BLOCKED
+              ? 'Blocked'
+              : 'On Hold',
       notes: log.notes || '',
       createdDate: log.createdAt.toISOString().split('T')[0],
       updatedDate: log.updatedAt.toISOString().split('T')[0],

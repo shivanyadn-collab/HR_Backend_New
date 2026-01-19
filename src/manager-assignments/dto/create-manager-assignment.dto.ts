@@ -27,4 +27,3 @@ export class CreateManagerAssignmentDto {
   @IsString()
   previousManagerId?: string
 }
-

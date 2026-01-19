@@ -1,9 +1,4 @@
-import {
-  Controller,
-  Get,
-  Query,
-  UseGuards,
-} from '@nestjs/common'
+import { Controller, Get, Query, UseGuards } from '@nestjs/common'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { PfRegisterService } from './pf-register.service'
 
@@ -21,4 +16,3 @@ export class PfRegisterController {
     return this.pfRegisterService.findAll(status, month, search)
   }
 }
-

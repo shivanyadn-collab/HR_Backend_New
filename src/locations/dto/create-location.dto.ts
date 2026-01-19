@@ -54,4 +54,3 @@ export class CreateLocationDto {
   @Max(180)
   longitude?: number
 }
-

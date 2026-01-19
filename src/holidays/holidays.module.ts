@@ -8,4 +8,3 @@ import { HolidaysController } from './holidays.controller'
   exports: [HolidaysService],
 })
 export class HolidaysModule {}
-

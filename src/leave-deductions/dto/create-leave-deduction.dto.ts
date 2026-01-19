@@ -20,4 +20,3 @@ export class CreateLeaveDeductionDto {
   @IsString()
   approvedBy?: string
 }
-

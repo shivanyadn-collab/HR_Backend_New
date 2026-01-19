@@ -51,4 +51,3 @@ export class CreateRoleDto {
   @IsBoolean()
   isActive?: boolean
 }
-

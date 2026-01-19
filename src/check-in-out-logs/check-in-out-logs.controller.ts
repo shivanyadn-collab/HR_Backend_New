@@ -54,4 +54,3 @@ export class CheckInOutLogsController {
     return this.service.remove(id)
   }
 }
-

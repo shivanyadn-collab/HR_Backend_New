@@ -139,7 +139,10 @@ export class UserRoleAssignmentsService {
     }
 
     // If roleId is being updated, check if new assignment would conflict
-    if (updateUserRoleAssignmentDto.roleId && updateUserRoleAssignmentDto.roleId !== assignment.roleId) {
+    if (
+      updateUserRoleAssignmentDto.roleId &&
+      updateUserRoleAssignmentDto.roleId !== assignment.roleId
+    ) {
       const existing = await this.prisma.userRoleAssignment.findUnique({
         where: {
           userId_roleId: {
@@ -197,4 +200,3 @@ export class UserRoleAssignmentsService {
     })
   }
 }
-

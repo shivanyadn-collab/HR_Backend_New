@@ -34,4 +34,3 @@ export class CreateAssetCategoryDto {
   @IsBoolean()
   isActive?: boolean
 }
-

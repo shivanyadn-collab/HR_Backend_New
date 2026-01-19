@@ -36,11 +36,7 @@ export class LocationDeviationAlertsController {
   }
 
   @Patch(':id/resolve')
-  resolve(
-    @Param('id') id: string,
-    @Body() body: { resolvedBy?: string; remarks?: string },
-  ) {
+  resolve(@Param('id') id: string, @Body() body: { resolvedBy?: string; remarks?: string }) {
     return this.service.resolve(id, body.resolvedBy, body.remarks)
   }
 }
-

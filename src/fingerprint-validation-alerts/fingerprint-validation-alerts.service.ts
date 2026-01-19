@@ -75,18 +75,18 @@ export class FingerprintValidationAlertsService {
     }
     if (severity) {
       const severityMap: Record<string, string> = {
-        'High': 'HIGH',
-        'Medium': 'MEDIUM',
-        'Low': 'LOW',
+        High: 'HIGH',
+        Medium: 'MEDIUM',
+        Low: 'LOW',
       }
       where.severity = severityMap[severity] || severity
     }
     if (status) {
       const statusMap: Record<string, string> = {
-        'Active': 'ACTIVE',
-        'Resolved': 'RESOLVED',
+        Active: 'ACTIVE',
+        Resolved: 'RESOLVED',
         'False Positive': 'FALSE_POSITIVE',
-        'active': 'ACTIVE',
+        active: 'ACTIVE',
       }
       where.status = statusMap[status] || status
     }
@@ -106,7 +106,7 @@ export class FingerprintValidationAlertsService {
       orderBy: { alertTime: 'desc' },
     })
 
-    return Promise.all(alerts.map(alert => this.formatResponse(alert)))
+    return Promise.all(alerts.map((alert) => this.formatResponse(alert)))
   }
 
   async findOne(id: string) {
@@ -226,23 +226,23 @@ export class FingerprintValidationAlertsService {
     }
 
     const typeMap: Record<string, string> = {
-      'LOW_QUALITY': 'Low Quality',
-      'TEMPLATE_MISMATCH': 'Template Mismatch',
-      'DUPLICATE_ENROLLMENT': 'Duplicate Enrollment',
-      'DEVICE_ERROR': 'Device Error',
-      'COMMUNICATION_FAILURE': 'Communication Failure',
+      LOW_QUALITY: 'Low Quality',
+      TEMPLATE_MISMATCH: 'Template Mismatch',
+      DUPLICATE_ENROLLMENT: 'Duplicate Enrollment',
+      DEVICE_ERROR: 'Device Error',
+      COMMUNICATION_FAILURE: 'Communication Failure',
     }
 
     const severityMap: Record<string, string> = {
-      'HIGH': 'High',
-      'MEDIUM': 'Medium',
-      'LOW': 'Low',
+      HIGH: 'High',
+      MEDIUM: 'Medium',
+      LOW: 'Low',
     }
 
     const statusMap: Record<string, string> = {
-      'ACTIVE': 'Active',
-      'RESOLVED': 'Resolved',
-      'FALSE_POSITIVE': 'False Positive',
+      ACTIVE: 'Active',
+      RESOLVED: 'Resolved',
+      FALSE_POSITIVE: 'False Positive',
     }
 
     return {
@@ -265,4 +265,3 @@ export class FingerprintValidationAlertsService {
     }
   }
 }
-

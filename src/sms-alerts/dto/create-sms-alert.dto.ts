@@ -23,4 +23,3 @@ export class CreateSMSAlertDto {
   @IsDateString()
   scheduledDate?: string
 }
-

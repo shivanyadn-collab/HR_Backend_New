@@ -37,7 +37,9 @@ export class GPSPunchesService {
     // Extract punchTime from DTO to avoid it being spread as a string
     const { punchTime: _punchTimeStr, ...restOfDto } = createDto
 
-    this.logger.log(`Creating GPS punch: ${createDto.punchType} at ${punchTimeDate.toISOString()}, selfie: ${this.truncateUrl(createDto.selfieImageUrl)}`)
+    this.logger.log(
+      `Creating GPS punch: ${createDto.punchType} at ${punchTimeDate.toISOString()}, selfie: ${this.truncateUrl(createDto.selfieImageUrl)}`,
+    )
 
     return this.prisma.gPSPunch.create({
       data: {
@@ -142,10 +144,9 @@ export class GPSPunchesService {
           remarks: (punch as any).remarks,
           createdAt: punch.createdAt?.toISOString(),
         }
-      })
+      }),
     )
 
     return punchesWithDetails
   }
 }
-

@@ -38,7 +38,7 @@ export class HRTicketsService {
       employee = await this.prisma.employeeMaster.findUnique({
         where: { employeeCode: createDto.employeeMasterId },
       })
-      
+
       if (employee) {
         // Use the actual UUID from the database
         createDto.employeeMasterId = employee.id
@@ -47,7 +47,7 @@ export class HRTicketsService {
 
     if (!employee) {
       throw new NotFoundException(
-        `Employee with ID ${createDto.employeeMasterId} not found. Please ensure your employee profile exists in the system.`
+        `Employee with ID ${createDto.employeeMasterId} not found. Please ensure your employee profile exists in the system.`,
       )
     }
 
@@ -115,7 +115,7 @@ export class HRTicketsService {
       orderBy: { createdDate: 'desc' },
     })
 
-    return tickets.map(ticket => this.formatTicketResponse(ticket))
+    return tickets.map((ticket) => this.formatTicketResponse(ticket))
   }
 
   async findOne(id: string) {
@@ -149,7 +149,7 @@ export class HRTicketsService {
     }
 
     const updateData: any = { ...updateDto }
-    
+
     // If status is being updated to RESOLVED or CLOSED, set resolvedDate
     if (updateDto.status === TicketStatus.RESOLVED || updateDto.status === TicketStatus.CLOSED) {
       if (!ticket.resolvedDate) {
@@ -210,11 +210,7 @@ export class HRTicketsService {
     return response
   }
 
-  async getResolutionReports(
-    startDate?: string,
-    endDate?: string,
-    category?: string,
-  ) {
+  async getResolutionReports(startDate?: string, endDate?: string, category?: string) {
     const where: any = {
       status: {
         in: [TicketStatus.RESOLVED, TicketStatus.CLOSED],
@@ -243,7 +239,7 @@ export class HRTicketsService {
       orderBy: { resolvedDate: 'desc' },
     })
 
-    return tickets.map(ticket => {
+    return tickets.map((ticket) => {
       const createdDate = new Date(ticket.createdDate)
       const resolvedDate = ticket.resolvedDate ? new Date(ticket.resolvedDate) : new Date()
       const resolutionTime = (resolvedDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60) // hours
@@ -294,24 +290,26 @@ export class HRTicketsService {
       employeeCode: ticket.employeeMaster?.employeeCode || '',
       responseCount: ticket.responses?.length || 0,
       lastResponseDate: ticket.responses?.[0]?.createdAt.toISOString(),
-      needsResponse: ticket.status === TicketStatus.OPEN || ticket.status === TicketStatus.IN_PROGRESS,
-      responses: ticket.responses?.map((r: any) => ({
-        id: r.id,
-        response: r.response,
-        respondedBy: r.respondedBy,
-        status: r.status,
-        isInternal: r.isInternal,
-        createdAt: r.createdAt.toISOString(),
-      })) || [],
-      attachments: ticket.attachments?.map((a: any) => ({
-        id: a.id,
-        fileName: a.fileName,
-        fileType: a.fileType,
-        fileSize: a.fileSize,
-        fileUrl: a.fileUrl,
-        uploadedDate: a.uploadedDate.toISOString(),
-      })) || [],
+      needsResponse:
+        ticket.status === TicketStatus.OPEN || ticket.status === TicketStatus.IN_PROGRESS,
+      responses:
+        ticket.responses?.map((r: any) => ({
+          id: r.id,
+          response: r.response,
+          respondedBy: r.respondedBy,
+          status: r.status,
+          isInternal: r.isInternal,
+          createdAt: r.createdAt.toISOString(),
+        })) || [],
+      attachments:
+        ticket.attachments?.map((a: any) => ({
+          id: a.id,
+          fileName: a.fileName,
+          fileType: a.fileType,
+          fileSize: a.fileSize,
+          fileUrl: a.fileUrl,
+          uploadedDate: a.uploadedDate.toISOString(),
+        })) || [],
     }
   }
 }
-

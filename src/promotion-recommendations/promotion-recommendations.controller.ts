@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-  UseGuards,
-} from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common'
 import { PromotionRecommendationsService } from './promotion-recommendations.service'
 import { CreatePromotionRecommendationDto } from './dto/create-promotion-recommendation.dto'
 import { UpdatePromotionRecommendationDto } from './dto/update-promotion-recommendation.dto'
@@ -25,10 +15,7 @@ export class PromotionRecommendationsController {
   }
 
   @Get()
-  findAll(
-    @Query('status') status?: string,
-    @Query('search') search?: string,
-  ) {
+  findAll(@Query('status') status?: string, @Query('search') search?: string) {
     return this.promotionRecommendationsService.findAll(status, search)
   }
 
@@ -47,4 +34,3 @@ export class PromotionRecommendationsController {
     return this.promotionRecommendationsService.remove(id)
   }
 }
-

@@ -1,9 +1,4 @@
-import {
-  Controller,
-  Get,
-  Query,
-  UseGuards,
-} from '@nestjs/common'
+import { Controller, Get, Query, UseGuards } from '@nestjs/common'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { WageComplianceService } from './wage-compliance.service'
 
@@ -22,4 +17,3 @@ export class WageComplianceController {
     return this.wageComplianceService.findAll(status, state, month, search)
   }
 }
-

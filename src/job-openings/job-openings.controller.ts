@@ -52,5 +52,3 @@ export class JobOpeningsController {
     return this.jobOpeningsService.remove(id)
   }
 }
-
-

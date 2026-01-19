@@ -53,7 +53,7 @@ export class DepartmentsService {
         createdAt: 'desc',
       },
     })
-    
+
     // Calculate actual employee count for each department from EmployeeMaster
     const departmentsWithCounts = await Promise.all(
       departments.map(async (dept) => {
@@ -64,7 +64,7 @@ export class DepartmentsService {
             status: 'ACTIVE', // Only count active employees
           },
         })
-        
+
         // Update the department's employeeCount if it's different
         if (dept.employeeCount !== employeeCount) {
           await this.prisma.department.update({
@@ -72,15 +72,15 @@ export class DepartmentsService {
             data: { employeeCount },
           })
         }
-        
+
         return {
           ...dept,
           employeeCount, // Use calculated count
           locationId: dept.locationId || undefined,
         }
-      })
+      }),
     )
-    
+
     return departmentsWithCounts
   }
 
@@ -115,7 +115,10 @@ export class DepartmentsService {
     }
 
     // Check if department code is being updated and if it conflicts
-    if (updateDepartmentDto.departmentCode && updateDepartmentDto.departmentCode !== department.departmentCode) {
+    if (
+      updateDepartmentDto.departmentCode &&
+      updateDepartmentDto.departmentCode !== department.departmentCode
+    ) {
       const existing = await this.prisma.department.findUnique({
         where: { departmentCode: updateDepartmentDto.departmentCode },
       })
@@ -170,4 +173,3 @@ export class DepartmentsService {
     })
   }
 }
-

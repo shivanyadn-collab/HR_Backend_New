@@ -45,4 +45,3 @@ export class UpdateUserDto {
   @IsString({ each: true })
   projectIds?: string[]
 }
-

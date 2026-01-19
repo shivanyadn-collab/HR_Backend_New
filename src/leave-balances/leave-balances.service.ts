@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common'
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  BadRequestException,
+} from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateLeaveBalanceDto } from './dto/create-leave-balance.dto'
 import { UpdateLeaveBalanceDto } from './dto/update-leave-balance.dto'
@@ -38,7 +43,9 @@ export class LeaveBalancesService {
     })
 
     if (existing) {
-      throw new ConflictException('Leave balance already exists for this employee, policy, and year')
+      throw new ConflictException(
+        'Leave balance already exists for this employee, policy, and year',
+      )
     }
 
     // Calculate available balance
@@ -101,10 +108,7 @@ export class LeaveBalancesService {
         employeeMaster: true,
         leavePolicy: true,
       },
-      orderBy: [
-        { year: 'desc' },
-        { employeeMaster: { employeeCode: 'asc' } },
-      ],
+      orderBy: [{ year: 'desc' }, { employeeMaster: { employeeCode: 'asc' } }],
     })
 
     return balances.map((balance) => this.formatResponse(balance))
@@ -224,9 +228,11 @@ export class LeaveBalancesService {
     }
 
     // Recalculate available balance
-    const totalAllocated = updateDto.totalAllocated !== undefined ? updateDto.totalAllocated : balance.totalAllocated
+    const totalAllocated =
+      updateDto.totalAllocated !== undefined ? updateDto.totalAllocated : balance.totalAllocated
     const used = updateDto.used !== undefined ? updateDto.used : balance.used
-    const carryForward = updateDto.carryForward !== undefined ? updateDto.carryForward : balance.carryForward
+    const carryForward =
+      updateDto.carryForward !== undefined ? updateDto.carryForward : balance.carryForward
     const available = totalAllocated + carryForward - used
 
     if (available < 0) {
@@ -281,4 +287,3 @@ export class LeaveBalancesService {
     }
   }
 }
-

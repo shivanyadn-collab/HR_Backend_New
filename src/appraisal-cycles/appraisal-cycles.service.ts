@@ -25,9 +25,15 @@ export class AppraisalCyclesService {
         endDate: new Date(createDto.endDate),
         evaluationPeriod: createDto.evaluationPeriod,
         status: createDto.status || 'PLANNING',
-        selfReviewDeadline: createDto.selfReviewDeadline ? new Date(createDto.selfReviewDeadline) : null,
-        managerReviewDeadline: createDto.managerReviewDeadline ? new Date(createDto.managerReviewDeadline) : null,
-        finalReviewDeadline: createDto.finalReviewDeadline ? new Date(createDto.finalReviewDeadline) : null,
+        selfReviewDeadline: createDto.selfReviewDeadline
+          ? new Date(createDto.selfReviewDeadline)
+          : null,
+        managerReviewDeadline: createDto.managerReviewDeadline
+          ? new Date(createDto.managerReviewDeadline)
+          : null,
+        finalReviewDeadline: createDto.finalReviewDeadline
+          ? new Date(createDto.finalReviewDeadline)
+          : null,
         totalEmployees: 0,
         completedEvaluations: 0,
         pendingEvaluations: 0,
@@ -57,7 +63,7 @@ export class AppraisalCyclesService {
       orderBy: { startDate: 'desc' },
     })
 
-    return cycles.map(cycle => this.formatResponse(cycle))
+    return cycles.map((cycle) => this.formatResponse(cycle))
   }
 
   async findOne(id: string) {
@@ -93,23 +99,23 @@ export class AppraisalCyclesService {
     }
 
     const updateData: any = { ...updateDto }
-    
+
     if (updateDto.startDate) {
       updateData.startDate = new Date(updateDto.startDate)
     }
-    
+
     if (updateDto.endDate) {
       updateData.endDate = new Date(updateDto.endDate)
     }
-    
+
     if (updateDto.selfReviewDeadline) {
       updateData.selfReviewDeadline = new Date(updateDto.selfReviewDeadline)
     }
-    
+
     if (updateDto.managerReviewDeadline) {
       updateData.managerReviewDeadline = new Date(updateDto.managerReviewDeadline)
     }
-    
+
     if (updateDto.finalReviewDeadline) {
       updateData.finalReviewDeadline = new Date(updateDto.finalReviewDeadline)
     }
@@ -159,4 +165,3 @@ export class AppraisalCyclesService {
     }
   }
 }
-

@@ -61,7 +61,7 @@ export class SelfReviewsService {
       orderBy: { submittedDate: 'desc' },
     })
 
-    return reviews.map(review => this.formatResponse(review))
+    return reviews.map((review) => this.formatResponse(review))
   }
 
   async findOne(id: string) {
@@ -89,11 +89,11 @@ export class SelfReviewsService {
     }
 
     const updateData: any = { ...updateDto }
-    
+
     if (updateDto.submittedDate) {
       updateData.submittedDate = new Date(updateDto.submittedDate)
     }
-    
+
     if (updateDto.reviewedDate) {
       updateData.reviewedDate = new Date(updateDto.reviewedDate)
     }
@@ -129,10 +129,13 @@ export class SelfReviewsService {
     return {
       id: review.id,
       employeeId: review.employeeMasterId,
-      employeeName: `${review.employeeMaster?.firstName || ''} ${review.employeeMaster?.lastName || ''}`.trim(),
+      employeeName:
+        `${review.employeeMaster?.firstName || ''} ${review.employeeMaster?.lastName || ''}`.trim(),
       employeeCode: review.employeeMaster?.employeeCode,
-      department: review.employeeMaster?.department?.departmentName || review.employeeMaster?.departmentId,
-      designation: review.employeeMaster?.designation?.designationName || review.employeeMaster?.designationId,
+      department:
+        review.employeeMaster?.department?.departmentName || review.employeeMaster?.departmentId,
+      designation:
+        review.employeeMaster?.designation?.designationName || review.employeeMaster?.designationId,
       reviewPeriod: review.reviewPeriod,
       overallRating: review.overallRating,
       achievements: review.achievements,
@@ -149,4 +152,3 @@ export class SelfReviewsService {
     }
   }
 }
-

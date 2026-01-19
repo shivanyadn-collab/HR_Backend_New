@@ -1,14 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-  UseGuards,
-} from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, UseGuards } from '@nestjs/common'
 import { SelfReviewsService } from './self-reviews.service'
 import { CreateSelfReviewDto } from './dto/create-self-review.dto'
 import { UpdateSelfReviewDto } from './dto/update-self-review.dto'
@@ -25,10 +15,7 @@ export class SelfReviewsController {
   }
 
   @Get()
-  findAll(
-    @Query('status') status?: string,
-    @Query('search') search?: string,
-  ) {
+  findAll(@Query('status') status?: string, @Query('search') search?: string) {
     return this.selfReviewsService.findAll(status, search)
   }
 
@@ -47,4 +34,3 @@ export class SelfReviewsController {
     return this.selfReviewsService.remove(id)
   }
 }
-

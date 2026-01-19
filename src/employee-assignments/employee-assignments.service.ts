@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException, ConflictException, InternalServerErrorException, BadRequestException } from '@nestjs/common'
+import {
+  Injectable,
+  NotFoundException,
+  ConflictException,
+  InternalServerErrorException,
+  BadRequestException,
+} from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateEmployeeAssignmentDto } from './dto/create-employee-assignment.dto'
 import { UpdateEmployeeAssignmentDto } from './dto/update-employee-assignment.dto'
@@ -11,14 +17,14 @@ export class EmployeeAssignmentsService {
   async create(createEmployeeAssignmentDto: CreateEmployeeAssignmentDto) {
     console.log('=== START: Creating Employee Assignment ===')
     console.log('Request data:', JSON.stringify(createEmployeeAssignmentDto, null, 2))
-    
+
     try {
       // Check if employee exists (could be Employee or EmployeeMaster ID)
       console.log('Step 1: Looking up employee by ID:', createEmployeeAssignmentDto.employeeId)
       let employee = await this.prisma.employee.findUnique({
         where: { id: createEmployeeAssignmentDto.employeeId },
       })
-      
+
       if (employee) {
         console.log('Step 1: Employee found directly:', employee.id)
       } else {
@@ -27,7 +33,10 @@ export class EmployeeAssignmentsService {
 
       // If not found, try to find/create from EmployeeMaster
       if (!employee) {
-        console.log('Step 2: Looking up EmployeeMaster by ID:', createEmployeeAssignmentDto.employeeId)
+        console.log(
+          'Step 2: Looking up EmployeeMaster by ID:',
+          createEmployeeAssignmentDto.employeeId,
+        )
         const employeeMaster = await this.prisma.employeeMaster.findUnique({
           where: { id: createEmployeeAssignmentDto.employeeId },
         })
@@ -36,16 +45,18 @@ export class EmployeeAssignmentsService {
           console.error('Step 2: EmployeeMaster not found')
           throw new NotFoundException('Employee not found')
         }
-        
+
         console.log('Step 2: EmployeeMaster found:', {
           id: employeeMaster.id,
           employeeCode: employeeMaster.employeeCode,
           email: employeeMaster.email,
-          name: `${employeeMaster.firstName} ${employeeMaster.lastName}`
+          name: `${employeeMaster.firstName} ${employeeMaster.lastName}`,
         })
 
         // Normalize email for consistent lookup
-        const normalizedEmail = employeeMaster.email ? employeeMaster.email.trim().toLowerCase() : null
+        const normalizedEmail = employeeMaster.email
+          ? employeeMaster.email.trim().toLowerCase()
+          : null
         const originalEmail = employeeMaster.email ? employeeMaster.email.trim() : null
 
         // Check if Employee record exists with this employeeCode
@@ -60,7 +71,7 @@ export class EmployeeAssignmentsService {
           employee = await this.prisma.employee.findUnique({
             where: { email: originalEmail },
           })
-          
+
           // Strategy 2: If not found, try case-insensitive search (for PostgreSQL)
           if (!employee && normalizedEmail) {
             try {
@@ -117,7 +128,10 @@ export class EmployeeAssignmentsService {
             })
             if (exactMatch) {
               employee = exactMatch
-              console.log('Found existing Employee record by email (exact match - final check):', employee.id)
+              console.log(
+                'Found existing Employee record by email (exact match - final check):',
+                employee.id,
+              )
             }
 
             // Try case-insensitive if still not found
@@ -133,7 +147,10 @@ export class EmployeeAssignmentsService {
                 })
                 if (existingByEmail) {
                   employee = existingByEmail
-                  console.log('Found existing Employee record by email (case-insensitive - final check):', employee.id)
+                  console.log(
+                    'Found existing Employee record by email (case-insensitive - final check):',
+                    employee.id,
+                  )
                 }
               } catch (checkError: any) {
                 // If case-insensitive mode fails, try raw query
@@ -148,7 +165,10 @@ export class EmployeeAssignmentsService {
                       where: { id: result[0].id },
                     })
                     if (employee) {
-                      console.log('Found existing Employee record by email (raw query - final check):', employee.id)
+                      console.log(
+                        'Found existing Employee record by email (raw query - final check):',
+                        employee.id,
+                      )
                     }
                   }
                 } catch (rawError: any) {
@@ -157,7 +177,7 @@ export class EmployeeAssignmentsService {
               }
             }
           }
-          
+
           // Final check by employeeId
           if (!employee && employeeMaster.employeeCode) {
             const existingById = await this.prisma.employee.findUnique({
@@ -165,16 +185,21 @@ export class EmployeeAssignmentsService {
             })
             if (existingById) {
               employee = existingById
-              console.log('Found existing Employee record by employeeId (final check):', employee.id)
+              console.log(
+                'Found existing Employee record by employeeId (final check):',
+                employee.id,
+              )
             }
           }
-          
+
           // Only create if still not found after ALL checks
           if (!employee) {
             // One more safety check: verify email doesn't exist using raw query
             if (originalEmail && normalizedEmail) {
               try {
-                const safetyCheck = await this.prisma.$queryRaw<Array<{ id: string; email: string }>>`
+                const safetyCheck = await this.prisma.$queryRaw<
+                  Array<{ id: string; email: string }>
+                >`
                   SELECT id, email FROM employees 
                   WHERE email IS NOT NULL AND LOWER(TRIM(email)) = LOWER(TRIM(${originalEmail}))
                   LIMIT 1
@@ -184,7 +209,10 @@ export class EmployeeAssignmentsService {
                     where: { id: safetyCheck[0].id },
                   })
                   if (employee) {
-                    console.log('Found existing Employee record by email (safety check before create):', employee.id)
+                    console.log(
+                      'Found existing Employee record by email (safety check before create):',
+                      employee.id,
+                    )
                   }
                 }
               } catch (safetyError: any) {
@@ -200,7 +228,7 @@ export class EmployeeAssignmentsService {
               console.log('Creating new Employee record for:', {
                 employeeCode: employeeMaster.employeeCode,
                 email: employeeMaster.email,
-                name: `${employeeMaster.firstName} ${employeeMaster.lastName}`
+                name: `${employeeMaster.firstName} ${employeeMaster.lastName}`,
               })
               employee = await this.prisma.employee.create({
                 data: {
@@ -219,13 +247,15 @@ export class EmployeeAssignmentsService {
               console.error('Error name:', error.name)
               console.error('Error code:', error.code)
               console.error('Error meta:', JSON.stringify(error.meta, null, 2))
-              
+
               // Handle Prisma unique constraint errors
               if (error.code === 'P2002') {
-                console.log('Unique constraint violation detected, attempting to find existing employee...')
+                console.log(
+                  'Unique constraint violation detected, attempting to find existing employee...',
+                )
                 console.log('Error meta.target:', error.meta?.target)
                 console.log('Email being searched:', originalEmail)
-                
+
                 // Always try to find by email first (most common unique constraint)
                 // Use multiple strategies to ensure we find it
                 if (originalEmail) {
@@ -236,7 +266,10 @@ export class EmployeeAssignmentsService {
                     })
                     if (exactMatch) {
                       employee = exactMatch
-                      console.log('Found employee by email (exact match in error handler):', employee.id)
+                      console.log(
+                        'Found employee by email (exact match in error handler):',
+                        employee.id,
+                      )
                     }
                   } catch (exactError: any) {
                     console.warn('Exact match lookup failed:', exactError.message)
@@ -256,36 +289,46 @@ export class EmployeeAssignmentsService {
                       })
                       if (employees.length > 0) {
                         employee = employees[0]
-                        console.log('Found employee by email (case-insensitive in error handler):', employee.id)
+                        console.log(
+                          'Found employee by email (case-insensitive in error handler):',
+                          employee.id,
+                        )
                       }
                     } catch (insensitiveError: any) {
                       console.warn('Case-insensitive lookup failed:', insensitiveError.message)
                     }
                   }
 
-                // Strategy 3: Raw query with LOWER() for guaranteed case-insensitive match
-                if (!employee && normalizedEmail && originalEmail) {
-                  try {
-                    const result = await this.prisma.$queryRaw<Array<{ id: string; email: string }>>`
+                  // Strategy 3: Raw query with LOWER() for guaranteed case-insensitive match
+                  if (!employee && normalizedEmail && originalEmail) {
+                    try {
+                      const result = await this.prisma.$queryRaw<
+                        Array<{ id: string; email: string }>
+                      >`
                       SELECT id, email FROM employees 
                       WHERE email IS NOT NULL AND LOWER(TRIM(email)) = LOWER(TRIM(${originalEmail}))
                       LIMIT 1
                     `
-                    if (result && result.length > 0) {
-                      employee = await this.prisma.employee.findUnique({
-                        where: { id: result[0].id },
-                      })
-                      if (employee) {
-                        console.log('Found employee by email (raw query in error handler):', employee.id, 'Email in DB:', result[0].email)
+                      if (result && result.length > 0) {
+                        employee = await this.prisma.employee.findUnique({
+                          where: { id: result[0].id },
+                        })
+                        if (employee) {
+                          console.log(
+                            'Found employee by email (raw query in error handler):',
+                            employee.id,
+                            'Email in DB:',
+                            result[0].email,
+                          )
+                        }
                       }
+                    } catch (rawError: any) {
+                      console.error('Raw query lookup failed in error handler:', rawError.message)
+                      // Don't throw, continue to next strategy
                     }
-                  } catch (rawError: any) {
-                    console.error('Raw query lookup failed in error handler:', rawError.message)
-                    // Don't throw, continue to next strategy
                   }
                 }
-                }
-                
+
                 // If not found by email, try by employeeId
                 if (!employee && employeeMaster.employeeCode) {
                   console.log('Looking up employee by employeeId:', employeeMaster.employeeCode)
@@ -300,17 +343,20 @@ export class EmployeeAssignmentsService {
                     console.error('Error looking up by employeeId:', lookupError)
                   }
                 }
-                
+
                 // If still not found, check what the constraint violation was about
                 if (!employee) {
                   const target = error.meta?.target
-                  console.error('Could not find employee after constraint violation. Target fields:', target)
+                  console.error(
+                    'Could not find employee after constraint violation. Target fields:',
+                    target,
+                  )
                   console.error('Searched email:', originalEmail)
                   console.error('Normalized email:', normalizedEmail)
                   if (target && Array.isArray(target)) {
                     console.error('Constraint was on fields:', target.join(', '))
                   }
-                  
+
                   // Last resort: try to find ANY employee with similar email
                   if (originalEmail && originalEmail.includes('@')) {
                     try {
@@ -318,7 +364,9 @@ export class EmployeeAssignmentsService {
                       if (emailParts.length === 2) {
                         const domain = emailParts[1]
                         const domainPattern = `%${domain}`
-                        const similarEmails = await this.prisma.$queryRaw<Array<{ id: string; email: string }>>`
+                        const similarEmails = await this.prisma.$queryRaw<
+                          Array<{ id: string; email: string }>
+                        >`
                           SELECT id, email FROM employees 
                           WHERE email IS NOT NULL AND email LIKE ${domainPattern}
                           LIMIT 5
@@ -332,11 +380,11 @@ export class EmployeeAssignmentsService {
                   }
                 }
               }
-              
+
               if (!employee) {
                 console.error('Failed to create or find Employee record after error handling')
                 console.error('Attempting one final comprehensive search...')
-                
+
                 // Final attempt: Try to find employee using all possible methods
                 if (originalEmail) {
                   // Try exact match one more time
@@ -352,7 +400,9 @@ export class EmployeeAssignmentsService {
                   // Try raw SQL query as absolute last resort
                   if (!employee && originalEmail && normalizedEmail) {
                     try {
-                      const finalResult = await this.prisma.$queryRaw<Array<{ id: string; email: string }>>`
+                      const finalResult = await this.prisma.$queryRaw<
+                        Array<{ id: string; email: string }>
+                      >`
                         SELECT id, email FROM employees 
                         WHERE email IS NOT NULL AND LOWER(TRIM(email)) = LOWER(TRIM(${originalEmail}))
                         LIMIT 1
@@ -376,10 +426,10 @@ export class EmployeeAssignmentsService {
                 if (!employee) {
                   throw new InternalServerErrorException(
                     `Failed to create or find Employee record. ` +
-                    `A record with email "${originalEmail}" may already exist but could not be located. ` +
-                    `Error: ${error.message || 'Unknown error'}. ` +
-                    `Error code: ${error.code || 'N/A'}, Target: ${JSON.stringify(error.meta?.target || 'N/A')}. ` +
-                    `Please check the database manually or try with a different email.`
+                      `A record with email "${originalEmail}" may already exist but could not be located. ` +
+                      `Error: ${error.message || 'Unknown error'}. ` +
+                      `Error code: ${error.code || 'N/A'}, Target: ${JSON.stringify(error.meta?.target || 'N/A')}. ` +
+                      `Please check the database manually or try with a different email.`,
                   )
                 } else {
                   console.log('Found existing Employee record in final search:', employee.id)
@@ -400,7 +450,7 @@ export class EmployeeAssignmentsService {
       if (!employee || !employee.id) {
         console.error('Employee validation failed:', {
           employee: employee ? 'exists but no id' : 'null/undefined',
-          employeeId: createEmployeeAssignmentDto.employeeId
+          employeeId: createEmployeeAssignmentDto.employeeId,
         })
         throw new InternalServerErrorException('Employee record is invalid or missing ID')
       }
@@ -408,7 +458,7 @@ export class EmployeeAssignmentsService {
       console.log('Employee validated successfully:', {
         employeeId: employee.id,
         employeeCode: employee.employeeId,
-        email: employee.email
+        email: employee.email,
       })
 
       // Check if project exists
@@ -419,13 +469,15 @@ export class EmployeeAssignmentsService {
 
       if (!project) {
         console.error('Project not found:', createEmployeeAssignmentDto.projectId)
-        throw new NotFoundException(`Project not found with ID: ${createEmployeeAssignmentDto.projectId}`)
+        throw new NotFoundException(
+          `Project not found with ID: ${createEmployeeAssignmentDto.projectId}`,
+        )
       }
 
       console.log('Project validated successfully:', {
         projectId: project.id,
         projectName: project.name,
-        projectCode: project.code
+        projectCode: project.code,
       })
 
       // Check for existing active assignment (use the Employee.id, not EmployeeMaster.id)
@@ -445,7 +497,10 @@ export class EmployeeAssignmentsService {
       if (!createEmployeeAssignmentDto.role) {
         throw new BadRequestException('Role is required')
       }
-      if (createEmployeeAssignmentDto.allocationPercentage === undefined || createEmployeeAssignmentDto.allocationPercentage === null) {
+      if (
+        createEmployeeAssignmentDto.allocationPercentage === undefined ||
+        createEmployeeAssignmentDto.allocationPercentage === null
+      ) {
         throw new BadRequestException('Allocation percentage is required')
       }
       if (!createEmployeeAssignmentDto.startDate) {
@@ -461,7 +516,7 @@ export class EmployeeAssignmentsService {
         role: createEmployeeAssignmentDto.role,
         allocationPercentage: createEmployeeAssignmentDto.allocationPercentage,
         startDate: createEmployeeAssignmentDto.startDate,
-        status: createEmployeeAssignmentDto.status || EmployeeAssignmentStatus.ACTIVE
+        status: createEmployeeAssignmentDto.status || EmployeeAssignmentStatus.ACTIVE,
       })
 
       // Prepare assignment data (outside try block so it's accessible in catch)
@@ -479,7 +534,10 @@ export class EmployeeAssignmentsService {
       if (createEmployeeAssignmentDto.endDate) {
         assignmentData.endDate = new Date(createEmployeeAssignmentDto.endDate)
       }
-      if (createEmployeeAssignmentDto.hourlyRate !== undefined && createEmployeeAssignmentDto.hourlyRate !== null) {
+      if (
+        createEmployeeAssignmentDto.hourlyRate !== undefined &&
+        createEmployeeAssignmentDto.hourlyRate !== null
+      ) {
         assignmentData.hourlyRate = Number(createEmployeeAssignmentDto.hourlyRate)
       }
       if (createEmployeeAssignmentDto.assignedBy) {
@@ -490,7 +548,6 @@ export class EmployeeAssignmentsService {
 
       let assignment
       try {
-
         assignment = await this.prisma.employeeAssignment.create({
           data: assignmentData,
           include: {
@@ -498,7 +555,7 @@ export class EmployeeAssignmentsService {
             project: true,
           },
         })
-        
+
         console.log('Employee assignment created successfully in database:', {
           id: assignment.id,
           employeeId: assignment.employeeId,
@@ -507,7 +564,7 @@ export class EmployeeAssignmentsService {
           projectCode: assignment.project?.code || 'NOT INCLUDED',
           hasProjectRelation: !!assignment.project,
           hasEmployeeRelation: !!assignment.employee,
-          status: assignment.status
+          status: assignment.status,
         })
 
         // Always fetch the assignment with all relations to ensure we have complete data
@@ -519,7 +576,7 @@ export class EmployeeAssignmentsService {
                 id: true,
                 name: true,
                 code: true,
-              }
+              },
             },
             employee: {
               select: {
@@ -529,15 +586,17 @@ export class EmployeeAssignmentsService {
                 email: true,
                 department: true,
                 designation: true,
-              }
+              },
             },
           },
         })
-        
+
         if (!verifyAssignment) {
-          throw new InternalServerErrorException('Assignment was created but could not be verified in database')
+          throw new InternalServerErrorException(
+            'Assignment was created but could not be verified in database',
+          )
         }
-        
+
         console.log('Assignment verified in database with relations:', {
           id: verifyAssignment.id,
           projectId: verifyAssignment.projectId,
@@ -548,10 +607,10 @@ export class EmployeeAssignmentsService {
           employeeCode: verifyAssignment.employee?.employeeId || 'NOT FOUND',
           employeeEmail: verifyAssignment.employee?.email || 'NOT FOUND',
           employeeName: verifyAssignment.employee?.name || 'NOT FOUND',
-          hasEmployee: !!verifyAssignment.employee
+          hasEmployee: !!verifyAssignment.employee,
         })
         console.log('SUCCESS: Employee assignment has been saved to the database')
-        
+
         // Use the verified assignment with all relations included
         assignment = verifyAssignment
       } catch (createError: any) {
@@ -560,27 +619,29 @@ export class EmployeeAssignmentsService {
           code: createError.code,
           message: createError.message,
           meta: JSON.stringify(createError.meta, null, 2),
-          stack: createError.stack
+          stack: createError.stack,
         })
         console.error('Assignment data that failed:', JSON.stringify(assignmentData, null, 2))
-        
+
         // Provide more specific error messages
         if (createError.code === 'P2002') {
           const target = createError.meta?.target
-          const errorMessage = `Unique constraint violation on field(s): ${Array.isArray(target) ? target.join(', ') : target || 'unknown'}. ` +
+          const errorMessage =
+            `Unique constraint violation on field(s): ${Array.isArray(target) ? target.join(', ') : target || 'unknown'}. ` +
             `An assignment with these values already exists.`
           console.error('Unique constraint error:', errorMessage)
           throw new ConflictException(errorMessage)
         }
         if (createError.code === 'P2003') {
           const field = createError.meta?.field_name
-          const errorMessage = `Foreign key constraint violation on field: ${field || 'unknown'}. ` +
+          const errorMessage =
+            `Foreign key constraint violation on field: ${field || 'unknown'}. ` +
             `The referenced record (employee or project) does not exist. ` +
             `Employee ID: ${assignmentData.employeeId}, Project ID: ${assignmentData.projectId}`
           console.error('Foreign key constraint error:', errorMessage)
           throw new BadRequestException(errorMessage)
         }
-        
+
         // Log the full error before re-throwing
         console.error('Unhandled Prisma error, re-throwing:', createError)
         throw createError // Re-throw to be handled by outer catch
@@ -600,7 +661,7 @@ export class EmployeeAssignmentsService {
       } catch (formatError: any) {
         // Even if formatting fails, the assignment is already saved
         console.error('Error formatting assignment response, but assignment is saved:', formatError)
-        
+
         // Try to get project name for fallback response
         let projectName = ''
         let projectCode = ''
@@ -632,7 +693,7 @@ export class EmployeeAssignmentsService {
               where: { employeeCode: assignment.employee.employeeId },
               select: { profilePhoto: true, employeeCode: true },
             })
-            
+
             // If not found by employeeCode, try to find by email as fallback
             if (!employeeMaster && assignment.employee.email) {
               employeeMaster = await this.prisma.employeeMaster.findFirst({
@@ -640,7 +701,7 @@ export class EmployeeAssignmentsService {
                 select: { profilePhoto: true, employeeCode: true },
               })
             }
-            
+
             if (employeeMaster) {
               fullEmployeeCode = employeeMaster.employeeCode || assignment.employee.employeeId
               employeePhoto = employeeMaster.profilePhoto || null
@@ -649,7 +710,7 @@ export class EmployeeAssignmentsService {
             console.error('Error fetching employee data for fallback response:', photoError.message)
           }
         }
-        
+
         // Return a basic response instead of failing
         return {
           id: assignment.id,
@@ -664,7 +725,8 @@ export class EmployeeAssignmentsService {
           startDate: assignment.startDate?.toISOString().split('T')[0] || '',
           endDate: assignment.endDate ? assignment.endDate.toISOString().split('T')[0] : null,
           status: assignment.status,
-          message: 'Assignment created successfully (some details may be missing due to formatting error)'
+          message:
+            'Assignment created successfully (some details may be missing due to formatting error)',
         }
       }
     } catch (error: any) {
@@ -675,38 +737,46 @@ export class EmployeeAssignmentsService {
         message: error.message,
         code: error.code,
         meta: error.meta,
-        name: error.name
+        name: error.name,
       })
-      
+
       // Re-throw known HTTP exceptions
-      if (error instanceof NotFoundException || 
-          error instanceof ConflictException || 
-          error instanceof BadRequestException ||
-          error instanceof InternalServerErrorException) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof ConflictException ||
+        error instanceof BadRequestException ||
+        error instanceof InternalServerErrorException
+      ) {
         throw error
       }
-      
+
       // Handle Prisma errors
       if (error.code) {
         if (error.code === 'P2002') {
-          throw new ConflictException(`Unique constraint violation: ${error.meta?.target || 'unknown field'}`)
+          throw new ConflictException(
+            `Unique constraint violation: ${error.meta?.target || 'unknown field'}`,
+          )
         }
         if (error.code === 'P2003') {
-          throw new BadRequestException(`Foreign key constraint violation: ${error.meta?.field_name || 'unknown field'}`)
+          throw new BadRequestException(
+            `Foreign key constraint violation: ${error.meta?.field_name || 'unknown field'}`,
+          )
         }
         if (error.code === 'P2025') {
           throw new NotFoundException(`Record not found: ${error.meta?.cause || 'Unknown'}`)
         }
       }
-      
+
       // Wrap unknown errors as InternalServerErrorException
-      throw new InternalServerErrorException(`Failed to create employee assignment: ${error.message || 'Unknown error'}`)
+      throw new InternalServerErrorException(
+        `Failed to create employee assignment: ${error.message || 'Unknown error'}`,
+      )
     }
   }
 
   async findAll(employeeId?: string, projectId?: string, status?: string) {
     const where: any = {}
-    
+
     // If employeeId is provided, try to find assignments by:
     // 1. Direct Employee.id match
     // 2. Employee.employeeId match (if employeeId is an employeeCode)
@@ -717,26 +787,23 @@ export class EmployeeAssignmentsService {
         where: { id: employeeId },
         select: { employeeCode: true, email: true },
       })
-      
+
       if (employeeMaster) {
         // This is an EmployeeMaster ID, find Employee by employeeCode or email
         console.log('EmployeeMaster found, searching for Employee record:', {
           employeeCode: employeeMaster.employeeCode,
-          email: employeeMaster.email
+          email: employeeMaster.email,
         })
-        
+
         const employee = await this.prisma.employee.findFirst({
           where: {
-            OR: [
-              { employeeId: employeeMaster.employeeCode },
-              { email: employeeMaster.email },
-            ],
+            OR: [{ employeeId: employeeMaster.employeeCode }, { email: employeeMaster.email }],
           },
           select: { id: true, employeeId: true, email: true },
         })
-        
+
         console.log('Employee record found:', employee)
-        
+
         if (employee) {
           where.employeeId = employee.id
         } else {
@@ -753,7 +820,7 @@ export class EmployeeAssignmentsService {
           where: { id: employeeId },
           select: { id: true },
         })
-        
+
         if (employee) {
           where.employeeId = employee.id
         } else {
@@ -762,7 +829,7 @@ export class EmployeeAssignmentsService {
             where: { employeeId: employeeId },
             select: { id: true },
           })
-          
+
           if (employeeByCode) {
             where.employeeId = employeeByCode.id
           } else {
@@ -772,7 +839,7 @@ export class EmployeeAssignmentsService {
         }
       }
     }
-    
+
     if (projectId) where.projectId = projectId
     if (status) where.status = status
 
@@ -789,9 +856,11 @@ export class EmployeeAssignmentsService {
 
     console.log(`Found ${assignments.length} assignments`)
 
-    const formattedAssignments = await Promise.all(assignments.map(assignment => this.formatAssignmentResponse(assignment)))
+    const formattedAssignments = await Promise.all(
+      assignments.map((assignment) => this.formatAssignmentResponse(assignment)),
+    )
     console.log(`Formatted ${formattedAssignments.length} assignments`)
-    
+
     return formattedAssignments
   }
 
@@ -824,8 +893,12 @@ export class EmployeeAssignmentsService {
       where: { id },
       data: {
         ...updateEmployeeAssignmentDto,
-        startDate: updateEmployeeAssignmentDto.startDate ? new Date(updateEmployeeAssignmentDto.startDate) : undefined,
-        endDate: updateEmployeeAssignmentDto.endDate ? new Date(updateEmployeeAssignmentDto.endDate) : undefined,
+        startDate: updateEmployeeAssignmentDto.startDate
+          ? new Date(updateEmployeeAssignmentDto.startDate)
+          : undefined,
+        endDate: updateEmployeeAssignmentDto.endDate
+          ? new Date(updateEmployeeAssignmentDto.endDate)
+          : undefined,
       },
       include: {
         employee: true,
@@ -897,13 +970,13 @@ export class EmployeeAssignmentsService {
       // Fetch employee photo and full employee code from EmployeeMaster
       let employeePhoto: string | null = null
       let fullEmployeeCode: string = assignment.employee?.employeeId || ''
-      
+
       console.log('Fetching EmployeeMaster data:', {
         employeeId: assignment.employee?.employeeId,
         email: assignment.employee?.email,
-        name: assignment.employee?.name
+        name: assignment.employee?.name,
       })
-      
+
       if (assignment.employee) {
         try {
           // Strategy 1: Try to find by employeeCode (Employee.employeeId should match EmployeeMaster.employeeCode)
@@ -911,16 +984,19 @@ export class EmployeeAssignmentsService {
             where: { employeeCode: assignment.employee.employeeId },
             select: { profilePhoto: true, employeeCode: true },
           })
-          
+
           // Strategy 2: If not found by employeeCode, try to find by email (more reliable)
           if (!employeeMaster && assignment.employee.email) {
-            console.log('EmployeeMaster not found by employeeCode, trying email lookup:', assignment.employee.email)
+            console.log(
+              'EmployeeMaster not found by employeeCode, trying email lookup:',
+              assignment.employee.email,
+            )
             employeeMaster = await this.prisma.employeeMaster.findFirst({
               where: { email: assignment.employee.email },
               select: { profilePhoto: true, employeeCode: true },
             })
           }
-          
+
           // Strategy 3: Try case-insensitive email search if still not found
           if (!employeeMaster && assignment.employee.email) {
             console.log('Trying case-insensitive email search')
@@ -938,7 +1014,7 @@ export class EmployeeAssignmentsService {
               employeeMaster = employees[0]
             }
           }
-          
+
           if (employeeMaster) {
             // Use the full employee code from EmployeeMaster
             fullEmployeeCode = employeeMaster.employeeCode || assignment.employee.employeeId
@@ -946,13 +1022,13 @@ export class EmployeeAssignmentsService {
             console.log('✅ Employee data fetched from EmployeeMaster:', {
               employeeCode: fullEmployeeCode,
               hasPhoto: !!employeePhoto,
-              photoValue: employeePhoto ? 'Photo URL present' : 'No photo'
+              photoValue: employeePhoto ? 'Photo URL present' : 'No photo',
             })
           } else {
             console.warn('❌ EmployeeMaster not found for employee:', {
               employeeId: assignment.employee.employeeId,
               email: assignment.employee.email,
-              name: assignment.employee.name
+              name: assignment.employee.name,
             })
           }
         } catch (photoError: any) {
@@ -965,22 +1041,28 @@ export class EmployeeAssignmentsService {
       // Fetch project name if project is not included or project name is missing
       let projectName: string = ''
       let projectCode: string = ''
-      
+
       console.log('Fetching project data:', {
         hasProject: !!assignment.project,
         projectId: assignment.projectId,
-        projectName: assignment.project?.name || 'NOT INCLUDED'
+        projectName: assignment.project?.name || 'NOT INCLUDED',
       })
-      
+
       if (assignment.project) {
         // Project is already included
         projectName = assignment.project.name || ''
         projectCode = assignment.project.code || ''
-        console.log('✅ Project data from included relation:', { name: projectName, code: projectCode })
+        console.log('✅ Project data from included relation:', {
+          name: projectName,
+          code: projectCode,
+        })
       } else if (assignment.projectId) {
         // Project is not included, fetch it
         try {
-          console.log('⚠️ Project not included in assignment, fetching project:', assignment.projectId)
+          console.log(
+            '⚠️ Project not included in assignment, fetching project:',
+            assignment.projectId,
+          )
           const project = await this.prisma.project.findUnique({
             where: { id: assignment.projectId },
             select: { name: true, code: true },
@@ -988,7 +1070,10 @@ export class EmployeeAssignmentsService {
           if (project) {
             projectName = project.name || ''
             projectCode = project.code || ''
-            console.log('✅ Project fetched successfully:', { name: projectName, code: projectCode })
+            console.log('✅ Project fetched successfully:', {
+              name: projectName,
+              code: projectCode,
+            })
           } else {
             console.warn('❌ Project not found with ID:', assignment.projectId)
           }
@@ -1018,9 +1103,14 @@ export class EmployeeAssignmentsService {
         startDate: assignment.startDate?.toISOString().split('T')[0] || '',
         endDate: assignment.endDate ? assignment.endDate.toISOString().split('T')[0] : null,
         hourlyRate: assignment.hourlyRate,
-        status: assignment.status === EmployeeAssignmentStatus.ACTIVE ? 'Active' :
-                assignment.status === EmployeeAssignmentStatus.COMPLETED ? 'Completed' :
-                assignment.status === EmployeeAssignmentStatus.ON_HOLD ? 'On Hold' : 'Cancelled',
+        status:
+          assignment.status === EmployeeAssignmentStatus.ACTIVE
+            ? 'Active'
+            : assignment.status === EmployeeAssignmentStatus.COMPLETED
+              ? 'Completed'
+              : assignment.status === EmployeeAssignmentStatus.ON_HOLD
+                ? 'On Hold'
+                : 'Cancelled',
         assignedDate: assignment.assignedDate?.toISOString().split('T')[0] || '',
         assignedBy: assignment.assignedBy,
         createdAt: assignment.createdAt,
@@ -1032,12 +1122,14 @@ export class EmployeeAssignmentsService {
         employeeId: response.employeeId,
         employeeCode: response.employeeCode,
         employeeName: response.employeeName,
-        employeePhoto: response.employeePhoto ? `Photo: ${response.employeePhoto.substring(0, 50)}...` : 'No photo',
+        employeePhoto: response.employeePhoto
+          ? `Photo: ${response.employeePhoto.substring(0, 50)}...`
+          : 'No photo',
         designation: response.designation,
         department: response.department,
         projectId: response.projectId,
         projectName: response.projectName,
-        projectCode: response.projectCode
+        projectCode: response.projectCode,
       })
 
       return response
@@ -1048,9 +1140,11 @@ export class EmployeeAssignmentsService {
         id: assignment?.id,
         projectId: assignment?.projectId,
         hasProject: !!assignment?.project,
-        projectName: assignment?.project?.name
+        projectName: assignment?.project?.name,
       })
-      throw new InternalServerErrorException(`Failed to format assignment response: ${error.message || 'Unknown error'}`)
+      throw new InternalServerErrorException(
+        `Failed to format assignment response: ${error.message || 'Unknown error'}`,
+      )
     }
   }
 }

@@ -11,4 +11,3 @@ export class UpdateInterviewDto extends PartialType(CreateInterviewDto) {
   @IsDateString()
   interviewDate?: string
 }
-

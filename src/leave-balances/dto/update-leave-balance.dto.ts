@@ -29,4 +29,3 @@ export class UpdateLeaveBalanceDto {
   @Min(0)
   carryForward?: number
 }
-

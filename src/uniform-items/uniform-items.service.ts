@@ -42,7 +42,7 @@ export class UniformItemsService {
       orderBy: { createdAt: 'desc' },
     })
 
-    return items.map(item => this.formatResponse(item))
+    return items.map((item) => this.formatResponse(item))
   }
 
   async findOne(id: string) {
@@ -104,4 +104,3 @@ export class UniformItemsService {
     }
   }
 }
-

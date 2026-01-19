@@ -31,7 +31,7 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-    })
+    }),
   )
 
   // Global prefix
@@ -43,4 +43,3 @@ async function bootstrap() {
 }
 
 bootstrap()
-

@@ -42,7 +42,10 @@ export class EmployeeAssignmentsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateEmployeeAssignmentDto: UpdateEmployeeAssignmentDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateEmployeeAssignmentDto: UpdateEmployeeAssignmentDto,
+  ) {
     return this.employeeAssignmentsService.update(id, updateEmployeeAssignmentDto)
   }
 

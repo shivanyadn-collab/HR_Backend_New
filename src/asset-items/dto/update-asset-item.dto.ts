@@ -45,4 +45,3 @@ export class UpdateAssetItemDto {
   @IsBoolean()
   isActive?: boolean
 }
-

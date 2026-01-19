@@ -1,9 +1,18 @@
-import { IsString, IsOptional, IsNumber, IsBoolean, IsEnum, Min, Max, Matches } from 'class-validator'
+import {
+  IsString,
+  IsOptional,
+  IsNumber,
+  IsBoolean,
+  IsEnum,
+  Min,
+  Max,
+  Matches,
+} from 'class-validator'
 
 export enum CameraDeviceStatus {
   ACTIVE = 'ACTIVE',
   INACTIVE = 'INACTIVE',
-  OFFLINE = 'OFFLINE'
+  OFFLINE = 'OFFLINE',
 }
 
 export class CreateCameraDeviceDto {
@@ -47,4 +56,3 @@ export class CreateCameraDeviceDto {
   @IsString()
   firmwareVersion?: string
 }
-

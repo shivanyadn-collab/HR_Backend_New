@@ -14,11 +14,6 @@ import { FingerprintLogsModule } from '../fingerprint-logs/fingerprint-logs.modu
     ZKFingerSDKWrapperService,
     FingerprintDeviceMonitorService,
   ],
-  exports: [
-    FingerprintDevicesService,
-    ZKFingerSDKWrapperService,
-    FingerprintDeviceMonitorService,
-  ],
+  exports: [FingerprintDevicesService, ZKFingerSDKWrapperService, FingerprintDeviceMonitorService],
 })
 export class FingerprintDevicesModule {}
-

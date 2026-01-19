@@ -44,10 +44,7 @@ export class FingerprintEnrollmentsController {
   }
 
   @Post(':id/enroll')
-  enrollFingerprint(
-    @Param('id') id: string,
-    @Body() enrollDto: EnrollFingerprintDto,
-  ) {
+  enrollFingerprint(@Param('id') id: string, @Body() enrollDto: EnrollFingerprintDto) {
     return this.service.enrollFingerprint({ ...enrollDto, enrollmentId: id })
   }
 
@@ -56,4 +53,3 @@ export class FingerprintEnrollmentsController {
     return this.service.remove(id)
   }
 }
-

@@ -36,7 +36,14 @@ export class CandidateApplicationsController {
     @Query('endDate') endDate?: string,
     @Query('search') search?: string,
   ) {
-    return this.candidateApplicationsService.findAll(status, jobId, jobCode, startDate, endDate, search)
+    return this.candidateApplicationsService.findAll(
+      status,
+      jobId,
+      jobCode,
+      startDate,
+      endDate,
+      search,
+    )
   }
 
   @Get(':id')
@@ -45,7 +52,10 @@ export class CandidateApplicationsController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCandidateApplicationDto: UpdateCandidateApplicationDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateCandidateApplicationDto: UpdateCandidateApplicationDto,
+  ) {
     return this.candidateApplicationsService.update(id, updateCandidateApplicationDto)
   }
 
@@ -55,4 +65,3 @@ export class CandidateApplicationsController {
     return this.candidateApplicationsService.remove(id)
   }
 }
-

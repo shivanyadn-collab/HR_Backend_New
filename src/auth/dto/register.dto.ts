@@ -36,4 +36,3 @@ export class RegisterDto {
   @IsString({ each: true })
   projectIds?: string[]
 }
-

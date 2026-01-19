@@ -16,6 +16,4 @@ export class CreateProjectHoursDto {
   @IsOptional()
   @IsString()
   description?: string
-
 }
-

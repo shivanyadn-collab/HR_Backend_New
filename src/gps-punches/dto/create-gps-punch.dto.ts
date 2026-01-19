@@ -2,13 +2,13 @@ import { IsString, IsNumber, IsEnum, IsOptional, Min, Max } from 'class-validato
 
 export enum GPSPunchType {
   IN = 'IN',
-  OUT = 'OUT'
+  OUT = 'OUT',
 }
 
 export enum GPSPunchStatus {
   VALID = 'VALID',
   INVALID = 'INVALID',
-  OUTSIDE_GEOFENCE = 'OUTSIDE_GEOFENCE'
+  OUTSIDE_GEOFENCE = 'OUTSIDE_GEOFENCE',
 }
 
 export class CreateGPSPunchDto {
@@ -62,4 +62,3 @@ export class CreateGPSPunchDto {
   @IsString()
   remarks?: string
 }
-

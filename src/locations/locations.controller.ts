@@ -54,4 +54,3 @@ export class LocationsController {
     return this.locationsService.toggleActive(id)
   }
 }
-

@@ -27,11 +27,7 @@ export class AttendanceLogsController {
   }
 
   @Get('statistics')
-  getStatistics(
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
-  ) {
+  getStatistics(@Query('startDate') startDate?: string, @Query('endDate') endDate?: string) {
     return this.service.getAttendanceStatistics(startDate, endDate)
   }
 }
-

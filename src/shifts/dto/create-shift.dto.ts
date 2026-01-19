@@ -1,4 +1,13 @@
-import { IsString, IsOptional, IsBoolean, IsNumber, IsInt, IsArray, Min, Max } from 'class-validator'
+import {
+  IsString,
+  IsOptional,
+  IsBoolean,
+  IsNumber,
+  IsInt,
+  IsArray,
+  Min,
+  Max,
+} from 'class-validator'
 
 export class CreateShiftDto {
   @IsString()
@@ -66,4 +75,3 @@ export class CreateShiftDto {
   @IsString({ each: true })
   designationIds?: string[]
 }
-

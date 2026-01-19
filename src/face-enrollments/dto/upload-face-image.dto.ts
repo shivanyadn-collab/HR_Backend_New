@@ -7,6 +7,10 @@ export class UploadFaceImageDto {
   @IsString()
   imageUrl: string
 
+  @IsOptional()
+  @IsString()
+  imageKey?: string
+
   @IsString()
   imageName: string
 
@@ -20,4 +24,3 @@ export class UploadFaceImageDto {
   @Max(100)
   qualityScore?: number
 }
-

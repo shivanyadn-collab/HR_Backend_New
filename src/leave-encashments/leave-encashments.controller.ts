@@ -69,4 +69,3 @@ export class LeaveEncashmentsController {
     return this.leaveEncashmentsService.remove(id)
   }
 }
-

@@ -38,4 +38,3 @@ export class EmploymentHistoryController {
     return this.service.remove(id)
   }
 }
-

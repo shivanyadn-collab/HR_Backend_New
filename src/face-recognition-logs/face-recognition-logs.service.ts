@@ -32,7 +32,9 @@ export class FaceRecognitionLogsService {
       data: {
         employeeMasterId: createDto.employeeMasterId,
         cameraDeviceId: createDto.cameraDeviceId,
-        recognitionTime: createDto.recognitionTime ? new Date(createDto.recognitionTime) : new Date(),
+        recognitionTime: createDto.recognitionTime
+          ? new Date(createDto.recognitionTime)
+          : new Date(),
         status: (createDto.status as any) || 'UNKNOWN',
         confidence: createDto.confidence,
         imageUrl: createDto.imageUrl,
@@ -62,9 +64,9 @@ export class FaceRecognitionLogsService {
     if (employeeMasterId) where.employeeMasterId = employeeMasterId
     if (status) {
       const statusMap: Record<string, string> = {
-        'Recognized': 'RECOGNIZED',
-        'Failed': 'FAILED',
-        'Unknown': 'UNKNOWN',
+        Recognized: 'RECOGNIZED',
+        Failed: 'FAILED',
+        Unknown: 'UNKNOWN',
       }
       where.status = statusMap[status] || status
     }
@@ -85,7 +87,7 @@ export class FaceRecognitionLogsService {
       take: limit || 100,
     })
 
-    return Promise.all(logs.map(log => this.formatResponse(log)))
+    return Promise.all(logs.map((log) => this.formatResponse(log)))
   }
 
   async findRecent(limit: number = 50) {
@@ -98,7 +100,7 @@ export class FaceRecognitionLogsService {
       take: limit,
     })
 
-    return Promise.all(logs.map(log => this.formatResponse(log)))
+    return Promise.all(logs.map((log) => this.formatResponse(log)))
   }
 
   async findOne(id: string) {
@@ -127,9 +129,11 @@ export class FaceRecognitionLogsService {
     }
 
     const updateData: any = {}
-    if (updateDto.employeeMasterId !== undefined) updateData.employeeMasterId = updateDto.employeeMasterId
+    if (updateDto.employeeMasterId !== undefined)
+      updateData.employeeMasterId = updateDto.employeeMasterId
     if (updateDto.cameraDeviceId !== undefined) updateData.cameraDeviceId = updateDto.cameraDeviceId
-    if (updateDto.recognitionTime !== undefined) updateData.recognitionTime = new Date(updateDto.recognitionTime)
+    if (updateDto.recognitionTime !== undefined)
+      updateData.recognitionTime = new Date(updateDto.recognitionTime)
     if (updateDto.status !== undefined) updateData.status = updateDto.status
     if (updateDto.confidence !== undefined) updateData.confidence = updateDto.confidence
     if (updateDto.imageUrl !== undefined) updateData.imageUrl = updateDto.imageUrl
@@ -202,14 +206,15 @@ export class FaceRecognitionLogsService {
     // Require face enrollment for attendance
     if (!faceEnrollment || faceEnrollment.status !== 'COMPLETED' || faceEnrollment.faceImages < 1) {
       throw new BadRequestException(
-        'Face not enrolled. Please complete face enrollment before punching attendance.'
+        'Face not enrolled. Please complete face enrollment before punching attendance.',
       )
     }
 
     // Get enrolled face images from database if not provided
-    const enrolledImages = verifyDto.enrolledFaceImages && verifyDto.enrolledFaceImages.length > 0
-      ? verifyDto.enrolledFaceImages
-      : faceEnrollment.faceImagesData.map(img => img.imageUrl)
+    const enrolledImages =
+      verifyDto.enrolledFaceImages && verifyDto.enrolledFaceImages.length > 0
+        ? verifyDto.enrolledFaceImages
+        : faceEnrollment.faceImagesData.map((img) => img.imageUrl)
 
     if (enrolledImages.length === 0 && !employee.profilePhoto) {
       throw new BadRequestException('No reference face image found for verification')
@@ -238,7 +243,8 @@ export class FaceRecognitionLogsService {
     const livenessScore = checkAntiSpoofing ? Math.random() * 0.25 + 0.7 : 1.0
 
     // Simulated anti-spoofing check (less likely to fail with proper implementation)
-    const antiSpoofingPassed = !checkAntiSpoofing || (livenessScore > 0.5 && !(Math.random() < 0.05))
+    const antiSpoofingPassed =
+      !checkAntiSpoofing || (livenessScore > 0.5 && !(Math.random() < 0.05))
 
     // Determine if faces match
     const isMatch = confidence >= minConfidence && antiSpoofingPassed
@@ -270,16 +276,18 @@ export class FaceRecognitionLogsService {
       livenessScore,
       spoofingDetected: checkAntiSpoofing && !antiSpoofingPassed,
       reason,
-      antiSpoofingReason: !antiSpoofingPassed ? 'Liveness detection failed or spoofing detected' : undefined,
+      antiSpoofingReason: !antiSpoofingPassed
+        ? 'Liveness detection failed or spoofing detected'
+        : undefined,
       enrolledImagesUsed: enrolledImages.length,
     }
   }
 
   private async formatResponse(log: any) {
     const statusMap: Record<string, string> = {
-      'RECOGNIZED': 'Recognized',
-      'FAILED': 'Failed',
-      'UNKNOWN': 'Unknown',
+      RECOGNIZED: 'Recognized',
+      FAILED: 'Failed',
+      UNKNOWN: 'Unknown',
     }
 
     let departmentName = 'Not assigned'
@@ -320,4 +328,3 @@ export class FaceRecognitionLogsService {
     }
   }
 }
-

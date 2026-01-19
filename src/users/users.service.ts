@@ -15,11 +15,11 @@ export class UsersService {
 
   async findAll(role?: string, isActive?: boolean) {
     const where: any = {}
-    
+
     if (role) {
       where.role = role
     }
-    
+
     if (isActive !== undefined) {
       where.isActive = isActive
     }
@@ -38,7 +38,7 @@ export class UsersService {
       },
     })
 
-    return users.map(user => this.formatUserResponse(user))
+    return users.map((user) => this.formatUserResponse(user))
   }
 
   async findOne(userId: string): Promise<UserResponseDto> {
@@ -83,17 +83,17 @@ export class UsersService {
 
     // Validate role exists in Role table and get the roleCode
     let userRole: string = createUserDto.role.toUpperCase()
-    
+
     // Try to find the role in the Role table
     const role = await this.prisma.role.findFirst({
       where: {
         OR: [
           { roleCode: createUserDto.role },
           { roleCode: createUserDto.role.toUpperCase() },
-          { roleCode: { equals: createUserDto.role, mode: 'insensitive' } }
+          { roleCode: { equals: createUserDto.role, mode: 'insensitive' } },
         ],
-        isActive: true
-      }
+        isActive: true,
+      },
     })
 
     if (role) {
@@ -103,7 +103,9 @@ export class UsersService {
       // If role not found in Role table, validate it's a valid UserRole enum value
       const validRoles = ['ADMIN', 'PROJECT_DIRECTOR', 'PROJECT_HR', 'PROJECT_MANAGER', 'EMPLOYEE']
       if (!validRoles.includes(userRole)) {
-        throw new ConflictException(`Invalid role: ${createUserDto.role}. Role must exist in the Role table or be one of: ${validRoles.join(', ')}`)
+        throw new ConflictException(
+          `Invalid role: ${createUserDto.role}. Role must exist in the Role table or be one of: ${validRoles.join(', ')}`,
+        )
       }
     }
 
@@ -120,11 +122,13 @@ export class UsersService {
         employeeId: createUserDto.employeeId,
         department: createUserDto.department,
         designation: createUserDto.designation,
-        company: createUserDto.company || this.configService.get<string>('DEFAULT_COMPANY') || 'Exozen',
+        company:
+          createUserDto.company || this.configService.get<string>('DEFAULT_COMPANY') || 'Exozen',
         projects: {
-          create: createUserDto.projectIds?.map(projectId => ({
-            projectId,
-          })) || [],
+          create:
+            createUserDto.projectIds?.map((projectId) => ({
+              projectId,
+            })) || [],
         },
       },
       include: {
@@ -174,17 +178,17 @@ export class UsersService {
     let userRole: string | undefined = undefined
     if (updateUserDto.role) {
       userRole = updateUserDto.role.toUpperCase()
-      
+
       // Try to find the role in the Role table
       const role = await this.prisma.role.findFirst({
         where: {
           OR: [
             { roleCode: updateUserDto.role },
             { roleCode: updateUserDto.role.toUpperCase() },
-            { roleCode: { equals: updateUserDto.role, mode: 'insensitive' } }
+            { roleCode: { equals: updateUserDto.role, mode: 'insensitive' } },
           ],
-          isActive: true
-        }
+          isActive: true,
+        },
       })
 
       if (role) {
@@ -192,9 +196,17 @@ export class UsersService {
         userRole = role.roleCode.toUpperCase()
       } else {
         // If role not found in Role table, validate it's a valid UserRole enum value
-        const validRoles = ['ADMIN', 'PROJECT_DIRECTOR', 'PROJECT_HR', 'PROJECT_MANAGER', 'EMPLOYEE']
+        const validRoles = [
+          'ADMIN',
+          'PROJECT_DIRECTOR',
+          'PROJECT_HR',
+          'PROJECT_MANAGER',
+          'EMPLOYEE',
+        ]
         if (!validRoles.includes(userRole)) {
-          throw new ConflictException(`Invalid role: ${updateUserDto.role}. Role must exist in the Role table or be one of: ${validRoles.join(', ')}`)
+          throw new ConflictException(
+            `Invalid role: ${updateUserDto.role}. Role must exist in the Role table or be one of: ${validRoles.join(', ')}`,
+          )
         }
       }
     }
@@ -215,7 +227,7 @@ export class UsersService {
       // Create new project associations
       if (updateUserDto.projectIds.length > 0) {
         await this.prisma.userProject.createMany({
-          data: updateUserDto.projectIds.map(projectId => ({
+          data: updateUserDto.projectIds.map((projectId) => ({
             userId,
             projectId,
           })),
@@ -276,12 +288,12 @@ export class UsersService {
       designation: user.designation || undefined,
       company: user.company || undefined,
       isActive: user.isActive !== undefined ? user.isActive : true,
-      projects: user.projects?.map((up: any) => ({
-        id: up.project.id,
-        name: up.project.name,
-        code: up.project.code,
-      })) || [],
+      projects:
+        user.projects?.map((up: any) => ({
+          id: up.project.id,
+          name: up.project.name,
+          code: up.project.code,
+        })) || [],
     }
   }
 }
-

@@ -23,7 +23,14 @@ export class FingerprintLogsController {
     @Query('endDate') endDate?: string,
     @Query('limit') limit?: number,
   ) {
-    return this.service.findAll(fingerprintDeviceId, employeeMasterId, status, startDate, endDate, limit)
+    return this.service.findAll(
+      fingerprintDeviceId,
+      employeeMasterId,
+      status,
+      startDate,
+      endDate,
+      limit,
+    )
   }
 
   @Get('recent')
@@ -32,10 +39,7 @@ export class FingerprintLogsController {
   }
 
   @Get('statistics')
-  getStatistics(
-    @Query('startDate') startDate?: string,
-    @Query('endDate') endDate?: string,
-  ) {
+  getStatistics(@Query('startDate') startDate?: string, @Query('endDate') endDate?: string) {
     return this.service.getStatistics(startDate, endDate)
   }
 
@@ -54,4 +58,3 @@ export class FingerprintLogsController {
     return this.service.remove(id)
   }
 }
-

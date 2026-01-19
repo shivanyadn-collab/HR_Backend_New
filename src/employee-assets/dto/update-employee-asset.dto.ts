@@ -41,4 +41,3 @@ export class UpdateEmployeeAssetDto {
   @IsString()
   returnedBy?: string
 }
-

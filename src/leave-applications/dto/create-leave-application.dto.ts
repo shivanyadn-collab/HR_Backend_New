@@ -34,4 +34,3 @@ export class CreateLeaveApplicationDto {
   @IsString()
   attachmentName?: string
 }
-

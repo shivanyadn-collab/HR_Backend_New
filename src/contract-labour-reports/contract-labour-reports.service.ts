@@ -7,13 +7,13 @@ export class ContractLabourReportsService {
 
   /**
    * Get contract labour reports
-   * 
+   *
    * NOTE: This service currently returns an empty array as there's no ContractLabour table yet.
    * To implement this feature:
    * 1. Create a ContractLabour model in Prisma schema
    * 2. Create a ContractLabourReport model to store report submissions
    * 3. Update this service to fetch from the database
-   * 
+   *
    * Example schema structure:
    * model ContractLabour {
    *   id                String   @id @default(uuid())
@@ -28,7 +28,7 @@ export class ContractLabourReportsService {
    *   updatedAt         DateTime @updatedAt
    *   reports           ContractLabourReport[]
    * }
-   * 
+   *
    * model ContractLabourReport {
    *   id              String   @id @default(uuid())
    *   contractLabourId String
@@ -47,7 +47,7 @@ export class ContractLabourReportsService {
   async findAll(status?: string, type?: string, period?: string, search?: string) {
     // TODO: Implement database queries once ContractLabour models are created
     // For now, return empty array - data should be added via database
-    
+
     // Example implementation (commented out - uncomment when models exist):
     /*
     const where: any = {}
@@ -105,4 +105,3 @@ export class ContractLabourReportsService {
     return []
   }
 }
-

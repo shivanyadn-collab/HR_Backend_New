@@ -38,17 +38,17 @@ export class AuthService {
 
     // Validate role exists in Role table and get the roleCode
     let userRole: string = registerDto.role.toUpperCase()
-    
+
     // Try to find the role in the Role table
     const role = await this.prisma.role.findFirst({
       where: {
         OR: [
           { roleCode: registerDto.role },
           { roleCode: registerDto.role.toUpperCase() },
-          { roleCode: { equals: registerDto.role, mode: 'insensitive' } }
+          { roleCode: { equals: registerDto.role, mode: 'insensitive' } },
         ],
-        isActive: true
-      }
+        isActive: true,
+      },
     })
 
     if (role) {
@@ -58,7 +58,9 @@ export class AuthService {
       // If role not found in Role table, validate it's a valid UserRole enum value
       const validRoles = ['ADMIN', 'PROJECT_DIRECTOR', 'PROJECT_HR', 'PROJECT_MANAGER', 'EMPLOYEE']
       if (!validRoles.includes(userRole)) {
-        throw new ConflictException(`Invalid role: ${registerDto.role}. Role must exist in the Role table or be one of: ${validRoles.join(', ')}`)
+        throw new ConflictException(
+          `Invalid role: ${registerDto.role}. Role must exist in the Role table or be one of: ${validRoles.join(', ')}`,
+        )
       }
     }
 
@@ -73,7 +75,7 @@ export class AuthService {
           id: { in: registerDto.projectIds },
         },
       })
-      projects = projectRecords.map(p => ({
+      projects = projectRecords.map((p) => ({
         id: p.id,
         name: p.name,
         code: p.code,
@@ -90,11 +92,13 @@ export class AuthService {
         employeeId: registerDto.employeeId,
         department: registerDto.department,
         designation: registerDto.designation,
-        company: registerDto.company || this.configService.get<string>('DEFAULT_COMPANY') || 'Exozen',
+        company:
+          registerDto.company || this.configService.get<string>('DEFAULT_COMPANY') || 'Exozen',
         projects: {
-          create: registerDto.projectIds?.map(projectId => ({
-            projectId,
-          })) || [],
+          create:
+            registerDto.projectIds?.map((projectId) => ({
+              projectId,
+            })) || [],
         },
       },
       include: {
@@ -126,7 +130,7 @@ export class AuthService {
       designation: user.designation || undefined,
       company: user.company || undefined,
       isActive: user.isActive !== undefined ? user.isActive : true,
-      projects: user.projects.map(up => ({
+      projects: user.projects.map((up) => ({
         id: up.project.id,
         name: up.project.name,
         code: up.project.code,
@@ -188,7 +192,7 @@ export class AuthService {
       designation: user.designation || undefined,
       company: user.company || undefined,
       isActive: user.isActive !== undefined ? user.isActive : true,
-      projects: user.projects.map(up => ({
+      projects: user.projects.map((up) => ({
         id: up.project.id,
         name: up.project.name,
         code: up.project.code,
@@ -226,7 +230,7 @@ export class AuthService {
       department: user.department || undefined,
       designation: user.designation || undefined,
       company: user.company || undefined,
-      projects: user.projects.map(up => ({
+      projects: user.projects.map((up) => ({
         id: up.project.id,
         name: up.project.name,
         code: up.project.code,
@@ -234,4 +238,3 @@ export class AuthService {
     }
   }
 }
-

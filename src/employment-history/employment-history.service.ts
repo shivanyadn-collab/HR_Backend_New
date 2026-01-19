@@ -104,7 +104,7 @@ export class EmploymentHistoryService {
         }
 
         return this.formatResponse(r, departmentName, designationName)
-      })
+      }),
     )
 
     return formattedRecords
@@ -235,4 +235,3 @@ export class EmploymentHistoryService {
     }
   }
 }
-

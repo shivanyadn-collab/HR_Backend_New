@@ -1,39 +1,43 @@
-import { IsString, IsOptional, IsDateString } from 'class-validator';
+import { IsString, IsOptional, IsDateString } from 'class-validator'
 
 export class CreateTaxDocumentDto {
   @IsString()
-  employeeMasterId: string;
+  employeeMasterId: string
 
   @IsString()
-  documentType: string;
+  documentType: string
 
   @IsString()
-  documentName: string;
+  documentName: string
 
   @IsString()
-  financialYear: string;
+  financialYear: string
 
   @IsString()
   @IsOptional()
-  fileUrl?: string;
+  fileUrl?: string
+
+  @IsString()
+  @IsOptional()
+  fileKey?: string
 
   @IsDateString()
   @IsOptional()
-  uploadDate?: string;
+  uploadDate?: string
 
   @IsString()
   @IsOptional()
-  status?: string;
+  status?: string
 
   @IsString()
   @IsOptional()
-  verifiedBy?: string;
+  verifiedBy?: string
 
   @IsDateString()
   @IsOptional()
-  verifiedDate?: string;
+  verifiedDate?: string
 
   @IsString()
   @IsOptional()
-  remarks?: string;
+  remarks?: string
 }

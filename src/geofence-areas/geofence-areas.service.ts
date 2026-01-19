@@ -55,7 +55,7 @@ export class GeofenceAreasService {
       orderBy: { createdAt: 'desc' },
     })
 
-    return geofences.map(geo => ({
+    return geofences.map((geo) => ({
       ...geo,
       assignedProjects: geo._count.projectAssignments,
     }))
@@ -113,7 +113,9 @@ export class GeofenceAreasService {
     })
 
     if (assignments > 0) {
-      throw new Error('Cannot delete geofence with assigned projects. Please unassign projects first.')
+      throw new Error(
+        'Cannot delete geofence with assigned projects. Please unassign projects first.',
+      )
     }
 
     return this.prisma.geofenceArea.delete({
@@ -145,4 +147,3 @@ export class GeofenceAreasService {
     }
   }
 }
-

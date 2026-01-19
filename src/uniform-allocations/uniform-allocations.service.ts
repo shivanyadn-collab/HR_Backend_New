@@ -51,7 +51,9 @@ export class UniformAllocationsService {
         size: createDto.size,
         quantity: createDto.quantity,
         issueDate: createDto.issueDate ? new Date(createDto.issueDate) : new Date(),
-        expectedReturnDate: createDto.expectedReturnDate ? new Date(createDto.expectedReturnDate) : null,
+        expectedReturnDate: createDto.expectedReturnDate
+          ? new Date(createDto.expectedReturnDate)
+          : null,
         condition: createDto.condition || 'Good',
         remarks: createDto.remarks,
         issuedBy: createDto.issuedBy,
@@ -118,7 +120,7 @@ export class UniformAllocationsService {
         }
 
         return this.formatResponse(a, departmentName, designationName)
-      })
+      }),
     )
 
     return formattedAllocations
@@ -170,7 +172,9 @@ export class UniformAllocationsService {
         uniformItemId: updateDto.uniformItemId,
         size: updateDto.size,
         quantity: updateDto.quantity,
-        expectedReturnDate: updateDto.expectedReturnDate ? new Date(updateDto.expectedReturnDate) : undefined,
+        expectedReturnDate: updateDto.expectedReturnDate
+          ? new Date(updateDto.expectedReturnDate)
+          : undefined,
         status: updateDto.status,
         condition: updateDto.condition,
         remarks: updateDto.remarks,
@@ -223,7 +227,11 @@ export class UniformAllocationsService {
     await this.prisma.uniformAllocation.delete({ where: { id } })
   }
 
-  private formatResponse(allocation: any, departmentName: string = '', designationName: string = '') {
+  private formatResponse(
+    allocation: any,
+    departmentName: string = '',
+    designationName: string = '',
+  ) {
     return {
       id: allocation.id,
       employeeId: allocation.employeeMasterId,
@@ -239,19 +247,28 @@ export class UniformAllocationsService {
       quantity: allocation.quantity,
       issueDate: allocation.issueDate.toISOString().split('T')[0],
       returnDate: allocation.returnDate ? allocation.returnDate.toISOString().split('T')[0] : null,
-      expectedReturnDate: allocation.expectedReturnDate ? allocation.expectedReturnDate.toISOString().split('T')[0] : null,
-      status: allocation.status === 'ISSUED' ? 'Issued' :
-              allocation.status === 'RETURNED' ? 'Returned' :
-              allocation.status === 'LOST' ? 'Lost' :
-              allocation.status === 'DAMAGED' ? 'Damaged' : 'Expired',
+      expectedReturnDate: allocation.expectedReturnDate
+        ? allocation.expectedReturnDate.toISOString().split('T')[0]
+        : null,
+      status:
+        allocation.status === 'ISSUED'
+          ? 'Issued'
+          : allocation.status === 'RETURNED'
+            ? 'Returned'
+            : allocation.status === 'LOST'
+              ? 'Lost'
+              : allocation.status === 'DAMAGED'
+                ? 'Damaged'
+                : 'Expired',
       condition: allocation.condition,
       remarks: allocation.remarks,
       issuedBy: allocation.issuedBy,
       returnedBy: allocation.returnedBy,
-      returnedDate: allocation.returnedDate ? allocation.returnedDate.toISOString().split('T')[0] : null,
+      returnedDate: allocation.returnedDate
+        ? allocation.returnedDate.toISOString().split('T')[0]
+        : null,
       createdAt: allocation.createdAt,
       updatedAt: allocation.updatedAt,
     }
   }
 }
-

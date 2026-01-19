@@ -66,4 +66,3 @@ export class InterviewsController {
     return this.interviewsService.remove(id)
   }
 }
-

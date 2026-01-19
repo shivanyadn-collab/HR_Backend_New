@@ -36,7 +36,7 @@ export class AssetCategoriesService {
 
     // Note: assetCount would need to be calculated from Asset model if it exists
     // For now, returning 0 as placeholder
-    return categories.map(category => ({
+    return categories.map((category) => ({
       ...category,
       assetCount: 0, // TODO: Calculate from Asset model when available
     }))
@@ -67,7 +67,10 @@ export class AssetCategoriesService {
     }
 
     // Check if category code is being updated and if it conflicts
-    if (updateAssetCategoryDto.categoryCode && updateAssetCategoryDto.categoryCode !== category.categoryCode) {
+    if (
+      updateAssetCategoryDto.categoryCode &&
+      updateAssetCategoryDto.categoryCode !== category.categoryCode
+    ) {
       const existing = await this.prisma.assetCategory.findUnique({
         where: { categoryCode: updateAssetCategoryDto.categoryCode },
       })
@@ -118,4 +121,3 @@ export class AssetCategoriesService {
     })
   }
 }
-

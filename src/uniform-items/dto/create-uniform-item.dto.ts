@@ -24,4 +24,3 @@ export class CreateUniformItemDto {
   @IsOptional()
   isActive?: boolean
 }
-

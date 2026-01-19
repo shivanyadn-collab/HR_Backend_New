@@ -9,7 +9,7 @@ export class IDCardTemplatesService {
 
   async create(createDto: CreateIDCardTemplateDto) {
     const templateCode = createDto.templateCode || `TEMP-${Date.now().toString().slice(-6)}`
-    
+
     const template = await this.prisma.iDCardTemplate.create({
       data: {
         templateName: createDto.templateName,
@@ -22,7 +22,9 @@ export class IDCardTemplatesService {
         ...(createDto.logoUrl !== undefined && { logoUrl: createDto.logoUrl }),
         ...(createDto.companyName !== undefined && { companyName: createDto.companyName }),
         ...(createDto.companyAddress !== undefined && { companyAddress: createDto.companyAddress }),
-        ...(createDto.showEmployeePhoto !== undefined && { showEmployeePhoto: createDto.showEmployeePhoto }),
+        ...(createDto.showEmployeePhoto !== undefined && {
+          showEmployeePhoto: createDto.showEmployeePhoto,
+        }),
         showQRCode: createDto.showQRCode !== false,
         showDepartment: createDto.showDepartment !== false,
         showDesignation: createDto.showDesignation !== false,
@@ -41,7 +43,7 @@ export class IDCardTemplatesService {
       orderBy: { createdAt: 'desc' },
     })
 
-    return templates.map(t => this.formatResponse(t))
+    return templates.map((t) => this.formatResponse(t))
   }
 
   async findOne(id: string) {
@@ -62,7 +64,9 @@ export class IDCardTemplatesService {
       where: { id },
       data: {
         ...(updateDto.templateName !== undefined && { templateName: updateDto.templateName }),
-        ...(updateDto.backgroundColor !== undefined && { backgroundColor: updateDto.backgroundColor }),
+        ...(updateDto.backgroundColor !== undefined && {
+          backgroundColor: updateDto.backgroundColor,
+        }),
         ...(updateDto.textColor !== undefined && { textColor: updateDto.textColor }),
         ...(updateDto.accentColor !== undefined && { accentColor: updateDto.accentColor }),
         ...(updateDto.logoPosition !== undefined && { logoPosition: updateDto.logoPosition }),
@@ -70,12 +74,20 @@ export class IDCardTemplatesService {
         ...(updateDto.logoUrl !== undefined && { logoUrl: updateDto.logoUrl }),
         ...(updateDto.companyName !== undefined && { companyName: updateDto.companyName }),
         ...(updateDto.companyAddress !== undefined && { companyAddress: updateDto.companyAddress }),
-        ...(updateDto.showEmployeePhoto !== undefined && { showEmployeePhoto: updateDto.showEmployeePhoto }),
+        ...(updateDto.showEmployeePhoto !== undefined && {
+          showEmployeePhoto: updateDto.showEmployeePhoto,
+        }),
         ...(updateDto.showQRCode !== undefined && { showQRCode: updateDto.showQRCode }),
         ...(updateDto.showDepartment !== undefined && { showDepartment: updateDto.showDepartment }),
-        ...(updateDto.showDesignation !== undefined && { showDesignation: updateDto.showDesignation }),
-        ...(updateDto.showEmployeeCode !== undefined && { showEmployeeCode: updateDto.showEmployeeCode }),
-        ...(updateDto.showJoiningDate !== undefined && { showJoiningDate: updateDto.showJoiningDate }),
+        ...(updateDto.showDesignation !== undefined && {
+          showDesignation: updateDto.showDesignation,
+        }),
+        ...(updateDto.showEmployeeCode !== undefined && {
+          showEmployeeCode: updateDto.showEmployeeCode,
+        }),
+        ...(updateDto.showJoiningDate !== undefined && {
+          showJoiningDate: updateDto.showJoiningDate,
+        }),
         ...(updateDto.showExpiryDate !== undefined && { showExpiryDate: updateDto.showExpiryDate }),
         ...(updateDto.isDefault !== undefined && { isDefault: updateDto.isDefault }),
       },
@@ -119,4 +131,3 @@ export class IDCardTemplatesService {
     }
   }
 }
-

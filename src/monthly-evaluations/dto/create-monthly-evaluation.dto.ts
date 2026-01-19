@@ -5,7 +5,7 @@ export enum EvaluationStatus {
   PENDING = 'PENDING',
   IN_PROGRESS = 'IN_PROGRESS',
   COMPLETED = 'COMPLETED',
-  APPROVED = 'APPROVED'
+  APPROVED = 'APPROVED',
 }
 
 export class CreateMonthlyEvaluationDto {
@@ -39,4 +39,3 @@ export class CreateMonthlyEvaluationDto {
   @IsEnum(EvaluationStatus)
   status?: EvaluationStatus
 }
-

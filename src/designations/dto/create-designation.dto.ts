@@ -32,4 +32,3 @@ export class CreateDesignationDto {
   @IsBoolean()
   isActive?: boolean
 }
-

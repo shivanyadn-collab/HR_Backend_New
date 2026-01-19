@@ -374,6 +374,7 @@ model ProjectDocument {
   fileType     String
   fileSize     Int // in bytes
   fileUrl      String? // URL or path to stored file
+  fileKey      String? // Bucket key for cloud storage
   category     String // 'Requirements', 'Design', etc.
   description  String?
   version      String?
@@ -889,6 +890,7 @@ model EmployeeDocument {
   documentCategory String // 'ID Documents', 'Employment Documents', 'Certificates', etc.
   fileSize         Int // in bytes
   fileUrl          String? // URL or path to stored file
+  fileKey          String? // Bucket key for cloud storage
   uploadDate       DateTime               @default(now())
   expiryDate       DateTime?
   uploadedBy       String? // User ID
@@ -1153,6 +1155,7 @@ model FaceImage {
   id               String   @id @default(uuid())
   faceEnrollmentId String
   imageUrl         String // Path to stored image
+  imageKey         String? // Bucket key for cloud storage
   imageName        String
   imageSize        Int // Size in bytes
   qualityScore     Float? // Individual image quality score
@@ -2686,6 +2689,7 @@ model TaxDocument {
   documentName     String
   financialYear    String // Format: "2024-2025"
   fileUrl          String?
+  fileKey          String? // Bucket key for cloud storage
   uploadDate       DateTime          @default(now())
   status           TaxDocumentStatus @default(PENDING)
   verifiedBy       String?

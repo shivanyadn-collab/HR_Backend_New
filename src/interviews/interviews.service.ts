@@ -137,13 +137,15 @@ export class InterviewsService {
           { interviewer: { contains: search, mode: 'insensitive' } },
           { location: { contains: search, mode: 'insensitive' } },
           { candidateApplication: { candidateName: { contains: search, mode: 'insensitive' } } },
-          { candidateApplication: { applicationNumber: { contains: search, mode: 'insensitive' } } },
+          {
+            candidateApplication: { applicationNumber: { contains: search, mode: 'insensitive' } },
+          },
           {
             candidateApplication: {
               jobOpening: { jobTitle: { contains: search, mode: 'insensitive' } },
             },
           },
-        ]
+        ],
       })
     }
 
@@ -161,8 +163,8 @@ export class InterviewsService {
             { culturalFit: { not: null } },
             { strengths: { not: null } },
             { weaknesses: { not: null } },
-            { recommendation: { not: null } }
-          ]
+            { recommendation: { not: null } },
+          ],
         })
       } else {
         // If hasFeedback is false, we want interviews with no feedback
@@ -173,8 +175,8 @@ export class InterviewsService {
             { technicalSkills: null },
             { communication: null },
             { problemSolving: null },
-            { culturalFit: null }
-          ]
+            { culturalFit: null },
+          ],
         })
       }
     }
@@ -314,4 +316,3 @@ export class InterviewsService {
     }
   }
 }
-

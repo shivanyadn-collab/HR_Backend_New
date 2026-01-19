@@ -111,7 +111,7 @@ export class LocationDeviationAlertsService {
           description: alert.description,
           remarks: alert.remarks,
         }
-      })
+      }),
     )
 
     return alertsWithDetails
@@ -202,4 +202,3 @@ export class LocationDeviationAlertsService {
     })
   }
 }
-

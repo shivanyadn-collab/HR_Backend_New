@@ -52,7 +52,13 @@ export class AttendanceRegularizationsService {
     return this.formatResponse(regularization)
   }
 
-  async findAll(employeeId?: string, status?: string, startDate?: string, endDate?: string, search?: string) {
+  async findAll(
+    employeeId?: string,
+    status?: string,
+    startDate?: string,
+    endDate?: string,
+    search?: string,
+  ) {
     const where: any = {}
 
     if (employeeId) {
@@ -124,12 +130,22 @@ export class AttendanceRegularizationsService {
       where: { id },
       data: {
         ...(updateDto.date && { date: new Date(updateDto.date) }),
-        ...(updateDto.originalCheckIn !== undefined && { originalCheckIn: updateDto.originalCheckIn }),
-        ...(updateDto.originalCheckOut !== undefined && { originalCheckOut: updateDto.originalCheckOut }),
-        ...(updateDto.requestedCheckIn !== undefined && { requestedCheckIn: updateDto.requestedCheckIn }),
-        ...(updateDto.requestedCheckOut !== undefined && { requestedCheckOut: updateDto.requestedCheckOut }),
+        ...(updateDto.originalCheckIn !== undefined && {
+          originalCheckIn: updateDto.originalCheckIn,
+        }),
+        ...(updateDto.originalCheckOut !== undefined && {
+          originalCheckOut: updateDto.originalCheckOut,
+        }),
+        ...(updateDto.requestedCheckIn !== undefined && {
+          requestedCheckIn: updateDto.requestedCheckIn,
+        }),
+        ...(updateDto.requestedCheckOut !== undefined && {
+          requestedCheckOut: updateDto.requestedCheckOut,
+        }),
         ...(updateDto.reason !== undefined && { reason: updateDto.reason }),
-        ...(updateDto.supportingDocument !== undefined && { supportingDocument: updateDto.supportingDocument }),
+        ...(updateDto.supportingDocument !== undefined && {
+          supportingDocument: updateDto.supportingDocument,
+        }),
       },
       include: {
         employeeMaster: true,
@@ -262,4 +278,3 @@ export class AttendanceRegularizationsService {
     }
   }
 }
-

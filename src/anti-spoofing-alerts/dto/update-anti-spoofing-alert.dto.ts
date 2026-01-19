@@ -1,6 +1,11 @@
 import { IsString, IsOptional, IsNumber, IsEnum, IsDateString, Min, Max } from 'class-validator'
 import { PartialType } from '@nestjs/mapped-types'
-import { CreateAntiSpoofingAlertDto, AntiSpoofingAlertType, AntiSpoofingSeverity, AntiSpoofingAlertStatus } from './create-anti-spoofing-alert.dto'
+import {
+  CreateAntiSpoofingAlertDto,
+  AntiSpoofingAlertType,
+  AntiSpoofingSeverity,
+  AntiSpoofingAlertStatus,
+} from './create-anti-spoofing-alert.dto'
 
 export class UpdateAntiSpoofingAlertDto extends PartialType(CreateAntiSpoofingAlertDto) {
   @IsOptional()
@@ -15,4 +20,3 @@ export class UpdateAntiSpoofingAlertDto extends PartialType(CreateAntiSpoofingAl
   @IsString()
   resolvedBy?: string
 }
-

@@ -51,4 +51,3 @@ export class CreateCheckInOutLogDto {
   @IsEnum(CheckInOutStatus)
   status?: CheckInOutStatus
 }
-
