@@ -18,7 +18,9 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build --no-cache -t $IMAGE_NAME .'
+                sh '''
+                docker build --no-cache -t $IMAGE_NAME .
+                '''
             }
         }
 
@@ -35,9 +37,14 @@ pipeline {
             steps {
                 sh '''
                 docker run -d \
-                -p $HOST_PORT:$CONTAINER_PORT \
-                --name $CONTAINER_NAME \
-                $IMAGE_NAME
+                  --name $CONTAINER_NAME \
+                  -p $HOST_PORT:$CONTAINER_PORT \
+                  -e DATABASE_URL="postgresql://admin:Efmsiot%40%232025%21@192.168.1.2:5432/hr_admin?schema=public&connection_limit=5&pool_timeout=20" \
+                  -e JWT_SECRET="8f1cd53c5fcf27695ae0f13e14ddab11f526542b1ad1277a6ea679c1712e520f" \
+                  -e JWT_EXPIRES_IN="7d" \
+                  -e PORT=3000 \
+                  -e NODE_ENV=development \
+                  $IMAGE_NAME
                 '''
             }
         }
