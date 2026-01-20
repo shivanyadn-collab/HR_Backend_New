@@ -266,6 +266,7 @@ model EmployeeMaster {
   form16s                     Form16[]
   investmentDeclarations      InvestmentDeclaration[]
   taxDocuments                TaxDocument[]
+  salaryStructures            SalaryStructure[]
 
   @@map("employee_masters")
 }
@@ -478,9 +479,9 @@ model Location {
   updatedAt    DateTime @updatedAt
 
   // Relations
-  employees        EmployeeMaster[]
-  departments      Department[]
-  shifts           Shift[]
+  employees   EmployeeMaster[]
+  departments Department[]
+  shifts      Shift[]
 
   @@map("locations")
 }
@@ -540,13 +541,13 @@ model Shift {
   endTime         String // Format: HH:mm
   breakDuration   Int      @default(0) // in minutes
   totalHours      Float
-  shiftType       String?  // Shift type: '8hrs', '9hrs', '10hrs', '12hrs', 'Panama', etc.
+  shiftType       String? // Shift type: '8hrs', '9hrs', '10hrs', '12hrs', 'Panama', etc.
   isFlexible      Boolean  @default(false)
   employeeCount   Int      @default(0)
   isActive        Boolean  @default(true)
   workingDays     String[] // Array of day names: ['Monday', 'Tuesday', ...]
-  weekOffPattern  String?  // Complex weekly off pattern: 'Sunday, 2nd & 4th Saturday', 'All Saturdays & Sundays', etc.
-  saturdayPattern String?  // 'ALL_OFF', 'ALL_WORKING', '2ND_4TH_OFF', '1ST_3RD_5TH_OFF', 'ALTERNATE'
+  weekOffPattern  String? // Complex weekly off pattern: 'Sunday, 2nd & 4th Saturday', 'All Saturdays & Sundays', etc.
+  saturdayPattern String? // 'ALL_OFF', 'ALL_WORKING', '2ND_4TH_OFF', '1ST_3RD_5TH_OFF', 'ALTERNATE'
   locationId      String? // Foreign key to Location
   departmentIds   String[] // Array of department IDs
   designationIds  String[] // Array of designation IDs
@@ -630,7 +631,7 @@ model LeaveApplication {
   leavePolicyId     String
   startDate         DateTime
   endDate           DateTime
-  totalDays         Float                  // Changed to Float to support 0.5 days
+  totalDays         Float // Changed to Float to support 0.5 days
   leaveSession      LeaveSession           @default(FULL_DAY)
   reason            String
   status            LeaveApplicationStatus @default(PENDING)
@@ -638,8 +639,8 @@ model LeaveApplication {
   approvedBy        String?
   approvedDate      DateTime?
   rejectionReason   String?
-  attachmentUrl     String?                // For document uploads (medical certificate, etc.)
-  attachmentName    String?                // Original filename
+  attachmentUrl     String? // For document uploads (medical certificate, etc.)
+  attachmentName    String? // Original filename
   createdAt         DateTime               @default(now())
   updatedAt         DateTime               @updatedAt
 
@@ -788,15 +789,15 @@ model AssetCategory {
 
 // Project Category Model
 model ProjectCategory {
-  id            String   @id @default(uuid())
-  categoryName  String
-  categoryCode  String   @unique
-  description   String
-  color         String? // Color key for UI display
-  locationIds   String[] // Array of location IDs for multiple location mapping
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id @default(uuid())
+  categoryName String
+  categoryCode String   @unique
+  description  String
+  color        String? // Color key for UI display
+  locationIds  String[] // Array of location IDs for multiple location mapping
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relations
   projects Project[]
@@ -817,9 +818,45 @@ model SalaryTemplate {
   updatedAt    DateTime @updatedAt
 
   // Relations
-  employees EmployeeMaster[]
+  employees        EmployeeMaster[]
+  salaryStructures SalaryStructure[]
 
   @@map("salary_templates")
+}
+
+// Salary Structure Model
+model SalaryStructure {
+  id                 String   @id @default(uuid())
+  employeeMasterId   String
+  employeeName       String
+  employeeCode       String
+  department         String
+  designation        String
+  basicSalary        Float    @default(0)
+  hra                Float    @default(0)
+  specialAllowance   Float    @default(0)
+  transportAllowance Float    @default(0)
+  medicalAllowance   Float    @default(0)
+  otherAllowances    Float    @default(0)
+  totalEarnings      Float    @default(0)
+  providentFund      Float    @default(0)
+  esic               Float    @default(0)
+  professionalTax    Float    @default(0)
+  tds                Float    @default(0)
+  otherDeductions    Float    @default(0)
+  totalDeductions    Float    @default(0)
+  netSalary          Float    @default(0)
+  effectiveDate      DateTime
+  status             String   @default("Active") // 'Active' | 'Inactive'
+  templateId         String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  // Relations
+  employeeMaster EmployeeMaster  @relation(fields: [employeeMasterId], references: [id], onDelete: Cascade)
+  template       SalaryTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@map("salary_structures")
 }
 
 // KYC Verification Model
@@ -2334,11 +2371,11 @@ enum OvertimeStatus {
 
 // Attendance Regularization Model
 model AttendanceRegularization {
-  id                 String                 @id @default(uuid())
-  requestNumber      String                 @unique
+  id                 String               @id @default(uuid())
+  requestNumber      String               @unique
   employeeMasterId   String
-  regularizationType RegularizationType     @default(MISSED_PUNCH)
-  date               DateTime               @db.Date
+  regularizationType RegularizationType   @default(MISSED_PUNCH)
+  date               DateTime             @db.Date
   originalCheckIn    String? // Format: HH:mm
   originalCheckOut   String? // Format: HH:mm
   requestedCheckIn   String? // Format: HH:mm (optional for WFH/On-Duty)
@@ -2346,14 +2383,14 @@ model AttendanceRegularization {
   reason             String
   location           String? // For on-duty location
   supportingDocument String?
-  status             RegularizationStatus   @default(PENDING)
-  requestedDate      DateTime               @default(now())
+  status             RegularizationStatus @default(PENDING)
+  requestedDate      DateTime             @default(now())
   approvedBy         String?
   approvedDate       DateTime?
   rejectionReason    String?
   remarks            String?
-  createdAt          DateTime               @default(now())
-  updatedAt          DateTime               @updatedAt
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
 
   // Relations
   employeeMaster EmployeeMaster @relation(fields: [employeeMasterId], references: [id], onDelete: Cascade)

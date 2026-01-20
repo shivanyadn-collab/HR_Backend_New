@@ -19,6 +19,7 @@ import { UserRoleAssignmentsModule } from './user-role-assignments/user-role-ass
 import { AssetCategoriesModule } from './asset-categories/asset-categories.module'
 import { ProjectCategoriesModule } from './project-categories/project-categories.module'
 import { SalaryTemplatesModule } from './salary-templates/salary-templates.module'
+import { SalaryStructuresModule } from './salary-structures/salary-structures.module'
 import { ManagerAssignmentsModule } from './manager-assignments/manager-assignments.module'
 import { EmployeeAssignmentsModule } from './employee-assignments/employee-assignments.module'
 import { BudgetItemsModule } from './budget-items/budget-items.module'
@@ -111,6 +112,7 @@ import { BucketModule } from './bucket/bucket.module'
     AssetCategoriesModule,
     ProjectCategoriesModule,
     SalaryTemplatesModule,
+    SalaryStructuresModule,
     ManagerAssignmentsModule,
     EmployeeAssignmentsModule,
     BudgetItemsModule,
