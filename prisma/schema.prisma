@@ -961,6 +961,7 @@ model IDCardTemplate {
   accentColor       String   @default("#667eea")
   logoPosition      String   @default("left") // 'left', 'center', 'right'
   photoPosition     String   @default("right") // 'left', 'right'
+  orientation       String   @default("horizontal") // 'horizontal', 'vertical'
   logoUrl           String? // URL or base64 for company logo
   companyName       String? // Company name to display on ID card
   companyAddress    String? // Company address to display on ID card

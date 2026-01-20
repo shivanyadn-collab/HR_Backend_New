@@ -19,6 +19,7 @@ export class IDCardTemplatesService {
         accentColor: createDto.accentColor || '#667eea',
         logoPosition: createDto.logoPosition || 'left',
         photoPosition: createDto.photoPosition || 'right',
+        orientation: createDto.orientation || 'horizontal',
         ...(createDto.logoUrl !== undefined && { logoUrl: createDto.logoUrl }),
         ...(createDto.companyName !== undefined && { companyName: createDto.companyName }),
         ...(createDto.companyAddress !== undefined && { companyAddress: createDto.companyAddress }),
@@ -32,7 +33,7 @@ export class IDCardTemplatesService {
         showJoiningDate: createDto.showJoiningDate || false,
         showExpiryDate: createDto.showExpiryDate !== false,
         isDefault: createDto.isDefault || false,
-      },
+      } as any,
     })
 
     return this.formatResponse(template)
@@ -71,6 +72,7 @@ export class IDCardTemplatesService {
         ...(updateDto.accentColor !== undefined && { accentColor: updateDto.accentColor }),
         ...(updateDto.logoPosition !== undefined && { logoPosition: updateDto.logoPosition }),
         ...(updateDto.photoPosition !== undefined && { photoPosition: updateDto.photoPosition }),
+        ...(updateDto.orientation !== undefined && { orientation: updateDto.orientation }),
         ...(updateDto.logoUrl !== undefined && { logoUrl: updateDto.logoUrl }),
         ...(updateDto.companyName !== undefined && { companyName: updateDto.companyName }),
         ...(updateDto.companyAddress !== undefined && { companyAddress: updateDto.companyAddress }),
@@ -114,6 +116,7 @@ export class IDCardTemplatesService {
       accentColor: template.accentColor,
       logoPosition: template.logoPosition,
       photoPosition: template.photoPosition,
+      orientation: template.orientation || 'horizontal',
       logoUrl: template.logoUrl || null,
       companyName: template.companyName || null,
       companyAddress: template.companyAddress || null,
