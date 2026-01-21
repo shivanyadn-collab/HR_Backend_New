@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config'
 @Injectable()
 export class FirebaseService {
   private readonly logger = new Logger(FirebaseService.name)
-  private firebaseApp: admin.app.App
+  private firebaseApp: admin.app.App | null = null
 
   constructor(private configService: ConfigService) {
     this.initializeFirebase()
@@ -19,18 +19,40 @@ export class FirebaseService {
       
       if (serviceAccount) {
         // If service account is provided as JSON string
-        const serviceAccountJson = JSON.parse(serviceAccount)
-        this.firebaseApp = admin.initializeApp({
-          credential: admin.credential.cert(serviceAccountJson),
-        })
-      } else {
-        // Try to use default credentials (for Google Cloud environments)
-        // Or use environment variables
-        const projectId = this.configService.get<string>('FIREBASE_PROJECT_ID')
-        const privateKey = this.configService.get<string>('FIREBASE_PRIVATE_KEY')?.replace(/\\n/g, '\n')
-        const clientEmail = this.configService.get<string>('FIREBASE_CLIENT_EMAIL')
+        try {
+          const serviceAccountJson = JSON.parse(serviceAccount)
+          this.firebaseApp = admin.initializeApp({
+            credential: admin.credential.cert(serviceAccountJson),
+          })
+          this.logger.log('Firebase Admin SDK initialized successfully using FIREBASE_SERVICE_ACCOUNT')
+          return
+        } catch (parseError) {
+          this.logger.warn('Failed to parse FIREBASE_SERVICE_ACCOUNT JSON, trying alternative methods', parseError)
+        }
+      }
 
-        if (projectId && privateKey && clientEmail) {
+      // Try to use environment variables
+      const projectId = this.configService.get<string>('FIREBASE_PROJECT_ID')
+      let privateKey = this.configService.get<string>('FIREBASE_PRIVATE_KEY')
+      const clientEmail = this.configService.get<string>('FIREBASE_CLIENT_EMAIL')
+
+      if (projectId && privateKey && clientEmail) {
+        // Fix private key formatting - ensure proper PEM format
+        privateKey = privateKey.replace(/\\n/g, '\n')
+        
+        // Validate that private key has proper PEM headers
+        if (!privateKey.includes('-----BEGIN')) {
+          this.logger.warn('FIREBASE_PRIVATE_KEY appears to be missing PEM headers. Ensure it includes -----BEGIN PRIVATE KEY----- and -----END PRIVATE KEY-----')
+        }
+
+        // Validate private key is not empty after processing
+        if (!privateKey.trim()) {
+          this.logger.warn('FIREBASE_PRIVATE_KEY is empty after processing')
+          this.tryDefaultInitialization()
+          return
+        }
+
+        try {
           this.firebaseApp = admin.initializeApp({
             credential: admin.credential.cert({
               projectId,
@@ -38,16 +60,41 @@ export class FirebaseService {
               clientEmail,
             }),
           })
-        } else {
-          // Use default credentials (for Google Cloud environments)
-          this.firebaseApp = admin.initializeApp()
+          this.logger.log('Firebase Admin SDK initialized successfully using environment variables')
+          return
+        } catch (certError) {
+          this.logger.error('Failed to initialize Firebase with provided credentials', certError)
+          this.tryDefaultInitialization()
+          return
         }
+      } else {
+        this.logger.warn('Firebase credentials not found in environment variables. Missing: ' + 
+          (!projectId ? 'FIREBASE_PROJECT_ID ' : '') +
+          (!privateKey ? 'FIREBASE_PRIVATE_KEY ' : '') +
+          (!clientEmail ? 'FIREBASE_CLIENT_EMAIL' : ''))
+        this.tryDefaultInitialization()
       }
-
-      this.logger.log('Firebase Admin SDK initialized successfully')
     } catch (error) {
       this.logger.error('Failed to initialize Firebase Admin SDK', error)
-      throw error
+      this.logger.warn('Application will continue without Firebase. Push notifications will not work.')
+      // Don't throw error - allow app to start without Firebase
+    }
+  }
+
+  private tryDefaultInitialization() {
+    try {
+      // Use default credentials (for Google Cloud environments)
+      this.firebaseApp = admin.initializeApp()
+      this.logger.log('Firebase Admin SDK initialized using default credentials')
+    } catch (defaultError) {
+      this.logger.warn('Failed to initialize Firebase with default credentials. Push notifications will be disabled.', defaultError)
+      this.firebaseApp = null
+    }
+  }
+
+  private ensureInitialized(): void {
+    if (!this.firebaseApp) {
+      throw new Error('Firebase Admin SDK is not initialized. Please check your Firebase configuration.')
     }
   }
 
@@ -55,6 +102,7 @@ export class FirebaseService {
    * Send FCM notification to a single device
    */
   async sendToDevice(token: string, notification: { title: string; body: string }, data?: any): Promise<string> {
+    this.ensureInitialized()
     try {
       const message: admin.messaging.Message = {
         token,
@@ -93,6 +141,7 @@ export class FirebaseService {
     notification: { title: string; body: string },
     data?: any,
   ): Promise<admin.messaging.BatchResponse> {
+    this.ensureInitialized()
     try {
       if (tokens.length === 0) {
         throw new Error('No tokens provided')
@@ -135,6 +184,7 @@ export class FirebaseService {
     notification: { title: string; body: string },
     data?: any,
   ): Promise<string> {
+    this.ensureInitialized()
     try {
       const message: admin.messaging.Message = {
         topic,
@@ -169,6 +219,7 @@ export class FirebaseService {
    * Subscribe device tokens to a topic
    */
   async subscribeToTopic(tokens: string[], topic: string): Promise<void> {
+    this.ensureInitialized()
     try {
       const response = await admin.messaging().subscribeToTopic(tokens, topic)
       this.logger.log(`Subscribed ${response.successCount} tokens to topic ${topic}`)
@@ -214,6 +265,10 @@ export class FirebaseService {
    * Validate FCM token
    */
   async validateToken(token: string): Promise<boolean> {
+    if (!this.firebaseApp) {
+      this.logger.warn('Firebase not initialized, cannot validate token')
+      return false
+    }
     try {
       // Try to send a test message (dry run)
       await admin.messaging().send(
