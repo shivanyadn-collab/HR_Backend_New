@@ -248,6 +248,7 @@ export class UsersService {
         ...(updateUserDto.designation !== undefined && { designation: updateUserDto.designation }),
         ...(updateUserDto.company !== undefined && { company: updateUserDto.company }),
         ...(updateUserDto.isActive !== undefined && { isActive: updateUserDto.isActive }),
+        ...(updateUserDto.fcmToken !== undefined && { fcmToken: updateUserDto.fcmToken }),
       },
       include: {
         projects: {

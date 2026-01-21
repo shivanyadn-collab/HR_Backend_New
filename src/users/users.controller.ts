@@ -28,6 +28,12 @@ export class UsersController {
     return this.usersService.findOne(user.id)
   }
 
+  @Patch('profile/fcm-token')
+  @HttpCode(HttpStatus.OK)
+  async updateFcmToken(@CurrentUser() user: UserResponseDto, @Body() body: { fcmToken: string }) {
+    return this.usersService.update(user.id, { fcmToken: body.fcmToken })
+  }
+
   @Get()
   findAll(@Query('role') role?: string, @Query('isActive') isActive?: string) {
     const isActiveBool = isActive === 'true' ? true : isActive === 'false' ? false : undefined

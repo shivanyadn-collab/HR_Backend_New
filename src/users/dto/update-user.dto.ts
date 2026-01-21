@@ -41,6 +41,10 @@ export class UpdateUserDto {
   isActive?: boolean
 
   @IsOptional()
+  @IsString()
+  fcmToken?: string
+
+  @IsOptional()
   @IsArray()
   @IsString({ each: true })
   projectIds?: string[]

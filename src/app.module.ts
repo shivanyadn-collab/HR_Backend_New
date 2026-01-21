@@ -85,6 +85,7 @@ import { Form16Module } from './form16/form16.module'
 import { InvestmentDeclarationsModule } from './investment-declarations/investment-declarations.module'
 import { TaxDocumentsModule } from './tax-documents/tax-documents.module'
 import { BucketModule } from './bucket/bucket.module'
+import { FirebaseModule } from './firebase/firebase.module'
 
 @Module({
   imports: [
@@ -177,6 +178,7 @@ import { BucketModule } from './bucket/bucket.module'
     Form16Module,
     InvestmentDeclarationsModule,
     TaxDocumentsModule,
+    FirebaseModule,
   ],
 })
 export class AppModule {}

@@ -841,7 +841,32 @@ export class EmployeeAssignmentsService {
     }
 
     if (projectId) where.projectId = projectId
-    if (status) where.status = status
+    if (status) {
+      // Map string status to enum value
+      const statusMap: Record<string, EmployeeAssignmentStatus> = {
+        'Active': EmployeeAssignmentStatus.ACTIVE,
+        'ACTIVE': EmployeeAssignmentStatus.ACTIVE,
+        'Completed': EmployeeAssignmentStatus.COMPLETED,
+        'COMPLETED': EmployeeAssignmentStatus.COMPLETED,
+        'On Hold': EmployeeAssignmentStatus.ON_HOLD,
+        'ON_HOLD': EmployeeAssignmentStatus.ON_HOLD,
+        'OnHold': EmployeeAssignmentStatus.ON_HOLD,
+        'Cancelled': EmployeeAssignmentStatus.CANCELLED,
+        'CANCELLED': EmployeeAssignmentStatus.CANCELLED
+      }
+      const enumStatus = statusMap[status]
+      if (enumStatus) {
+        where.status = enumStatus
+      } else {
+        // If status doesn't match, try to use it directly (might already be enum)
+        try {
+          where.status = status as EmployeeAssignmentStatus
+        } catch {
+          // Invalid status, skip it
+          console.warn(`Invalid status value: ${status}`)
+        }
+      }
+    }
 
     console.log('Finding assignments with where clause:', JSON.stringify(where, null, 2))
 
