@@ -4,6 +4,8 @@ import { AppModule } from './app.module'
 import { NestExpressApplication } from '@nestjs/platform-express'
 import { join } from 'path'
 import * as express from 'express'
+import { AllExceptionsFilter } from './common/filters/http-exception.filter'
+
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule)
@@ -13,8 +15,33 @@ async function bootstrap() {
   app.use(express.urlencoded({ limit: '50mb', extended: true }))
 
   // Enable CORS
+  const allowedOrigins = process.env.FRONTEND_URL
+    ? process.env.FRONTEND_URL.split(',').map((url) => url.trim())
+    : ['http://localhost:5173', 'http://localhost:4173']
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) {
+        return callback(null, true)
+      }
+      
+      // Check if origin is in allowed list
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true)
+      }
+      
+      // For development: allow any localhost origin
+      if (process.env.NODE_ENV !== 'production') {
+        const localhostRegex = /^https?:\/\/localhost(:\d+)?$/
+        if (localhostRegex.test(origin)) {
+          return callback(null, true)
+        }
+      }
+      
+      // Reject if not allowed
+      callback(new Error(`Not allowed by CORS. Origin: ${origin}`))
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -24,6 +51,9 @@ async function bootstrap() {
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads/',
   })
+
+  // Global exception filter
+  app.useGlobalFilters(new AllExceptionsFilter())
 
   // Global validation pipe
   app.useGlobalPipes(
