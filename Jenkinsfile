@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    // This pipeline is triggered by GitHub webhooks
+    // Make sure GitHub webhook is configured to POST to: https://jenkins.zenapi.co.in/github-webhook/
+    // Content type: application/json
+    // Events: Just the push event
+
     environment {
         IMAGE_NAME = "hr-backend"
         CONTAINER_NAME = "hr-backend"
