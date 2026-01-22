@@ -227,6 +227,17 @@ export class BucketService {
     return await getSignedUrl(this.s3Client, command, { expiresIn })
   }
 
+  /**
+   * Get a signed URL for accessing a file in the bucket
+   * @param key The bucket key (path) of the file
+   * @param expiresIn Expiration time in seconds (default: 3600 = 1 hour)
+   * @returns Signed URL that can be used to access the file
+   */
+  async getSignedUrl(key: string, expiresIn: number = 3600): Promise<string> {
+    // Use the existing getFileUrl method which handles both S3 and local storage
+    return this.getFileUrl(key, expiresIn)
+  }
+
 
 
   async listFiles(prefix?: string): Promise<FileInfo[]> {
