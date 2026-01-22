@@ -4,10 +4,14 @@ import { CreateFaceEnrollmentDto } from './dto/create-face-enrollment.dto'
 import { UpdateFaceEnrollmentDto } from './dto/update-face-enrollment.dto'
 import { UploadFaceImageDto } from './dto/upload-face-image.dto'
 import { FaceEnrollmentStatus } from './dto/create-face-enrollment.dto'
+import { BucketService } from '../bucket/bucket.service'
 
 @Injectable()
 export class FaceEnrollmentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private bucketService: BucketService,
+  ) {}
 
   async create(createDto: CreateFaceEnrollmentDto) {
     const employee = await this.prisma.employeeMaster.findUnique({
@@ -172,6 +176,7 @@ export class FaceEnrollmentsService {
       data: {
         faceEnrollmentId: uploadDto.faceEnrollmentId,
         imageUrl: uploadDto.imageUrl,
+        imageKey: uploadDto.imageKey, // Store the bucket key for signed URL generation
         imageName: uploadDto.imageName,
         imageSize: uploadDto.imageSize,
         qualityScore: uploadDto.qualityScore,
@@ -250,19 +255,54 @@ export class FaceEnrollmentsService {
       throw new NotFoundException('Face enrollment not found')
     }
 
-    const images = enrollment.faceImagesData.map((img) => ({
-      id: img.id,
-      imageUrl: img.imageUrl,
-      imageName: img.imageName,
-      imageSize: img.imageSize,
-      qualityScore: img.qualityScore,
-      createdAt: img.createdAt,
-    }))
+    // Generate signed URLs for all images
+    const imagesWithSignedUrls = await Promise.all(
+      enrollment.faceImagesData.map(async (img) => {
+        let imageUrl = img.imageUrl
+
+        try {
+          // Use imageKey if available, otherwise extract key from S3 URL
+          let bucketKey = img.imageKey
+
+          // If imageKey is not available, try to extract it from the S3 URL
+          if (!bucketKey && img.imageUrl) {
+            // S3 URL format: https://{bucket-name}.s3.{region}.amazonaws.com/{key}
+            const s3UrlPattern = /https?:\/\/[^/]+\.s3\.[^/]+\/(.+)$/
+            const match = img.imageUrl.match(s3UrlPattern)
+            if (match && match[1]) {
+              bucketKey = decodeURIComponent(match[1])
+            }
+          }
+
+          // Generate signed URL if we have a bucket key
+          if (bucketKey) {
+            try {
+              imageUrl = await this.bucketService.getSignedUrl(bucketKey, 3600)
+            } catch (error) {
+              console.warn(`Failed to generate signed URL for image ${img.id}:`, error)
+              // Fallback to original URL if signed URL generation fails
+            }
+          }
+        } catch (error) {
+          console.warn(`Error processing image ${img.id}:`, error)
+          // Continue with original URL
+        }
+
+        return {
+          id: img.id,
+          imageUrl,
+          imageName: img.imageName,
+          imageSize: img.imageSize,
+          qualityScore: img.qualityScore,
+          createdAt: img.createdAt,
+        }
+      }),
+    )
 
     return {
       enrollmentId: id,
-      images: images.map((img) => img.imageUrl),
-      imageDetails: images,
+      images: imagesWithSignedUrls.map((img) => img.imageUrl),
+      imageDetails: imagesWithSignedUrls,
     }
   }
 
