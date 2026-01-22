@@ -2748,3 +2748,21 @@ enum TaxDocumentStatus {
   VERIFIED
   REJECTED
 }
+
+// Minimum Wage Configuration Model - Configurable minimum wage by state and category
+model MinimumWageConfiguration {
+  id          String   @id @default(uuid())
+  state       String   // State name (e.g., "Maharashtra", "Karnataka")
+  category    String   // Category: "Skilled", "Semi-Skilled", "Unskilled"
+  minimumWage Float    // Minimum wage amount
+  effectiveFrom DateTime @default(now()) // When this wage becomes effective
+  effectiveTo   DateTime? // When this wage expires (null = currently active)
+  isActive      Boolean  @default(true)
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([state, category, effectiveFrom])
+  @@map("minimum_wage_configurations")
+}

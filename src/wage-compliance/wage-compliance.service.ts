@@ -1,5 +1,7 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
+import { CreateMinimumWageDto } from './dto/create-minimum-wage.dto'
+import { UpdateMinimumWageDto } from './dto/update-minimum-wage.dto'
 
 interface SalaryComponent {
   name: string
@@ -59,23 +61,32 @@ export class WageComplianceService {
       },
     })
 
-    // Minimum wage by state and category (simplified - should come from a configuration table)
-    const minimumWageMap: Record<string, Record<string, number>> = {
-      Maharashtra: {
-        Skilled: 15000,
-        'Semi-Skilled': 13000,
-        Unskilled: 12000,
+    // Fetch minimum wage configurations from database
+    const now = new Date()
+    const minimumWageConfigs = await this.prisma.minimumWageConfiguration.findMany({
+      where: {
+        isActive: true,
+        effectiveFrom: { lte: now },
+        OR: [
+          { effectiveTo: null },
+          { effectiveTo: { gte: now } },
+        ],
       },
-      Karnataka: {
-        Skilled: 14000,
-        'Semi-Skilled': 12000,
-        Unskilled: 11000,
+      orderBy: {
+        effectiveFrom: 'desc',
       },
-      'Tamil Nadu': {
-        Skilled: 14500,
-        'Semi-Skilled': 12500,
-        Unskilled: 11500,
-      },
+    })
+
+    // Build minimum wage map from database
+    const minimumWageMap: Record<string, Record<string, number>> = {}
+    for (const config of minimumWageConfigs) {
+      if (!minimumWageMap[config.state]) {
+        minimumWageMap[config.state] = {}
+      }
+      // Use the most recent configuration for each state-category combination
+      if (!minimumWageMap[config.state][config.category]) {
+        minimumWageMap[config.state][config.category] = config.minimumWage
+      }
     }
 
     const records = employees.map((emp) => {
@@ -87,7 +98,8 @@ export class WageComplianceService {
         : emp.designation?.designationName?.toLowerCase().includes('semi')
           ? 'Semi-Skilled'
           : 'Skilled'
-      const applicableMinimumWage = minimumWageMap[empState]?.[category] || 12000
+      // Get minimum wage from database, fallback to 0 if not configured
+      const applicableMinimumWage = minimumWageMap[empState]?.[category] || 0
       const difference = actualWagePaid - applicableMinimumWage
       const complianceStatus = difference >= 0 ? 'Compliant' : 'Non-Compliant'
 
@@ -123,5 +135,74 @@ export class WageComplianceService {
     }
 
     return records
+  }
+
+  // CRUD operations for Minimum Wage Configuration
+  async createMinimumWage(createDto: CreateMinimumWageDto, createdBy?: string) {
+    return this.prisma.minimumWageConfiguration.create({
+      data: {
+        ...createDto,
+        effectiveFrom: createDto.effectiveFrom ? new Date(createDto.effectiveFrom) : new Date(),
+        effectiveTo: createDto.effectiveTo ? new Date(createDto.effectiveTo) : null,
+        createdBy,
+      },
+    })
+  }
+
+  async findAllMinimumWages() {
+    return this.prisma.minimumWageConfiguration.findMany({
+      orderBy: [
+        { state: 'asc' },
+        { category: 'asc' },
+        { effectiveFrom: 'desc' },
+      ],
+    })
+  }
+
+  async findOneMinimumWage(id: string) {
+    const config = await this.prisma.minimumWageConfiguration.findUnique({
+      where: { id },
+    })
+
+    if (!config) {
+      throw new NotFoundException(`Minimum wage configuration with ID ${id} not found`)
+    }
+
+    return config
+  }
+
+  async updateMinimumWage(id: string, updateDto: UpdateMinimumWageDto, updatedBy?: string) {
+    await this.findOneMinimumWage(id) // Check if exists
+
+    return this.prisma.minimumWageConfiguration.update({
+      where: { id },
+      data: {
+        ...updateDto,
+        effectiveFrom: updateDto.effectiveFrom ? new Date(updateDto.effectiveFrom) : undefined,
+        effectiveTo: updateDto.effectiveTo ? new Date(updateDto.effectiveTo) : undefined,
+        updatedBy,
+      },
+    })
+  }
+
+  async removeMinimumWage(id: string) {
+    await this.findOneMinimumWage(id) // Check if exists
+
+    return this.prisma.minimumWageConfiguration.delete({
+      where: { id },
+    })
+  }
+
+  async getStates() {
+    const states = await this.prisma.minimumWageConfiguration.findMany({
+      select: { state: true },
+      distinct: ['state'],
+      orderBy: { state: 'asc' },
+    })
+    return states.map((s) => s.state)
+  }
+
+  async getCategories() {
+    return ['Skilled', 'Semi-Skilled', 'Unskilled']
   }
 }
