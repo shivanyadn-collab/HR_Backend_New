@@ -17,6 +17,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>()
     const request = ctx.getRequest<Request>()
 
+    // Handle OPTIONS requests gracefully - don't return error JSON for preflight
+    if (request.method === 'OPTIONS') {
+      return response.status(200).end()
+    }
+
     const status =
       exception instanceof HttpException
         ? exception.getStatus()

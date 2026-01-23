@@ -39,12 +39,16 @@ async function bootstrap() {
         }
       }
       
-      // Reject if not allowed
-      callback(new Error(`Not allowed by CORS. Origin: ${origin}`))
+      // Reject if not allowed - return false instead of throwing error
+      // This prevents 500 errors on OPTIONS preflight requests
+      callback(null, false)
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    exposedHeaders: ['Content-Range', 'X-Content-Range'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   })
 
   // Serve static files
