@@ -2,9 +2,11 @@ import { Injectable, UnauthorizedException, ConflictException } from '@nestjs/co
 import { JwtService } from '@nestjs/jwt'
 import { ConfigService } from '@nestjs/config'
 import { PrismaService } from '../prisma/prisma.service'
+import { LoginLogsService } from '../login-logs/login-logs.service'
 import { RegisterDto } from './dto/register.dto'
 import { LoginDto } from './dto/login.dto'
 import { AuthResponseDto, UserResponseDto, ProjectDto } from './dto/auth-response.dto'
+import { LoginLogStatus } from '../login-logs/dto/create-login-log.dto'
 import * as bcrypt from 'bcrypt'
 
 @Injectable()
@@ -13,9 +15,57 @@ export class AuthService {
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private loginLogsService: LoginLogsService,
   ) {}
 
-  async register(registerDto: RegisterDto): Promise<AuthResponseDto> {
+  private getClientInfo(req: any) {
+    // Get IP address
+    const ipAddress = 
+      req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+      req.headers['x-real-ip'] ||
+      req.connection?.remoteAddress ||
+      req.socket?.remoteAddress ||
+      req.ip ||
+      'Unknown'
+
+    // Get User-Agent for device and browser detection
+    const userAgent = req.headers['user-agent'] || 'Unknown'
+    
+    // Parse device and browser from User-Agent
+    let device = 'Unknown'
+    let browser = 'Unknown'
+    
+    if (userAgent.includes('Windows')) {
+      device = 'Windows'
+    } else if (userAgent.includes('Mac')) {
+      device = 'macOS'
+    } else if (userAgent.includes('Linux')) {
+      device = 'Linux'
+    } else if (userAgent.includes('Android')) {
+      device = 'Android'
+    } else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) {
+      device = 'iOS'
+    }
+    
+    if (userAgent.includes('Chrome') && !userAgent.includes('Edg')) {
+      browser = 'Chrome'
+    } else if (userAgent.includes('Firefox')) {
+      browser = 'Firefox'
+    } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+      browser = 'Safari'
+    } else if (userAgent.includes('Edg')) {
+      browser = 'Edge'
+    } else if (userAgent.includes('Opera')) {
+      browser = 'Opera'
+    }
+
+    // Get location (could be enhanced with IP geolocation service)
+    const location = req.headers['x-location'] || 'Unknown'
+
+    return { ipAddress, device, browser, location }
+  }
+
+  async register(registerDto: RegisterDto, req?: any): Promise<AuthResponseDto> {
     // Check if user already exists
     const existingUser = await this.prisma.user.findUnique({
       where: { email: registerDto.email },
@@ -143,7 +193,9 @@ export class AuthService {
     }
   }
 
-  async login(loginDto: LoginDto): Promise<AuthResponseDto> {
+  async login(loginDto: LoginDto, req?: any): Promise<AuthResponseDto> {
+    const clientInfo = req ? this.getClientInfo(req) : { ipAddress: 'Unknown', device: 'Unknown', browser: 'Unknown', location: 'Unknown' }
+    
     // Find user
     const user = await this.prisma.user.findUnique({
       where: { email: loginDto.email },
@@ -156,20 +208,87 @@ export class AuthService {
       },
     })
 
+    // Log failed login attempt if user not found
     if (!user) {
+      try {
+        await this.loginLogsService.create({
+          userName: loginDto.email,
+          userCode: undefined,
+          email: loginDto.email,
+          ipAddress: clientInfo.ipAddress,
+          device: clientInfo.device,
+          browser: clientInfo.browser,
+          location: clientInfo.location,
+          status: LoginLogStatus.Failed,
+          failureReason: 'User not found',
+        })
+      } catch (error) {
+        // Silently fail logging - don't break login flow
+        console.error('Failed to log login attempt:', error)
+      }
       throw new UnauthorizedException('Invalid credentials')
     }
 
     // Check if user is active
     if (!user.isActive) {
+      try {
+        await this.loginLogsService.create({
+          userId: user.id,
+          userName: user.name,
+          userCode: user.employeeId || undefined,
+          email: user.email,
+          ipAddress: clientInfo.ipAddress,
+          device: clientInfo.device,
+          browser: clientInfo.browser,
+          location: clientInfo.location,
+          status: LoginLogStatus.Failed,
+          failureReason: 'Account is deactivated',
+        })
+      } catch (error) {
+        console.error('Failed to log login attempt:', error)
+      }
       throw new UnauthorizedException('Account is deactivated')
     }
 
     // Verify password
     const isPasswordValid = await bcrypt.compare(loginDto.password, user.password)
 
+    // Log failed login attempt if password invalid
     if (!isPasswordValid) {
+      try {
+        await this.loginLogsService.create({
+          userId: user.id,
+          userName: user.name,
+          userCode: user.employeeId || undefined,
+          email: user.email,
+          ipAddress: clientInfo.ipAddress,
+          device: clientInfo.device,
+          browser: clientInfo.browser,
+          location: clientInfo.location,
+          status: LoginLogStatus.Failed,
+          failureReason: 'Invalid password',
+        })
+      } catch (error) {
+        console.error('Failed to log login attempt:', error)
+      }
       throw new UnauthorizedException('Invalid credentials')
+    }
+
+    // Log successful login
+    try {
+      await this.loginLogsService.create({
+        userId: user.id,
+        userName: user.name,
+        userCode: user.employeeId || undefined,
+        email: user.email,
+        ipAddress: clientInfo.ipAddress,
+        device: clientInfo.device,
+        browser: clientInfo.browser,
+        location: clientInfo.location,
+        status: LoginLogStatus.Success,
+      })
+    } catch (error) {
+      console.error('Failed to log login attempt:', error)
     }
 
     // Generate tokens
@@ -203,6 +322,15 @@ export class AuthService {
       user: userResponse,
       accessToken,
     }
+  }
+
+  async logout(userId: string, req?: any): Promise<{ message: string }> {
+    try {
+      await this.loginLogsService.updateLogoutTime(userId, new Date())
+    } catch (error) {
+      console.error('Failed to log logout:', error)
+    }
+    return { message: 'Logged out successfully' }
   }
 
   async validateUser(userId: string): Promise<UserResponseDto | null> {

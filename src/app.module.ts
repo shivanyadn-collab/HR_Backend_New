@@ -86,6 +86,7 @@ import { InvestmentDeclarationsModule } from './investment-declarations/investme
 import { TaxDocumentsModule } from './tax-documents/tax-documents.module'
 import { BucketModule } from './bucket/bucket.module'
 import { FirebaseModule } from './firebase/firebase.module'
+import { LoginLogsModule } from './login-logs/login-logs.module'
 
 @Module({
   imports: [
@@ -179,6 +180,7 @@ import { FirebaseModule } from './firebase/firebase.module'
     InvestmentDeclarationsModule,
     TaxDocumentsModule,
     FirebaseModule,
+    LoginLogsModule,
   ],
 })
 export class AppModule {}

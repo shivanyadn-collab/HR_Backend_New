@@ -29,6 +29,7 @@ model User {
   // Relations
   projects                   UserProject[]
   refreshTokens              RefreshToken[]
+  loginLogs                  LoginLog[]
   roleAssignments            UserRoleAssignment[]
   managerAssignments         ManagerAssignment[]
   previousManagerAssignments ManagerAssignment[]  @relation("PreviousManager")
@@ -430,6 +431,38 @@ model RefreshToken {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("refresh_tokens")
+}
+
+// Login Log Model for tracking user login/logout events
+model LoginLog {
+  id           String        @id @default(uuid())
+  userId       String?       // Optional for failed logins where user doesn't exist
+  userName     String
+  userCode     String?
+  email        String
+  loginTime    DateTime      @default(now())
+  logoutTime   DateTime?
+  ipAddress    String
+  device       String
+  browser      String
+  location     String?
+  status       LoginLogStatus @default(Success)
+  failureReason String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([loginTime])
+  @@index([status])
+  @@map("login_logs")
+}
+
+// Login Log Status Enum
+enum LoginLogStatus {
+  Success
+  Failed
 }
 
 // Company Model
