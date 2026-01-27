@@ -29,6 +29,9 @@ export class LocationDeviationAlertsService {
     status?: string,
     startDate?: string,
     endDate?: string,
+    search?: string,
+    employeeMasterId?: string,
+    projectId?: string,
   ) {
     const where: any = {}
 
@@ -44,6 +47,23 @@ export class LocationDeviationAlertsService {
       where.status = 'ACTIVE'
     } else if (status && status !== 'all') {
       where.status = status
+    }
+
+    if (employeeMasterId) {
+      where.employeeMasterId = employeeMasterId
+    }
+
+    if (projectId && projectId !== 'all') {
+      where.projectId = projectId
+    }
+
+    if (search) {
+      where.OR = [
+        { employeeMaster: { firstName: { contains: search, mode: 'insensitive' } } },
+        { employeeMaster: { lastName: { contains: search, mode: 'insensitive' } } },
+        { employeeMaster: { employeeCode: { contains: search, mode: 'insensitive' } } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ]
     }
 
     if (startDate || endDate) {
@@ -200,5 +220,73 @@ export class LocationDeviationAlertsService {
       resolvedBy,
       remarks,
     })
+  }
+
+  async remove(id: string) {
+    const existing = await this.prisma.locationDeviationAlert.findUnique({
+      where: { id },
+    })
+
+    if (!existing) {
+      throw new NotFoundException(`Alert with ID ${id} not found`)
+    }
+
+    await this.prisma.locationDeviationAlert.delete({
+      where: { id },
+    })
+
+    return { message: 'Location deviation alert deleted successfully' }
+  }
+
+  async getStatistics(startDate?: string, endDate?: string) {
+    const where: any = {}
+
+    if (startDate || endDate) {
+      where.alertTime = {}
+      if (startDate) where.alertTime.gte = new Date(startDate)
+      if (endDate) {
+        const end = new Date(endDate)
+        end.setHours(23, 59, 59, 999)
+        where.alertTime.lte = end
+      }
+    }
+
+    const [total, active, resolved, falsePositive, high, medium, low] = await Promise.all([
+      this.prisma.locationDeviationAlert.count({ where }),
+      this.prisma.locationDeviationAlert.count({ where: { ...where, status: 'ACTIVE' } }),
+      this.prisma.locationDeviationAlert.count({ where: { ...where, status: 'RESOLVED' } }),
+      this.prisma.locationDeviationAlert.count({ where: { ...where, status: 'FALSE_POSITIVE' } }),
+      this.prisma.locationDeviationAlert.count({ where: { ...where, severity: 'HIGH' } }),
+      this.prisma.locationDeviationAlert.count({ where: { ...where, severity: 'MEDIUM' } }),
+      this.prisma.locationDeviationAlert.count({ where: { ...where, severity: 'LOW' } }),
+    ])
+
+    // Get alert type breakdown
+    const [outsideGeofence, noGps, locationMismatch, routeDeviation] = await Promise.all([
+      this.prisma.locationDeviationAlert.count({ where: { ...where, alertType: 'OUTSIDE_GEOFENCE' } }),
+      this.prisma.locationDeviationAlert.count({ where: { ...where, alertType: 'NO_GPS_SIGNAL' } }),
+      this.prisma.locationDeviationAlert.count({ where: { ...where, alertType: 'LOCATION_MISMATCH' } }),
+      this.prisma.locationDeviationAlert.count({ where: { ...where, alertType: 'ROUTE_DEVIATION' } }),
+    ])
+
+    return {
+      total,
+      byStatus: {
+        active,
+        resolved,
+        falsePositive,
+      },
+      bySeverity: {
+        high,
+        medium,
+        low,
+      },
+      byType: {
+        outsideGeofence,
+        noGps,
+        locationMismatch,
+        routeDeviation,
+      },
+    }
   }
 }

@@ -22,6 +22,7 @@ export class FingerprintLogsController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
     @Query('limit') limit?: number,
+    @Query('search') search?: string,
   ) {
     return this.service.findAll(
       fingerprintDeviceId,
@@ -30,6 +31,7 @@ export class FingerprintLogsController {
       startDate,
       endDate,
       limit,
+      search,
     )
   }
 

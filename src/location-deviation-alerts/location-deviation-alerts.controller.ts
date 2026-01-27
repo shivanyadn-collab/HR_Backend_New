@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Query, UseGuards } from '@nestjs/common'
+import { Controller, Get, Post, Body, Patch, Delete, Param, Query, UseGuards } from '@nestjs/common'
 import { LocationDeviationAlertsService } from './location-deviation-alerts.service'
 import { CreateLocationDeviationAlertDto } from './dto/create-location-deviation-alert.dto'
 import { UpdateLocationDeviationAlertDto } from './dto/update-location-deviation-alert.dto'
@@ -21,8 +21,28 @@ export class LocationDeviationAlertsController {
     @Query('status') status?: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query('search') search?: string,
+    @Query('employeeMasterId') employeeMasterId?: string,
+    @Query('projectId') projectId?: string,
   ) {
-    return this.service.findAll(alertType, severity, status, startDate, endDate)
+    return this.service.findAll(
+      alertType,
+      severity,
+      status,
+      startDate,
+      endDate,
+      search,
+      employeeMasterId,
+      projectId,
+    )
+  }
+
+  @Get('statistics')
+  getStatistics(
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.service.getStatistics(startDate, endDate)
   }
 
   @Get(':id')
@@ -38,5 +58,10 @@ export class LocationDeviationAlertsController {
   @Patch(':id/resolve')
   resolve(@Param('id') id: string, @Body() body: { resolvedBy?: string; remarks?: string }) {
     return this.service.resolve(id, body.resolvedBy, body.remarks)
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.service.remove(id)
   }
 }

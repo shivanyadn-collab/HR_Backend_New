@@ -56,6 +56,7 @@ export class FingerprintLogsService {
     startDate?: string,
     endDate?: string,
     limit?: number,
+    search?: string,
   ) {
     const where: any = {}
 
@@ -71,10 +72,23 @@ export class FingerprintLogsService {
       where.status = statusMap[status] || status
     }
 
+    if (search) {
+      where.OR = [
+        { employeeMaster: { firstName: { contains: search, mode: 'insensitive' } } },
+        { employeeMaster: { lastName: { contains: search, mode: 'insensitive' } } },
+        { employeeMaster: { employeeCode: { contains: search, mode: 'insensitive' } } },
+        { location: { contains: search, mode: 'insensitive' } },
+      ]
+    }
+
     if (startDate || endDate) {
       where.recognitionTime = {}
       if (startDate) where.recognitionTime.gte = new Date(startDate)
-      if (endDate) where.recognitionTime.lte = new Date(endDate)
+      if (endDate) {
+        const end = new Date(endDate)
+        end.setHours(23, 59, 59, 999)
+        where.recognitionTime.lte = end
+      }
     }
 
     const logs = await this.prisma.fingerprintLog.findMany({

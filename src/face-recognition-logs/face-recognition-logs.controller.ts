@@ -23,6 +23,7 @@ export class FaceRecognitionLogsController {
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
     @Query('limit') limit?: string,
+    @Query('search') search?: string,
   ) {
     return this.service.findAll(
       cameraDeviceId,
@@ -31,6 +32,7 @@ export class FaceRecognitionLogsController {
       startDate,
       endDate,
       limit ? parseInt(limit) : undefined,
+      search,
     )
   }
 

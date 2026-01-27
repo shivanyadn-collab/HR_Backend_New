@@ -1,6 +1,7 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common'
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards } from '@nestjs/common'
 import { GPSPunchesService } from './gps-punches.service'
 import { CreateGPSPunchDto } from './dto/create-gps-punch.dto'
+import { UpdateGPSPunchDto } from './dto/update-gps-punch.dto'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 
 @Controller('gps-punches')
@@ -32,5 +33,35 @@ export class GPSPunchesController {
       endDate,
       search,
     )
+  }
+
+  @Get('statistics')
+  getStatistics(
+    @Query('employeeMasterId') employeeMasterId?: string,
+    @Query('projectId') projectId?: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.service.getStatistics(employeeMasterId, projectId, startDate, endDate)
+  }
+
+  @Get('today')
+  getTodayPunches(@Query('employeeMasterId') employeeMasterId?: string) {
+    return this.service.getTodayPunches(employeeMasterId)
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.service.findOne(id)
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateDto: UpdateGPSPunchDto) {
+    return this.service.update(id, updateDto)
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.service.remove(id)
   }
 }
