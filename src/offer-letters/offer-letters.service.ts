@@ -25,17 +25,9 @@ export class OfferLettersService {
       throw new NotFoundException('Candidate application not found')
     }
 
-    // Generate offer number
+    // Generate unique offer number with retry logic
     const year = new Date().getFullYear()
-    const count = await this.prisma.offerLetter.count({
-      where: {
-        offerDate: {
-          gte: new Date(`${year}-01-01`),
-          lt: new Date(`${year + 1}-01-01`),
-        },
-      },
-    })
-    const offerNumber = `OFFER-${year}-${String(count + 1).padStart(3, '0')}`
+    const offerNumber = await this.generateUniqueOfferNumber(year)
 
     const offerLetter = await this.prisma.offerLetter.create({
       data: {
@@ -203,6 +195,51 @@ export class OfferLettersService {
     await this.prisma.offerLetter.delete({
       where: { id },
     })
+  }
+
+  private async generateUniqueOfferNumber(year: number, maxRetries = 5): Promise<string> {
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      // Find the latest offer letter for this year
+      const latestOffer = await this.prisma.offerLetter.findFirst({
+        where: {
+          offerNumber: {
+            startsWith: `OFFER-${year}-`,
+          },
+        },
+        orderBy: {
+          offerNumber: 'desc',
+        },
+        select: {
+          offerNumber: true,
+        },
+      })
+
+      let nextNumber = 1
+      if (latestOffer) {
+        // Extract the number from the offer number (e.g., "OFFER-2026-005" -> 5)
+        const parts = latestOffer.offerNumber.split('-')
+        const lastNumber = parseInt(parts[2], 10)
+        nextNumber = lastNumber + 1
+      }
+
+      const offerNumber = `OFFER-${year}-${String(nextNumber).padStart(3, '0')}`
+
+      // Check if this offer number already exists (double-check for race conditions)
+      const exists = await this.prisma.offerLetter.findUnique({
+        where: { offerNumber },
+      })
+
+      if (!exists) {
+        return offerNumber
+      }
+
+      // If exists, wait a bit and retry
+      await new Promise(resolve => setTimeout(resolve, 100 * (attempt + 1)))
+    }
+
+    // If all retries fail, use timestamp to ensure uniqueness
+    const timestamp = Date.now()
+    return `OFFER-${year}-${timestamp}`
   }
 
   private formatResponse(offerLetter: any) {
