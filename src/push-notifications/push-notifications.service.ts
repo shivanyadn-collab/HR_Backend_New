@@ -126,14 +126,20 @@ export class PushNotificationsService {
 
     try {
       // Get target users and their FCM tokens based on target audience
+      this.logger.log(`Getting target users for notification ${id}, audience: ${notification.targetAudience}, details: ${notification.targetDetails}`)
+      
       const { tokens, employees } = await this.getTargetUsersAndTokens(
         notification.targetAudience,
         notification.targetDetails,
       )
 
+      this.logger.log(`Found ${employees.length} employees and ${tokens.length} FCM tokens for notification ${id}`)
+
       // Create employee notification records for all target employees
       if (employees.length > 0) {
-        await this.prisma.employeeNotification.createMany({
+        this.logger.log(`Creating employee notification records for: ${JSON.stringify(employees)}`)
+        
+        const createResult = await this.prisma.employeeNotification.createMany({
           data: employees.map((emp) => ({
             employeeId: emp.employeeId,
             userId: emp.userId,
@@ -149,7 +155,9 @@ export class PushNotificationsService {
           skipDuplicates: true,
         })
 
-        this.logger.log(`Created ${employees.length} employee notification records for push notification ${id}`)
+        this.logger.log(`Created ${createResult.count} employee notification records for push notification ${id}`)
+      } else {
+        this.logger.warn(`No employees found for notification ${id} with audience ${notification.targetAudience}`)
       }
 
       let fcmSuccessCount = 0
@@ -215,6 +223,8 @@ export class PushNotificationsService {
     targetAudience: string,
     targetDetails?: string | null,
   ): Promise<{ tokens: string[]; employees: { employeeId: string; userId: string | null }[] }> {
+    this.logger.log(`getTargetUsersAndTokens called with audience: ${targetAudience}, details: ${targetDetails}`)
+    
     const userWhere: any = {
       isActive: true,
     }
@@ -225,6 +235,7 @@ export class PushNotificationsService {
     switch (targetAudience) {
       case 'ALL_EMPLOYEES':
         // Get all active employees
+        this.logger.log('Fetching ALL_EMPLOYEES')
         break
 
       case 'DEPARTMENT':
@@ -348,19 +359,25 @@ export class PushNotificationsService {
         break
 
       default:
+        this.logger.warn(`Unknown target audience: ${targetAudience}`)
         return { tokens: [], employees: [] }
     }
 
     // Get all employees based on filter
+    this.logger.log(`Fetching employees with filter: ${JSON.stringify(employeeWhere)}`)
     const employees = await this.prisma.employeeMaster.findMany({
       where: employeeWhere,
       select: { id: true, userId: true },
     })
 
+    this.logger.log(`Found ${employees.length} employees matching filter`)
+
     // Get user IDs that have employees
     const userIds = employees
       .map((emp) => emp.userId)
       .filter((id): id is string => id !== null)
+
+    this.logger.log(`Found ${userIds.length} user IDs linked to employees`)
 
     // Get FCM tokens for these users
     const tokens: string[] = []
@@ -375,6 +392,7 @@ export class PushNotificationsService {
       })
 
       tokens.push(...users.map((u) => u.fcmToken).filter((t): t is string => t !== null))
+      this.logger.log(`Found ${tokens.length} FCM tokens`)
     }
 
     return {
@@ -419,39 +437,51 @@ export class PushNotificationsService {
    * Get notifications for a specific user (by userId)
    */
   async getUserNotifications(userId: string, unreadOnly?: boolean) {
+    this.logger.log(`Fetching notifications for userId: ${userId}`)
+    
     // First find the employee master for this user
     const employee = await this.prisma.employeeMaster.findFirst({
       where: { userId },
     })
 
-    if (!employee) {
-      // Try to find notifications by userId directly
-      const where: any = { userId }
-      if (unreadOnly) {
-        where.isRead = false
-      }
+    this.logger.log(`Found employee for user ${userId}: ${employee?.id || 'none'}`)
 
-      const notifications = await this.prisma.employeeNotification.findMany({
-        where,
-        orderBy: { sentAt: 'desc' },
-        take: 50,
-      })
+    // Build OR conditions to find notifications by either employeeId or userId
+    const orConditions: any[] = []
+    
+    if (employee) {
+      orConditions.push({ employeeId: employee.id })
+    }
+    orConditions.push({ userId: userId })
 
-      return notifications.map((n) => ({
-        id: n.id,
-        title: n.title,
-        message: n.message,
-        type: n.type,
-        category: n.category,
-        priority: n.priority,
-        isRead: n.isRead,
-        readAt: n.readAt?.toISOString(),
-        sentAt: n.sentAt.toISOString(),
-        createdAt: n.createdAt.toISOString(),
-      }))
+    const where: any = {
+      OR: orConditions,
     }
 
-    return this.getEmployeeNotifications(employee.id, unreadOnly)
+    if (unreadOnly) {
+      where.isRead = false
+    }
+
+    const notifications = await this.prisma.employeeNotification.findMany({
+      where,
+      orderBy: { sentAt: 'desc' },
+      take: 50,
+    })
+
+    this.logger.log(`Found ${notifications.length} notifications for user ${userId}`)
+
+    return notifications.map((n) => ({
+      id: n.id,
+      title: n.title,
+      message: n.message,
+      type: n.type,
+      category: n.category,
+      priority: n.priority,
+      isRead: n.isRead,
+      readAt: n.readAt?.toISOString(),
+      sentAt: n.sentAt.toISOString(),
+      createdAt: n.createdAt.toISOString(),
+    }))
   }
 
   /**
