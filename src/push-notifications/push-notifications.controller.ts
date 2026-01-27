@@ -40,6 +40,8 @@ export class PushNotificationsController {
     @Query('unreadOnly') unreadOnly?: string,
   ) {
     const userId = req.user?.sub || req.user?.id
+    console.log('my-notifications endpoint called, user:', JSON.stringify(req.user))
+    console.log('Extracted userId:', userId)
     return this.service.getUserNotifications(userId, unreadOnly === 'true')
   }
 
@@ -49,6 +51,13 @@ export class PushNotificationsController {
     // Get employee for this user
     const notifications = await this.service.getUserNotifications(userId, true)
     return { unreadCount: notifications.length }
+  }
+
+  // Debug endpoint to check user-employee mapping
+  @Get('my-notifications/debug')
+  async debugMyNotifications(@Request() req: any) {
+    const userId = req.user?.sub || req.user?.id
+    return this.service.debugUserNotifications(userId)
   }
 
   @Post('my-notifications/mark-all-read')

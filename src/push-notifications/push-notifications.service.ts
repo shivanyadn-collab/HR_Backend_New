@@ -560,6 +560,50 @@ export class PushNotificationsService {
     return { unreadCount: count }
   }
 
+  /**
+   * Debug method to check user-employee-notification mapping
+   */
+  async debugUserNotifications(userId: string) {
+    // Find employee for this user
+    const employee = await this.prisma.employeeMaster.findFirst({
+      where: { userId },
+      select: { id: true, employeeCode: true, firstName: true, lastName: true, userId: true },
+    })
+
+    // Count total employee notifications
+    const totalNotifications = await this.prisma.employeeNotification.count()
+
+    // Find notifications by userId
+    const notificationsByUserId = await this.prisma.employeeNotification.findMany({
+      where: { userId },
+      take: 5,
+    })
+
+    // Find notifications by employeeId (if employee found)
+    let notificationsByEmployeeId: any[] = []
+    if (employee) {
+      notificationsByEmployeeId = await this.prisma.employeeNotification.findMany({
+        where: { employeeId: employee.id },
+        take: 5,
+      })
+    }
+
+    // Get sample of all employee notifications to verify data
+    const sampleNotifications = await this.prisma.employeeNotification.findMany({
+      take: 5,
+      select: { id: true, employeeId: true, userId: true, title: true },
+    })
+
+    return {
+      providedUserId: userId,
+      employeeFound: employee,
+      totalEmployeeNotifications: totalNotifications,
+      notificationsByUserId: notificationsByUserId.length,
+      notificationsByEmployeeId: notificationsByEmployeeId.length,
+      sampleNotifications,
+    }
+  }
+
   private formatResponse(notification: any) {
     return {
       id: notification.id,
