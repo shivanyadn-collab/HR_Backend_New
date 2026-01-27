@@ -34,6 +34,7 @@ model User {
   managerAssignments         ManagerAssignment[]
   previousManagerAssignments ManagerAssignment[]  @relation("PreviousManager")
   employeeMaster             EmployeeMaster?
+  employeeNotifications      EmployeeNotification[]
 
   @@map("users")
 }
@@ -269,6 +270,7 @@ model EmployeeMaster {
   investmentDeclarations      InvestmentDeclaration[]
   taxDocuments                TaxDocument[]
   salaryStructures            SalaryStructure[]
+  employeeNotifications       EmployeeNotification[]
 
   @@map("employee_masters")
 }
@@ -2653,23 +2655,51 @@ model EmailAlert {
 
 // Push Notification Model
 model PushNotification {
-  id             String               @id @default(uuid())
-  title          String
-  message        String
-  targetAudience TargetAudience
-  targetDetails  String?
-  priority       NotificationPriority @default(MEDIUM)
-  scheduledDate  DateTime?
-  sentDate       DateTime?
-  status         NotificationStatus   @default(DRAFT)
-  sentCount      Int?
-  readCount      Int?
-  createdBy      String
-  createdDate    DateTime             @default(now())
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @updatedAt
+  id                    String                 @id @default(uuid())
+  title                 String
+  message               String
+  targetAudience        TargetAudience
+  targetDetails         String?
+  priority              NotificationPriority   @default(MEDIUM)
+  scheduledDate         DateTime?
+  sentDate              DateTime?
+  status                NotificationStatus     @default(DRAFT)
+  sentCount             Int?
+  readCount             Int?
+  createdBy             String
+  createdDate           DateTime               @default(now())
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  employeeNotifications EmployeeNotification[]
 
   @@map("push_notifications")
+}
+
+// Employee Notification Model - stores notifications sent to each employee
+model EmployeeNotification {
+  id                 String            @id @default(uuid())
+  employeeId         String
+  userId             String?
+  pushNotificationId String?
+  title              String
+  message            String
+  type               String            @default("PUSH") // PUSH, LEAVE, PAYROLL, ATTENDANCE, etc.
+  category           String            @default("General") // Leave, Payroll, Attendance, Performance, General
+  priority           NotificationPriority @default(MEDIUM)
+  isRead             Boolean           @default(false)
+  readAt             DateTime?
+  sentAt             DateTime          @default(now())
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  employee         EmployeeMaster?    @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  user             User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  pushNotification PushNotification?  @relation(fields: [pushNotificationId], references: [id], onDelete: SetNull)
+
+  @@index([employeeId])
+  @@index([userId])
+  @@index([isRead])
+  @@map("employee_notifications")
 }
 
 enum TargetAudience {
