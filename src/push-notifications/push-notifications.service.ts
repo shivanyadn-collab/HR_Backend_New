@@ -604,6 +604,68 @@ export class PushNotificationsService {
     }
   }
 
+  /**
+   * Process scheduled notifications that are due
+   * This method should be called periodically (e.g., every minute via cron)
+   */
+  async processScheduledNotifications(): Promise<{ processed: number; failed: number }> {
+    const now = new Date()
+    
+    // Find all scheduled notifications that are due
+    const dueNotifications = await this.prisma.pushNotification.findMany({
+      where: {
+        status: 'SCHEDULED',
+        scheduledDate: {
+          lte: now,
+        },
+      },
+    })
+
+    this.logger.log(`Found ${dueNotifications.length} scheduled notifications to process`)
+
+    let processed = 0
+    let failed = 0
+
+    for (const notification of dueNotifications) {
+      try {
+        await this.send(notification.id)
+        processed++
+        this.logger.log(`Successfully sent scheduled notification ${notification.id}`)
+      } catch (error: any) {
+        failed++
+        this.logger.error(`Failed to send scheduled notification ${notification.id}: ${error.message}`)
+      }
+    }
+
+    return { processed, failed }
+  }
+
+  /**
+   * Start the scheduled notification processor
+   * Runs every minute to check for due notifications
+   */
+  startScheduler(intervalMs: number = 60000): NodeJS.Timeout {
+    this.logger.log(`Starting scheduled notification processor (interval: ${intervalMs}ms)`)
+    
+    const intervalId = setInterval(async () => {
+      try {
+        const result = await this.processScheduledNotifications()
+        if (result.processed > 0 || result.failed > 0) {
+          this.logger.log(`Scheduler run complete: ${result.processed} processed, ${result.failed} failed`)
+        }
+      } catch (error: any) {
+        this.logger.error(`Scheduler error: ${error.message}`)
+      }
+    }, intervalMs)
+
+    // Also run immediately
+    this.processScheduledNotifications().catch((error) => {
+      this.logger.error(`Initial scheduler run error: ${error.message}`)
+    })
+
+    return intervalId
+  }
+
   private formatResponse(notification: any) {
     return {
       id: notification.id,
