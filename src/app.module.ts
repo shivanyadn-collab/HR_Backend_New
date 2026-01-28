@@ -54,7 +54,6 @@ import { ProjectHoursModule } from './project-hours/project-hours.module'
 import { NightShiftAllowancesModule } from './night-shift-allowances/night-shift-allowances.module'
 import { LeaveDeductionsModule } from './leave-deductions/leave-deductions.module'
 import { NotificationTemplatesModule } from './notification-templates/notification-templates.module'
-import { SMSAlertsModule } from './sms-alerts/sms-alerts.module'
 import { WhatsAppNotificationsModule } from './whatsapp-notifications/whatsapp-notifications.module'
 import { EmailAlertsModule } from './email-alerts/email-alerts.module'
 import { PushNotificationsModule } from './push-notifications/push-notifications.module'
@@ -88,6 +87,7 @@ import { BucketModule } from './bucket/bucket.module'
 import { FirebaseModule } from './firebase/firebase.module'
 import { LoginLogsModule } from './login-logs/login-logs.module'
 import { MailModule } from './mail/mail.module'
+import { WhatsAppModule } from './whatsapp/whatsapp.module'
 
 @Module({
   imports: [
@@ -97,6 +97,7 @@ import { MailModule } from './mail/mail.module'
     }),
     PrismaModule,
     MailModule,
+    WhatsAppModule,
     BucketModule,
     AuthModule,
     UsersModule,
@@ -151,7 +152,6 @@ import { MailModule } from './mail/mail.module'
     NightShiftAllowancesModule,
     LeaveDeductionsModule,
     NotificationTemplatesModule,
-    SMSAlertsModule,
     WhatsAppNotificationsModule,
     EmailAlertsModule,
     PushNotificationsModule,

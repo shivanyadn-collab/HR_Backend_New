@@ -48,4 +48,10 @@ export class WhatsAppNotificationsController {
   remove(@Param('id') id: string) {
     return this.service.remove(id)
   }
+
+  @Post(':id/send')
+  @HttpCode(HttpStatus.OK)
+  send(@Param('id') id: string) {
+    return this.service.send(id)
+  }
 }

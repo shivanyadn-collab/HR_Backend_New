@@ -35,28 +35,39 @@ export class MailService {
 
   private initializeTransporter() {
     const host = this.configService.get<string>('MAIL_HOST') || 'smtp.gmail.com'
-    const port = this.configService.get<number>('MAIL_PORT') || 587
-    const user = this.configService.get<string>('MAIL_USER') || 'no-reply@exozen.co.in'
+    const port = parseInt(this.configService.get<string>('MAIL_PORT') || '587', 10)
+    const user = this.configService.get<string>('MAIL_USER') || ''
     const pass = this.configService.get<string>('MAIL_PASSWORD') || ''
-    const secure = this.configService.get<boolean>('MAIL_SECURE') || false
+    const secureStr = this.configService.get<string>('MAIL_SECURE') || 'false'
+    const secure = secureStr === 'true' || port === 465
 
+    this.logger.log(`Initializing mail transporter: host=${host}, port=${port}, secure=${secure}, user=${user}`)
+
+    // For port 587, use STARTTLS (secure=false but TLS is upgraded)
+    // For port 465, use direct SSL (secure=true)
     this.transporter = nodemailer.createTransport({
       host,
       port,
-      secure, // true for 465, false for other ports
+      secure, // true for 465, false for 587 (STARTTLS)
       auth: {
         user,
         pass,
       },
       tls: {
-        rejectUnauthorized: false, // Allow self-signed certificates
+        // Do not fail on invalid certs
+        rejectUnauthorized: false,
       },
+      // Increase timeout for slow connections
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
     })
 
-    // Verify connection
+    // Verify connection (non-blocking)
     this.transporter.verify((error) => {
       if (error) {
         this.logger.error('Mail transporter verification failed:', error.message)
+        this.logger.warn('Emails may fail to send. Check SMTP configuration.')
       } else {
         this.logger.log('Mail transporter is ready to send emails')
       }
