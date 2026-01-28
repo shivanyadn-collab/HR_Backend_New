@@ -181,17 +181,19 @@ export class EmailAlertsService {
 
   /**
    * Get target employee emails based on audience type
+   * Fetches from User table for users linked to active EmployeeMaster records
    */
   private async getTargetEmails(targetAudience: string, targetDetails?: string | null): Promise<string[]> {
+    // Base filter for employees - only active employees with linked users
     const employeeWhere: any = {
       status: 'ACTIVE',
-      email: { not: null },
+      NOT: { userId: null }, // Only employees linked to users
     }
 
     switch (targetAudience) {
       case 'ALL_EMPLOYEES':
-        // Get all active employees
-        this.logger.log('Fetching all employee emails')
+        // Get all active employees with linked users
+        this.logger.log('Fetching all employee emails from linked users')
         break
 
       case 'DEPARTMENT':
@@ -248,25 +250,23 @@ export class EmailAlertsService {
           })
 
           if (project) {
-            // Get employees assigned to this project through UserProject
+            // Get users assigned to this project
             const userProjects = await this.prisma.userProject.findMany({
               where: { projectId: project.id },
-              select: { userId: true },
-            })
-
-            const userIds = userProjects.map((up) => up.userId)
-
-            // Get employees linked to these users
-            const employees = await this.prisma.employeeMaster.findMany({
-              where: {
-                status: 'ACTIVE',
-                userId: { in: userIds },
-                email: { not: null },
+              include: {
+                user: {
+                  select: { id: true, email: true, isActive: true },
+                },
               },
-              select: { email: true },
             })
 
-            return employees.map((e) => e.email).filter((email): email is string => email !== null)
+            // Filter to only active users with valid emails
+            const emails = userProjects
+              .filter((up) => up.user.isActive && up.user.email)
+              .map((up) => up.user.email)
+
+            this.logger.log(`Found ${emails.length} user emails for project: ${project.name}`)
+            return emails
           } else {
             this.logger.warn(`Project not found: ${targetDetails}`)
             return []
@@ -276,22 +276,26 @@ export class EmailAlertsService {
 
       case 'INDIVIDUAL':
         if (targetDetails) {
-          // Find employee by email or employee code
-          const employee = await this.prisma.employeeMaster.findFirst({
+          // Find user by email directly, or find via employee code
+          const user = await this.prisma.user.findFirst({
             where: {
               OR: [
                 { email: { equals: targetDetails, mode: 'insensitive' } },
-                { employeeCode: { equals: targetDetails, mode: 'insensitive' } },
+                {
+                  employeeMaster: {
+                    employeeCode: { equals: targetDetails, mode: 'insensitive' },
+                  },
+                },
               ],
-              status: 'ACTIVE',
+              isActive: true,
             },
             select: { email: true },
           })
 
-          if (employee?.email) {
-            return [employee.email]
+          if (user?.email) {
+            return [user.email]
           } else {
-            this.logger.warn(`Employee not found: ${targetDetails}`)
+            this.logger.warn(`User not found: ${targetDetails}`)
             return []
           }
         }
@@ -302,14 +306,22 @@ export class EmailAlertsService {
         return []
     }
 
-    // Get all employees based on filter
+    // Get employees with linked users, then fetch user emails
     const employees = await this.prisma.employeeMaster.findMany({
       where: employeeWhere,
-      select: { email: true },
+      include: {
+        user: {
+          select: { email: true, isActive: true },
+        },
+      },
     })
 
-    const emails = employees.map((e) => e.email).filter((email): email is string => email !== null)
-    this.logger.log(`Found ${emails.length} email addresses`)
+    // Extract emails from linked users (only active users)
+    const emails = employees
+      .filter((e) => e.user && e.user.isActive && e.user.email)
+      .map((e) => e.user!.email)
+
+    this.logger.log(`Found ${emails.length} user email addresses`)
 
     return emails
   }
