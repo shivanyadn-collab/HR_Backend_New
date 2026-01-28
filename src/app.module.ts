@@ -87,6 +87,7 @@ import { TaxDocumentsModule } from './tax-documents/tax-documents.module'
 import { BucketModule } from './bucket/bucket.module'
 import { FirebaseModule } from './firebase/firebase.module'
 import { LoginLogsModule } from './login-logs/login-logs.module'
+import { MailModule } from './mail/mail.module'
 
 @Module({
   imports: [
@@ -95,6 +96,7 @@ import { LoginLogsModule } from './login-logs/login-logs.module'
       envFilePath: '.env',
     }),
     PrismaModule,
+    MailModule,
     BucketModule,
     AuthModule,
     UsersModule,

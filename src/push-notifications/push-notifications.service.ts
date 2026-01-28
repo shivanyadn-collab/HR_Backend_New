@@ -187,6 +187,7 @@ export class PushNotificationsService {
           status: 'SENT',
           sentDate: new Date(),
           sentCount: employees.length, // Total employees notified
+          readCount: 0, // Initialize read count to 0
         },
       })
 
@@ -501,6 +502,9 @@ export class PushNotificationsService {
       throw new NotFoundException('Notification not found')
     }
 
+    // Check if already read to avoid duplicate count increments
+    const wasAlreadyRead = notification.isRead
+
     const updated = await this.prisma.employeeNotification.update({
       where: { id: notificationId },
       data: {
@@ -509,8 +513,8 @@ export class PushNotificationsService {
       },
     })
 
-    // Update read count on the push notification
-    if (notification.pushNotificationId) {
+    // Update read count on the push notification only if not already read
+    if (notification.pushNotificationId && !wasAlreadyRead) {
       await this.prisma.pushNotification.update({
         where: { id: notification.pushNotificationId },
         data: {
@@ -519,6 +523,7 @@ export class PushNotificationsService {
           },
         },
       })
+      this.logger.log(`Incremented read count for push notification ${notification.pushNotificationId}`)
     }
 
     return {

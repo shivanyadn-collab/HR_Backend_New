@@ -160,6 +160,9 @@ export class AuthService {
       },
     })
 
+    // Auto-link with EmployeeMaster if exists with same email
+    await this.linkUserToEmployee(user.id, user.email)
+
     // Generate tokens
     const payload = {
       sub: user.id,
@@ -363,6 +366,40 @@ export class AuthService {
         name: up.project.name,
         code: up.project.code,
       })),
+    }
+  }
+
+  /**
+   * Automatically link a user to an employee master record by matching email
+   */
+  private async linkUserToEmployee(userId: string, email: string): Promise<void> {
+    try {
+      // Find employee master with matching email that doesn't have a userId
+      const employee = await this.prisma.employeeMaster.findFirst({
+        where: {
+          email: { equals: email, mode: 'insensitive' },
+          userId: null,
+        },
+      })
+
+      if (employee) {
+        // Link the employee to the user
+        await this.prisma.employeeMaster.update({
+          where: { id: employee.id },
+          data: { userId: userId },
+        })
+
+        // Also update user's employeeId if not already set
+        await this.prisma.user.update({
+          where: { id: userId },
+          data: { employeeId: employee.id },
+        })
+
+        console.log(`Auto-linked user ${email} to employee ${employee.employeeCode}`)
+      }
+    } catch (error) {
+      console.error(`Failed to auto-link user ${email} to employee:`, error)
+      // Don't throw - this is a non-critical operation
     }
   }
 }

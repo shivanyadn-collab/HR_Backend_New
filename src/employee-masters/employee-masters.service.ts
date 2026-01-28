@@ -239,7 +239,46 @@ export class EmployeeMastersService {
       },
     })
 
+    // Auto-link with User if exists with same email and no userId provided
+    if (!createEmployeeMasterDto.userId) {
+      await this.linkEmployeeToUser(employee.id, employee.email)
+    }
+
     return await this.formatEmployeeResponse(employee)
+  }
+
+  /**
+   * Automatically link an employee to a user by matching email
+   */
+  private async linkEmployeeToUser(employeeId: string, email: string): Promise<void> {
+    try {
+      // Find user with matching email that doesn't have an employeeMaster linked
+      const user = await this.prisma.user.findFirst({
+        where: {
+          email: { equals: email, mode: 'insensitive' },
+          employeeMaster: null, // No employee linked yet
+        },
+      })
+
+      if (user) {
+        // Link the user to the employee
+        await this.prisma.employeeMaster.update({
+          where: { id: employeeId },
+          data: { userId: user.id },
+        })
+
+        // Also update user's employeeId
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: { employeeId: employeeId },
+        })
+
+        console.log(`Auto-linked employee ${email} to user ${user.name}`)
+      }
+    } catch (error) {
+      console.error(`Failed to auto-link employee ${email} to user:`, error)
+      // Don't throw - this is a non-critical operation
+    }
   }
 
   async findAll(departmentId?: string, status?: string, search?: string) {
