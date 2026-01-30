@@ -44,6 +44,7 @@ import { FingerprintValidationAlertsModule } from './fingerprint-validation-aler
 import { CameraDevicesModule } from './camera-devices/camera-devices.module'
 import { FingerprintDevicesModule } from './fingerprint-devices/fingerprint-devices.module'
 import { FaceRecognitionLogsModule } from './face-recognition-logs/face-recognition-logs.module'
+import { AwsRekognitionModule } from './aws-rekognition/aws-rekognition.module'
 import { AntiSpoofingAlertsModule } from './anti-spoofing-alerts/anti-spoofing-alerts.module'
 import { AttendanceLogsModule } from './attendance-logs/attendance-logs.module'
 import { DailyAttendanceModule } from './daily-attendance/daily-attendance.module'
@@ -142,6 +143,7 @@ import { WhatsAppModule } from './whatsapp/whatsapp.module'
     FingerprintLogsModule,
     FingerprintValidationAlertsModule,
     FaceRecognitionLogsModule,
+    AwsRekognitionModule,
     AntiSpoofingAlertsModule,
     AttendanceLogsModule,
     DailyAttendanceModule,

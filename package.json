@@ -28,6 +28,7 @@
     "bucket:utils": "ts-node scripts/bucket-utils.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-rekognition": "^3.968.0",
     "@aws-sdk/client-s3": "^3.968.0",
     "@aws-sdk/lib-storage": "^3.968.0",
     "@aws-sdk/s3-request-presigner": "^3.968.0",

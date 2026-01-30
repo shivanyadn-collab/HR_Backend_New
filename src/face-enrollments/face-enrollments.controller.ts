@@ -13,6 +13,7 @@ import {
   ParseFilePipe,
   MaxFileSizeValidator,
   BadRequestException,
+  StreamableFile,
 } from '@nestjs/common'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { FaceEnrollmentsService } from './face-enrollments.service'
@@ -55,6 +56,41 @@ export class FaceEnrollmentsController {
       return null
     }
     return enrollment
+  }
+
+  /**
+   * Proxy S3 face images to avoid CORS when the frontend fetches them as blob/data URL.
+   * Only allows URLs for the configured S3 bucket.
+   */
+  @Get('proxy-image')
+  async proxyImage(@Query('url') url: string): Promise<StreamableFile> {
+    if (!url || typeof url !== 'string') {
+      throw new BadRequestException('Missing or invalid url parameter')
+    }
+    let decoded: string
+    try {
+      decoded = decodeURIComponent(url)
+    } catch {
+      throw new BadRequestException('Invalid url encoding')
+    }
+    const bucketName = this.bucketService.getConfig().bucketName
+    if (!bucketName) {
+      throw new BadRequestException('Bucket not configured')
+    }
+    // Allow only our S3 bucket URLs (e.g. https://bucket-name.s3.region.amazonaws.com/...)
+    const allowedHost = `${bucketName}.s3.`
+    if (!decoded.startsWith('https://') || !decoded.includes(allowedHost)) {
+      throw new BadRequestException('URL must be a signed URL for the configured face image bucket')
+    }
+    const res = await fetch(decoded)
+    if (!res.ok) {
+      throw new BadRequestException(`Failed to fetch image: ${res.status}`)
+    }
+    const buffer = Buffer.from(await res.arrayBuffer())
+    const contentType = res.headers.get('content-type') || 'image/jpeg'
+    return new StreamableFile(buffer, {
+      type: contentType,
+    })
   }
 
   @Get(':id/images')
