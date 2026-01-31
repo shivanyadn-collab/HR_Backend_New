@@ -13,7 +13,10 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
+  Redirect,
+  Req,
 } from '@nestjs/common'
+import { Request } from 'express'
 import { FileInterceptor } from '@nestjs/platform-express'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { CurrentUser } from '../auth/decorators/current-user.decorator'
@@ -87,6 +90,19 @@ export class EmployeeDocumentsController {
     @Query('search') search?: string,
   ) {
     return this.employeeDocumentsService.findAll(employeeMasterId, documentCategory, status, search)
+  }
+
+  /** Redirect to document file (S3 or /uploads/). Frontend calls GET :id/download to trigger download. */
+  @Get(':id/download')
+  @Redirect()
+  async download(@Param('id') id: string, @Req() req: Request) {
+    const { fileUrl } = await this.employeeDocumentsService.getFileUrl(id)
+    // If relative (e.g. /uploads/...), build absolute URL from request origin
+    const redirectUrl =
+      fileUrl.startsWith('http://') || fileUrl.startsWith('https://')
+        ? fileUrl
+        : `${req.protocol}://${req.get('host')}${fileUrl}`
+    return { url: redirectUrl, statusCode: 302 }
   }
 
   @Get(':id')
