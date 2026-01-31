@@ -6,6 +6,22 @@ export class UpdateEmployeeAssetDto {
   assetItemId?: string
 
   @IsOptional()
+  @IsIn(['Returnable', 'NonReturnable'])
+  dcType?: 'Returnable' | 'NonReturnable'
+
+  @IsOptional()
+  @IsString()
+  issuanceDcNumber?: string
+
+  @IsOptional()
+  @IsString()
+  issuanceFormUrl?: string
+
+  @IsOptional()
+  @IsString()
+  issuanceFormKey?: string
+
+  @IsOptional()
   @IsString()
   serialNumber?: string
 

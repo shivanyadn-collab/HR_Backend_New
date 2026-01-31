@@ -3,6 +3,22 @@ import { PrismaService } from '../prisma/prisma.service'
 import { CreateEmployeeAssetDto } from './dto/create-employee-asset.dto'
 import { UpdateEmployeeAssetDto } from './dto/update-employee-asset.dto'
 
+/** Map frontend dcType ("Returnable" | "NonReturnable") to Prisma enum value */
+function dcTypeToDb(dcType: string | undefined): 'RETURNABLE' | 'NON_RETURNABLE' | undefined {
+  if (!dcType) return undefined
+  if (dcType === 'Returnable') return 'RETURNABLE'
+  if (dcType === 'NonReturnable') return 'NON_RETURNABLE'
+  return undefined
+}
+
+/** Map Prisma enum to frontend dcType */
+function dcTypeToApi(dcType: string | null | undefined): 'Returnable' | 'NonReturnable' | null {
+  if (!dcType) return null
+  if (dcType === 'RETURNABLE') return 'Returnable'
+  if (dcType === 'NON_RETURNABLE') return 'NonReturnable'
+  return null
+}
+
 @Injectable()
 export class EmployeeAssetsService {
   constructor(private prisma: PrismaService) {}
@@ -44,6 +60,14 @@ export class EmployeeAssetsService {
       throw new NotFoundException('Asset not available')
     }
 
+    // Server-side DC number: generate if not sent (DC-YYYYMMDD-NNNN)
+    let issuanceDcNumber = createDto.issuanceDcNumber?.trim()
+    if (!issuanceDcNumber) {
+      issuanceDcNumber = await this.generateIssuanceDcNumber(
+        createDto.issueDate ? new Date(createDto.issueDate) : new Date(),
+      )
+    }
+
     const asset = await this.prisma.employeeAsset.create({
       data: {
         employeeMasterId: createDto.employeeMasterId,
@@ -60,7 +84,11 @@ export class EmployeeAssetsService {
         location: createDto.location || 'Office',
         remarks: createDto.remarks,
         issuedBy: createDto.issuedBy,
-      },
+        dcType: dcTypeToDb(createDto.dcType),
+        issuanceDcNumber,
+        issuanceFormUrl: createDto.issuanceFormUrl,
+        issuanceFormKey: createDto.issuanceFormKey,
+      } as any,
       include: {
         employeeMaster: true,
         assetItem: true,
@@ -174,25 +202,30 @@ export class EmployeeAssetsService {
     const wasIssued = asset.status === 'ISSUED'
     const willBeReturned = updateDto.status === 'RETURNED'
 
+    const updateData = {
+      assetItemId: updateDto.assetItemId,
+      serialNumber: updateDto.serialNumber,
+      expectedReturnDate: updateDto.expectedReturnDate
+        ? new Date(updateDto.expectedReturnDate)
+        : undefined,
+      status: updateDto.status,
+      condition: updateDto.condition,
+      warrantyExpiryDate: updateDto.warrantyExpiryDate
+        ? new Date(updateDto.warrantyExpiryDate)
+        : undefined,
+      location: updateDto.location,
+      remarks: updateDto.remarks,
+      returnDate: updateDto.returnDate ? new Date(updateDto.returnDate) : undefined,
+      returnedBy: updateDto.returnedBy,
+      returnedDate: updateDto.returnDate ? new Date(updateDto.returnDate) : undefined,
+      dcType: updateDto.dcType !== undefined ? dcTypeToDb(updateDto.dcType) : undefined,
+      issuanceDcNumber: updateDto.issuanceDcNumber,
+      issuanceFormUrl: updateDto.issuanceFormUrl,
+      issuanceFormKey: updateDto.issuanceFormKey,
+    }
     const updated = await this.prisma.employeeAsset.update({
       where: { id },
-      data: {
-        assetItemId: updateDto.assetItemId,
-        serialNumber: updateDto.serialNumber,
-        expectedReturnDate: updateDto.expectedReturnDate
-          ? new Date(updateDto.expectedReturnDate)
-          : undefined,
-        status: updateDto.status,
-        condition: updateDto.condition,
-        warrantyExpiryDate: updateDto.warrantyExpiryDate
-          ? new Date(updateDto.warrantyExpiryDate)
-          : undefined,
-        location: updateDto.location,
-        remarks: updateDto.remarks,
-        returnDate: updateDto.returnDate ? new Date(updateDto.returnDate) : undefined,
-        returnedBy: updateDto.returnedBy,
-        returnedDate: updateDto.returnDate ? new Date(updateDto.returnDate) : undefined,
-      },
+      data: updateData as any,
       include: {
         employeeMaster: true,
         assetItem: true,
@@ -235,23 +268,24 @@ export class EmployeeAssetsService {
     // Don't change quantities in this case as it was already returned
 
     // Recalculate quantities to ensure sync (handles any edge cases)
-    // This ensures quantities are always correct even if there were inconsistencies
     await this.recalculateQuantities(asset.assetItemId)
 
-    // Get department and designation names
+    // Get department and designation from employee (avoids relying on include type)
     let departmentName = ''
     let designationName = ''
-
-    if (updated.employeeMaster.departmentId) {
+    const employee = await this.prisma.employeeMaster.findUnique({
+      where: { id: updated.employeeMasterId },
+      select: { departmentId: true, designationId: true },
+    })
+    if (employee?.departmentId) {
       const department = await this.prisma.department.findUnique({
-        where: { id: updated.employeeMaster.departmentId },
+        where: { id: employee.departmentId },
       })
       departmentName = department?.departmentName || ''
     }
-
-    if (updated.employeeMaster.designationId) {
+    if (employee?.designationId) {
       const designation = await this.prisma.designation.findUnique({
-        where: { id: updated.employeeMaster.designationId },
+        where: { id: employee.designationId },
       })
       designationName = designation?.designationName || ''
     }
@@ -318,9 +352,32 @@ export class EmployeeAssetsService {
       issuedBy: asset.issuedBy,
       returnedBy: asset.returnedBy,
       returnedDate: asset.returnedDate ? asset.returnedDate.toISOString().split('T')[0] : null,
+      dcType: dcTypeToApi(asset.dcType),
+      issuanceDcNumber: asset.issuanceDcNumber ?? null,
+      issuanceFormUrl: asset.issuanceFormUrl ?? null,
+      issuanceFormKey: asset.issuanceFormKey ?? null,
       createdAt: asset.createdAt,
       updatedAt: asset.updatedAt,
     }
+  }
+
+  /** Generate unique issuance DC number: DC-YYYYMMDD-NNNN (sequence per day). */
+  private async generateIssuanceDcNumber(issueDate: Date): Promise<string> {
+    const yyyymmdd = issueDate.toISOString().slice(0, 10).replace(/-/g, '')
+    const prefix = `DC-${yyyymmdd}-`
+    const existing = await this.prisma.employeeAsset.findMany({
+      where: { issuanceDcNumber: { startsWith: prefix } } as any,
+      select: { issuanceDcNumber: true } as any,
+    })
+    let maxSeq = 0
+    for (const row of existing) {
+      const dcNum = (row as { issuanceDcNumber?: string | null }).issuanceDcNumber
+      const num = dcNum?.slice(prefix.length)
+      const n = parseInt(num ?? '0', 10)
+      if (!Number.isNaN(n) && n > maxSeq) maxSeq = n
+    }
+    const seq = String(maxSeq + 1).padStart(4, '0')
+    return `${prefix}${seq}`
   }
 
   // Helper method to recalculate and sync asset item quantities based on actual assignments

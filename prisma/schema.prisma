@@ -1129,6 +1129,12 @@ model AssetItem {
   @@map("asset_items")
 }
 
+// Delivery Challan type for asset issuance (set at assignment)
+enum DeliveryChallanType {
+  RETURNABLE    // Returnable DC - asset is expected to be returned
+  NON_RETURNABLE // Non-returnable DC - asset is issued without return expectation
+}
+
 // Employee Asset Model
 model EmployeeAsset {
   id                 String              @id @default(uuid())
@@ -1146,6 +1152,11 @@ model EmployeeAsset {
   issuedBy           String? // User ID
   returnedBy         String? // User ID
   returnedDate       DateTime?
+  // DC (Delivery Challan) and Asset Issuance Form - set when assigning
+  dcType             DeliveryChallanType? // Returnable DC or Non-returnable DC
+  issuanceDcNumber   String?   @unique // Unique DC number at issuance (e.g. DC-20260131-1234); backend can generate if not sent
+  issuanceFormUrl    String? // URL to Asset Issuance Form document (e.g. S3)
+  issuanceFormKey    String? // Bucket key for issuance form
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
 

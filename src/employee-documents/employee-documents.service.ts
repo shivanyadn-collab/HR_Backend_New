@@ -19,7 +19,9 @@ export class EmployeeDocumentsService {
     if (!fileUrl || !fileUrl.trim()) return undefined
     const match = fileUrl.match(/^data:([^;]+);base64,(.+)$/i)
     if (!match) {
+      // Allow http(s) URLs (S3, etc.) or local bucket path from upload (e.g. /uploads/...)
       if (/^https?:\/\//i.test(fileUrl)) return undefined
+      if (fileUrl.startsWith('/uploads/')) return undefined
       throw new BadRequestException(
         'fileUrl must be an S3/HTTP URL or a base64 data URL (data:...;base64,...). Use POST /employee-documents/upload for file uploads.',
       )
