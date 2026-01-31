@@ -11,6 +11,14 @@ export class EmployeeDocumentsService {
     private bucketService: BucketService,
   ) {}
 
+  /** Coerce form/JSON value to boolean (multipart sends "true"/"false" as strings). */
+  private toBoolean(value: boolean | string | undefined | null, defaultValue: boolean): boolean {
+    if (value === undefined || value === null) return defaultValue
+    if (typeof value === 'boolean') return value
+    if (typeof value === 'string') return value.toLowerCase() === 'true' || value === '1'
+    return defaultValue
+  }
+
   /** If fileUrl is a base64 data URL, uploads to S3 and returns { fileUrl, fileKey, fileSize }. Otherwise returns undefined. */
   private async normalizeFileUrlToS3(
     fileUrl: string | undefined,
@@ -144,7 +152,7 @@ export class EmployeeDocumentsService {
         status: createEmployeeDocumentDto.status || 'ACTIVE',
         description: createEmployeeDocumentDto.description,
         version: createEmployeeDocumentDto.version || '1.0',
-        isConfidential: createEmployeeDocumentDto.isConfidential || false,
+        isConfidential: this.toBoolean(createEmployeeDocumentDto.isConfidential, false),
       },
       include: {
         employeeMaster: {
@@ -373,7 +381,7 @@ export class EmployeeDocumentsService {
     }
 
     if (updateEmployeeDocumentDto.isConfidential !== undefined) {
-      updateData.isConfidential = updateEmployeeDocumentDto.isConfidential
+      updateData.isConfidential = this.toBoolean(updateEmployeeDocumentDto.isConfidential, false)
     }
 
     // Check if document is expired
