@@ -6,6 +6,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { Readable } from 'stream'
 import { extname, join, dirname } from 'path'
 import { writeFile, mkdir } from 'fs/promises'
+import { createReadStream } from 'fs'
 
 export enum BucketProvider {
   AWS_S3 = 'aws-s3',
@@ -37,6 +38,11 @@ export interface FileInfo {
   size?: number
   lastModified?: Date
   mimeType?: string
+}
+
+export interface GetSignedUrlOptions {
+  /** e.g. attachment; filename="Document.pdf" — S3 returns this as Content-Disposition */
+  responseContentDisposition?: string
 }
 
 @Injectable()
@@ -212,10 +218,14 @@ export class BucketService {
   }
 
 
-  async getFileUrl(key: string, expiresIn: number = 3600): Promise<string> {
+  async getFileUrl(
+    key: string,
+    expiresIn: number = 3600,
+    options?: GetSignedUrlOptions,
+  ): Promise<string> {
     switch (this.config.provider) {
       case BucketProvider.AWS_S3:
-        return this.getS3SignedUrl(key, expiresIn)
+        return this.getS3SignedUrl(key, expiresIn, options)
       case BucketProvider.LOCAL:
         return `/uploads/${key}`
       default:
@@ -223,24 +233,91 @@ export class BucketService {
     }
   }
 
-  private async getS3SignedUrl(key: string, expiresIn: number): Promise<string> {
+  private async getS3SignedUrl(
+    key: string,
+    expiresIn: number,
+    options?: GetSignedUrlOptions,
+  ): Promise<string> {
     const command = new GetObjectCommand({
       Bucket: this.config.bucketName,
       Key: key,
+      // Disable checksum so presigned URL works in browser (SDK default ENABLED causes 403 when browser doesn't send the header)
+      ChecksumMode: 'DISABLED' as any,
+      ...(options?.responseContentDisposition && {
+        ResponseContentDisposition: options.responseContentDisposition,
+      }),
     })
 
-    return await getSignedUrl(this.s3Client, command, { expiresIn })
+    return await getSignedUrl(this.s3Client, command, {
+      expiresIn,
+      // Also exclude from signature in case SDK still adds it
+      unsignableHeaders: new Set(['x-amz-checksum-mode']),
+    })
   }
 
   /**
    * Get a signed URL for accessing a file in the bucket
    * @param key The bucket key (path) of the file
    * @param expiresIn Expiration time in seconds (default: 3600 = 1 hour)
+   * @param options Optional response overrides (e.g. Content-Disposition for download)
    * @returns Signed URL that can be used to access the file
    */
-  async getSignedUrl(key: string, expiresIn: number = 3600): Promise<string> {
-    // Use the existing getFileUrl method which handles both S3 and local storage
-    return this.getFileUrl(key, expiresIn)
+  async getSignedUrl(
+    key: string,
+    expiresIn: number = 3600,
+    options?: GetSignedUrlOptions,
+  ): Promise<string> {
+    return this.getFileUrl(key, expiresIn, options)
+  }
+
+  /**
+   * Get a readable stream of the file (for streaming download). S3: GetObject Body; local: createReadStream.
+   */
+  async getFileStream(key: string): Promise<{
+    stream: Readable
+    contentType?: string
+    contentLength?: number
+  }> {
+    switch (this.config.provider) {
+      case BucketProvider.AWS_S3:
+        return this.getS3FileStream(key)
+      case BucketProvider.LOCAL:
+        return this.getLocalFileStream(key)
+      default:
+        throw new Error(`Unsupported bucket provider: ${this.config.provider}`)
+    }
+  }
+
+  private async getS3FileStream(key: string): Promise<{
+    stream: Readable
+    contentType?: string
+    contentLength?: number
+  }> {
+    const command = new GetObjectCommand({
+      Bucket: this.config.bucketName,
+      Key: key,
+      ChecksumMode: 'DISABLED' as any,
+    })
+    const result = await this.s3Client.send(command)
+    return {
+      stream: result.Body as Readable,
+      contentType: result.ContentType ?? undefined,
+      contentLength: result.ContentLength ?? undefined,
+    }
+  }
+
+  private getLocalFileStream(key: string): {
+    stream: Readable
+    contentType?: string
+    contentLength?: number
+  } {
+    const uploadsDir = join(process.cwd(), 'uploads')
+    const filePath = join(uploadsDir, key)
+    return {
+      stream: createReadStream(filePath),
+      contentType: undefined,
+      contentLength: undefined,
+    }
   }
 
 

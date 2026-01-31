@@ -288,16 +288,20 @@ export class EmployeeDocumentsService {
     return formattedResults
   }
 
-  /** Get document fileUrl by id (for download redirect). */
-  async getFileUrl(id: string): Promise<{ fileUrl: string; documentName: string }> {
+  /** Get document fileUrl and fileKey by id (for download redirect; fileKey used for S3 presigned URL). */
+  async getFileUrl(id: string): Promise<{ fileUrl: string; fileKey: string | null; documentName: string }> {
     const document = await this.prisma.employeeDocument.findUnique({
       where: { id },
-      select: { fileUrl: true, documentName: true },
+      select: { fileUrl: true, fileKey: true, documentName: true },
     })
     if (!document || !document.fileUrl) {
       throw new NotFoundException('Document not found or has no file')
     }
-    return { fileUrl: document.fileUrl, documentName: document.documentName }
+    return {
+      fileUrl: document.fileUrl,
+      fileKey: document.fileKey ?? null,
+      documentName: document.documentName,
+    }
   }
 
   async findOne(id: string) {
