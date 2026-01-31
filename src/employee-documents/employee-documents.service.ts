@@ -1,11 +1,80 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
+import { BucketService } from '../bucket/bucket.service'
 import { CreateEmployeeDocumentDto } from './dto/create-employee-document.dto'
 import { UpdateEmployeeDocumentDto } from './dto/update-employee-document.dto'
 
 @Injectable()
 export class EmployeeDocumentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private bucketService: BucketService,
+  ) {}
+
+  /** If fileUrl is a base64 data URL, uploads to S3 and returns { fileUrl, fileKey, fileSize }. Otherwise returns undefined. */
+  private async normalizeFileUrlToS3(
+    fileUrl: string | undefined,
+    documentName: string,
+  ): Promise<{ fileUrl: string; fileKey: string; fileSize: number } | undefined> {
+    if (!fileUrl || !fileUrl.trim()) return undefined
+    const match = fileUrl.match(/^data:([^;]+);base64,(.+)$/i)
+    if (!match) {
+      if (/^https?:\/\//i.test(fileUrl)) return undefined
+      throw new BadRequestException(
+        'fileUrl must be an S3/HTTP URL or a base64 data URL (data:...;base64,...). Use POST /employee-documents/upload for file uploads.',
+      )
+    }
+    const mimeType = match[1].trim()
+    const base64 = match[2]
+    let buffer: Buffer
+    try {
+      buffer = Buffer.from(base64, 'base64')
+    } catch {
+      throw new BadRequestException('Invalid base64 in fileUrl')
+    }
+    if (!buffer.length) throw new BadRequestException('Empty file content in fileUrl')
+
+    const ext = this.getExtensionFromMime(mimeType)
+    const safeName = documentName.replace(/[^a-zA-Z0-9.-]/g, '_').slice(0, 80) || 'document'
+    const customFileName = `${safeName}-${Date.now()}${ext}`
+
+    const file: Express.Multer.File = {
+      buffer,
+      mimetype: mimeType,
+      originalname: customFileName,
+      size: buffer.length,
+      fieldname: 'file',
+      encoding: '7bit',
+      stream: null as any,
+      destination: '',
+      filename: '',
+      path: '',
+    }
+
+    const uploadResult = await this.bucketService.uploadFile(file, 'employee-documents', customFileName)
+    return {
+      fileUrl: uploadResult.url,
+      fileKey: uploadResult.key,
+      fileSize: uploadResult.size,
+    }
+  }
+
+  private getExtensionFromMime(mimeType: string): string {
+    const map: Record<string, string> = {
+      'application/pdf': '.pdf',
+      'image/jpeg': '.jpg',
+      'image/jpg': '.jpg',
+      'image/png': '.png',
+      'image/gif': '.gif',
+      'image/webp': '.webp',
+      'application/msword': '.doc',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+      'application/vnd.ms-excel': '.xls',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+      'text/plain': '.txt',
+    }
+    return map[mimeType.toLowerCase()] ?? '.bin'
+  }
 
   async create(createEmployeeDocumentDto: CreateEmployeeDocumentDto) {
     // Verify employee exists
@@ -48,14 +117,23 @@ export class EmployeeDocumentsService {
       ? new Date(createEmployeeDocumentDto.uploadDate)
       : new Date()
 
+    // Auto-upload base64 fileUrl to S3 and store only the URL
+    const s3Result = createEmployeeDocumentDto.fileUrl
+      ? await this.normalizeFileUrlToS3(
+          createEmployeeDocumentDto.fileUrl,
+          createEmployeeDocumentDto.documentName,
+        )
+      : undefined
+
     const document = await this.prisma.employeeDocument.create({
       data: {
         employeeMasterId: createEmployeeDocumentDto.employeeMasterId,
         documentName: createEmployeeDocumentDto.documentName,
         documentType: createEmployeeDocumentDto.documentType,
         documentCategory: createEmployeeDocumentDto.documentCategory,
-        fileSize: createEmployeeDocumentDto.fileSize,
-        fileUrl: createEmployeeDocumentDto.fileUrl,
+        fileSize: s3Result?.fileSize ?? createEmployeeDocumentDto.fileSize,
+        fileUrl: s3Result?.fileUrl ?? createEmployeeDocumentDto.fileUrl,
+        fileKey: s3Result?.fileKey ?? createEmployeeDocumentDto.fileKey,
         uploadDate,
         expiryDate: createEmployeeDocumentDto.expiryDate
           ? new Date(createEmployeeDocumentDto.expiryDate)

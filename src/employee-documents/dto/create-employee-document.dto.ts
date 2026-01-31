@@ -16,6 +16,7 @@ export class CreateEmployeeDocumentDto {
   @IsInt()
   fileSize: number
 
+  /** S3/HTTP URL, or base64 data URL (data:...;base64,...). Base64 is auto-uploaded to S3 and stored as URL. Prefer POST /upload for file uploads. */
   @IsOptional()
   @IsString()
   fileUrl?: string
