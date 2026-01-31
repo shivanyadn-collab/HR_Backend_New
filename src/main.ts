@@ -15,7 +15,8 @@ async function bootstrap() {
   app.use(express.json({ limit: '100mb' }))
   app.use(express.urlencoded({ limit: '100mb', extended: true }))
 
-  // Enable CORS
+  // Enable CORS (allowed origins: FRONTEND_URL comma-separated, or default includes https://hr.exozen.co.in)
+  // If Nginx returns 413 before proxying, it won't add CORS headers—see docs/cors-and-upload-limit.md
   const allowedOrigins = process.env.FRONTEND_URL
     ? process.env.FRONTEND_URL.split(',').map((url) => url.trim())
     : ['http://localhost:5173', 'http://localhost:4173', 'https://hr.exozen.co.in']
