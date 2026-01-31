@@ -296,7 +296,6 @@ export class BucketService {
     const command = new GetObjectCommand({
       Bucket: this.config.bucketName,
       Key: key,
-      ChecksumMode: 'DISABLED' as any,
     })
     const result = await this.s3Client.send(command)
     return {
