@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsDateString, IsEnum } from 'class-validator'
+import { IsString, IsOptional, IsDateString, IsEnum, IsIn } from 'class-validator'
 
 export class UpdateEmployeeAssetDto {
   @IsOptional()
