@@ -1,12 +1,58 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common'
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
+import { BucketService } from '../bucket/bucket.service'
 import { CreateEmployeeMasterDto } from './dto/create-employee-master.dto'
 import { UpdateEmployeeMasterDto } from './dto/update-employee-master.dto'
 import { EmployeeMasterStatus } from '@prisma/client'
 
 @Injectable()
 export class EmployeeMastersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private bucketService: BucketService,
+  ) {}
+
+  private static isBase64DataUrl(value: string): boolean {
+    return /^data:image\/[a-z+]+;base64,/i.test(value) || value.startsWith('data:')
+  }
+
+  /**
+   * If profilePhoto is base64, uploads to S3 and returns the URL. If it's already an http(s) URL, returns as-is.
+   * Returns undefined for empty input. Throws for invalid format.
+   */
+  private async normalizeProfilePhotoToUrl(
+    profilePhoto: string | undefined | null,
+    filenamePrefix?: string,
+  ): Promise<string | undefined | null> {
+    if (profilePhoto == null || profilePhoto === '') return profilePhoto === null ? null : undefined
+    if (EmployeeMastersService.isBase64DataUrl(profilePhoto)) {
+      const parsed = this.parseDataUrlToBuffer(profilePhoto)
+      if (!parsed) throw new BadRequestException('Invalid base64 profile photo format')
+      const { buffer, mimeType } = parsed
+      const ext = mimeType === 'image/png' ? '.png' : '.jpg'
+      const customFileName = filenamePrefix
+        ? `profile-${filenamePrefix}-${Date.now()}${ext}`
+        : `profile-${Date.now()}-${Math.random().toString(36).slice(2, 9)}${ext}`
+      const file: Express.Multer.File = {
+        buffer,
+        mimetype: mimeType,
+        originalname: customFileName,
+        size: buffer.length,
+        fieldname: 'file',
+        encoding: '7bit',
+        stream: null as any,
+        destination: '',
+        filename: '',
+        path: '',
+      }
+      const uploadResult = await this.bucketService.uploadFile(file, 'profile-photos', customFileName)
+      return uploadResult.url
+    }
+    if (/^https?:\/\//i.test(profilePhoto)) return profilePhoto
+    throw new BadRequestException(
+      'profilePhoto must be a valid URL or a base64 data URL (data:image/...;base64,...)',
+    )
+  }
 
   async create(createEmployeeMasterDto: CreateEmployeeMasterDto) {
     // Check if email already exists
@@ -119,6 +165,11 @@ export class EmployeeMastersService {
       }
     }
 
+    // Auto-convert base64 profile photo to S3 URL
+    const normalizedPhoto = createEmployeeMasterDto.profilePhoto
+      ? await this.normalizeProfilePhotoToUrl(createEmployeeMasterDto.profilePhoto, employeeCode)
+      : undefined
+
     const employee = await this.prisma.employeeMaster.create({
       data: {
         employeeCode,
@@ -160,7 +211,7 @@ export class EmployeeMastersService {
         emergencyContactRelation: createEmployeeMasterDto.emergencyContactRelation,
         emergencyContactPhone: createEmployeeMasterDto.emergencyContactPhone,
         status: createEmployeeMasterDto.status || EmployeeMasterStatus.ACTIVE,
-        profilePhoto: createEmployeeMasterDto.profilePhoto,
+        profilePhoto: normalizedPhoto,
         userId: createEmployeeMasterDto.userId,
         // Additional personal information - using type assertion until Prisma client is regenerated
         ...(createEmployeeMasterDto.parentRelationType && {
@@ -561,6 +612,17 @@ export class EmployeeMastersService {
       updateData.confirmationDate = new Date(updateEmployeeMasterDto.confirmationDate)
     }
 
+    // Auto-convert base64 profile photo to S3 URL
+    if (updateEmployeeMasterDto.profilePhoto !== undefined) {
+      updateData.profilePhoto =
+        updateEmployeeMasterDto.profilePhoto === null
+          ? null
+          : await this.normalizeProfilePhotoToUrl(
+              updateEmployeeMasterDto.profilePhoto,
+              resolvedId,
+            )
+    }
+
     const updated = await this.prisma.employeeMaster.update({
       where: { id: resolvedId },
       data: updateData,
@@ -740,5 +802,87 @@ export class EmployeeMastersService {
       data: { profilePhoto: null },
     })
     return this.formatEmployeeResponse(employee)
+  }
+
+  /**
+   * One-time migration: find all employees with base64 profilePhoto, upload each to S3, and update the record with the URL.
+   * Call POST /employee-masters/migrate-profile-photos to run.
+   */
+  async migrateProfilePhotosToS3(): Promise<{
+    total: number
+    migrated: number
+    failed: Array<{ employeeId: string; employeeCode?: string; error: string }>
+  }> {
+    const employees = await this.prisma.employeeMaster.findMany({
+      where: {
+        AND: [{ profilePhoto: { not: null } }, { profilePhoto: { startsWith: 'data:' } }],
+      },
+      select: { id: true, employeeCode: true, profilePhoto: true },
+    })
+
+    const result = { total: employees.length, migrated: 0, failed: [] as Array<{ employeeId: string; employeeCode?: string; error: string }> }
+
+    for (const emp of employees) {
+      const profilePhoto = emp.profilePhoto as string
+      const parsed = this.parseDataUrlToBuffer(profilePhoto)
+      if (!parsed) {
+        result.failed.push({
+          employeeId: emp.id,
+          employeeCode: emp.employeeCode ?? undefined,
+          error: 'Invalid data URL format',
+        })
+        continue
+      }
+
+      const { buffer, mimeType } = parsed
+      const ext = mimeType === 'image/png' ? '.png' : '.jpg'
+      const customFileName = `profile-${emp.id}-${Date.now()}${ext}`
+
+      const file: Express.Multer.File = {
+        buffer,
+        mimetype: mimeType,
+        originalname: customFileName,
+        size: buffer.length,
+        fieldname: 'file',
+        encoding: '7bit',
+        stream: null as any,
+        destination: '',
+        filename: '',
+        path: '',
+      }
+
+      try {
+        const uploadResult = await this.bucketService.uploadFile(file, 'profile-photos', customFileName)
+        await this.prisma.employeeMaster.update({
+          where: { id: emp.id },
+          data: { profilePhoto: uploadResult.url },
+        })
+        result.migrated++
+      } catch (err: any) {
+        result.failed.push({
+          employeeId: emp.id,
+          employeeCode: emp.employeeCode ?? undefined,
+          error: err?.message ?? String(err),
+        })
+      }
+    }
+
+    return result
+  }
+
+  /** Parse data:image/xxx;base64,... to { buffer, mimeType }. Returns null if invalid. */
+  private parseDataUrlToBuffer(
+    dataUrl: string,
+  ): { buffer: Buffer; mimeType: string } | null {
+    const match = dataUrl.match(/^data:(image\/[a-z+]+);base64,(.+)$/i)
+    if (!match) return null
+    const mimeType = match[1]
+    const base64 = match[2]
+    try {
+      const buffer = Buffer.from(base64, 'base64')
+      return buffer.length ? { buffer, mimeType } : null
+    } catch {
+      return null
+    }
   }
 }

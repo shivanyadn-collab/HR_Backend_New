@@ -10,9 +10,10 @@ import { AllExceptionsFilter } from './common/filters/http-exception.filter'
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule)
 
-  // Increase body size limit for file uploads (50MB)
-  app.use(express.json({ limit: '50mb' }))
-  app.use(express.urlencoded({ limit: '50mb', extended: true }))
+  // Increase body size limit for large payloads and file uploads (100MB)
+  // If you still get 413, increase your reverse proxy limit (e.g. nginx client_max_body_size)
+  app.use(express.json({ limit: '100mb' }))
+  app.use(express.urlencoded({ limit: '100mb', extended: true }))
 
   // Enable CORS
   const allowedOrigins = process.env.FRONTEND_URL

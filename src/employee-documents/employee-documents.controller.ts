@@ -45,7 +45,11 @@ export class EmployeeDocumentsController {
   }
 
   @Post('upload')
-  @UseInterceptors(FileInterceptor('file'))
+  @UseInterceptors(
+    FileInterceptor('file', {
+      limits: { fileSize: 100 * 1024 * 1024 }, // 100MB
+    }),
+  )
   @HttpCode(HttpStatus.CREATED)
   async uploadDocument(
     @Body() createDto: Omit<CreateEmployeeDocumentDto, 'fileUrl' | 'fileKey' | 'fileSize' | 'uploadDate'>,

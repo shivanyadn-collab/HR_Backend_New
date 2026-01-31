@@ -138,6 +138,7 @@ export class CreateEmployeeMasterDto {
   @IsEnum(EmployeeMasterStatus)
   status?: EmployeeMasterStatus
 
+  /** Profile photo: S3/HTTP URL, or base64 data URL (data:image/...;base64,...). Base64 is auto-uploaded to S3 and stored as URL. */
   @IsOptional()
   @IsString()
   profilePhoto?: string

@@ -44,6 +44,13 @@ export class EmployeeMastersController {
     return this.employeeMastersService.findAll(departmentId, status, search)
   }
 
+  /** One-time migration: upload existing base64 profile photos to S3 and replace with URLs. */
+  @Post('migrate-profile-photos')
+  @HttpCode(HttpStatus.OK)
+  async migrateProfilePhotos() {
+    return this.employeeMastersService.migrateProfilePhotosToS3()
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.employeeMastersService.findOne(id)
