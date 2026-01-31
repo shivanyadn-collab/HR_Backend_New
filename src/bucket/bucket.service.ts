@@ -4,7 +4,8 @@ import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand, List
 import { Upload } from '@aws-sdk/lib-storage'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { Readable } from 'stream'
-import { extname } from 'path'
+import { extname, join, dirname } from 'path'
+import { writeFile, mkdir } from 'fs/promises'
 
 export enum BucketProvider {
   AWS_S3 = 'aws-s3',
@@ -171,9 +172,13 @@ export class BucketService {
 
 
   private async uploadToLocal(file: Express.Multer.File, key: string): Promise<UploadResult> {
-    // For local development, return a local URL
-    const url = `/uploads/${key}`
+    // Write file to disk so GET /uploads/... can serve it via static assets
+    const uploadsDir = join(process.cwd(), 'uploads')
+    const filePath = join(uploadsDir, key)
+    await mkdir(dirname(filePath), { recursive: true })
+    await writeFile(filePath, file.buffer)
 
+    const url = `/uploads/${key}`
     return {
       url,
       key,
