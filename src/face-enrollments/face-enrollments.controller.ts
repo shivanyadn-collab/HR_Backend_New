@@ -141,18 +141,18 @@ export class FaceEnrollmentsController {
     try {
       // Generate unique filename with .jpg extension for face images
       const customFileName = `${Date.now()}-${Math.round(Math.random() * 1e9)}.jpg`
+      // Store in S3 under face-enrollments/{enrollmentId}/ so images are organized and deletable by enrollment
+      const s3Folder = `face-enrollments/${id}`
+      const uploadResult = await this.bucketService.uploadFile(file, s3Folder, customFileName)
 
-      // Upload image to bucket with .jpg extension
-      const uploadResult = await this.bucketService.uploadFile(file, 'face-images', customFileName)
-
-    const uploadDto: UploadFaceImageDto = {
-      faceEnrollmentId: id,
+      const uploadDto: UploadFaceImageDto = {
+        faceEnrollmentId: id,
         imageUrl: uploadResult.url,
-        imageKey: uploadResult.key, // Store the bucket key
-        imageName: customFileName, // Use the new .jpg filename
-      imageSize: file.size,
-    }
-    return this.service.uploadFaceImage(uploadDto)
+        imageKey: uploadResult.key,
+        imageName: customFileName,
+        imageSize: file.size,
+      }
+      return this.service.uploadFaceImage(uploadDto)
     } catch (error) {
       throw new BadRequestException(`Failed to upload image: ${error.message}`)
     }

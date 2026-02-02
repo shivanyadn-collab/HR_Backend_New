@@ -224,13 +224,26 @@ export class FaceEnrollmentsService {
   async remove(id: string) {
     const enrollment = await this.prisma.faceEnrollment.findUnique({
       where: { id },
+      include: { faceImagesData: true },
     })
 
     if (!enrollment) {
       throw new NotFoundException('Face enrollment not found')
     }
 
-    // Delete associated face images first
+    // Delete face image files from S3 (or local bucket) before removing DB records
+    for (const img of enrollment.faceImagesData) {
+      if (img.imageKey) {
+        try {
+          await this.bucketService.deleteFile(img.imageKey)
+        } catch (err) {
+          // Log but continue; DB cleanup should still happen
+          console.warn(`Failed to delete S3 object ${img.imageKey}:`, err)
+        }
+      }
+    }
+
+    // Delete associated face images from DB first
     await this.prisma.faceImage.deleteMany({
       where: { faceEnrollmentId: id },
     })
