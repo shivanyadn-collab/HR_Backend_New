@@ -16,17 +16,11 @@ export class AttendanceRegularizationsService {
       throw new NotFoundException('Employee not found')
     }
 
-    // Generate request number
-    const year = new Date().getFullYear()
-    const count = await this.prisma.attendanceRegularization.count({
-      where: {
-        requestedDate: {
-          gte: new Date(`${year}-01-01`),
-          lt: new Date(`${year + 1}-01-01`),
-        },
-      },
-    })
-    const requestNumber = `REG-${year}-${String(count + 1).padStart(4, '0')}`
+    // Generate unique request number: date (YYYYMMDD) + employeeId + time (HHMMSS)
+    const now = new Date()
+    const datePart = now.toISOString().slice(0, 10).replace(/-/g, '') // YYYYMMDD
+    const timePart = now.toTimeString().slice(0, 8).replace(/:/g, '') // HHMMSS
+    const requestNumber = `REG-${datePart}-${createDto.employeeMasterId}-${timePart}`
 
     const regularization = await this.prisma.attendanceRegularization.create({
       data: {
