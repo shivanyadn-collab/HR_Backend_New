@@ -1,13 +1,47 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common'
+import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateGPSPunchDto } from './dto/create-gps-punch.dto'
 import { UpdateGPSPunchDto } from './dto/update-gps-punch.dto'
+import { parseUTCISO, utcToIST } from '../common/timezone.util'
 
 @Injectable()
 export class GPSPunchesService {
   private readonly logger = new Logger(GPSPunchesService.name)
 
   constructor(private prisma: PrismaService) {}
+
+  /** Format punch for API: punchTime stored as UTC; add punchDateIST and punchTimeIST (Asia/Kolkata). */
+  private formatPunchResponse(punch: any) {
+    const ist = utcToIST(punch.punchTime)
+    return {
+      id: punch.id,
+      employeeId: punch.employeeMasterId,
+      employeeCode: punch.employeeMaster?.employeeCode ?? '',
+      employeeName: punch.employeeMaster
+        ? `${punch.employeeMaster.firstName} ${punch.employeeMaster.lastName}`
+        : 'Unknown',
+      department: (punch as any).departmentName ?? 'Not assigned',
+      designation: (punch as any).designationName ?? 'Not assigned',
+      projectId: punch.projectId,
+      projectName: punch.project?.name,
+      projectCode: punch.project?.code,
+      geofenceId: punch.geofenceAreaId,
+      geofenceName: punch.geofenceArea?.geofenceName,
+      punchType: punch.punchType,
+      punchTime: punch.punchTime.toISOString(),
+      punchDateIST: ist.dateStr,
+      punchTimeIST: ist.timeStr,
+      latitude: punch.latitude,
+      longitude: punch.longitude,
+      location: punch.location,
+      distance: punch.distance,
+      status: punch.status,
+      accuracy: punch.accuracy,
+      selfieImageUrl: (punch as any).selfieImageUrl,
+      remarks: (punch as any).remarks,
+      createdAt: punch.createdAt?.toISOString(),
+    }
+  }
 
   // Helper to truncate base64 URLs for logging
   private truncateUrl(url?: string): string {
@@ -19,30 +53,33 @@ export class GPSPunchesService {
   }
 
   async create(createDto: CreateGPSPunchDto) {
-    // Parse punchTime - handle both ISO strings and time-only strings (HH:mm:ss)
-    let punchTimeDate = new Date()
-    if (createDto.punchTime) {
+    // Canonical punch time: use punchDateTime (UTC ISO) only; ignore client local time
+    let punchTimeDate: Date
+    if (createDto.punchDateTime) {
+      const parsed = parseUTCISO(createDto.punchDateTime)
+      if (!parsed) {
+        throw new BadRequestException('punchDateTime must be a valid UTC ISO 8601 string')
+      }
+      punchTimeDate = parsed
+    } else if (createDto.punchTime) {
+      // Legacy: accept ISO only (interpreted as UTC); do not use time-only local strings
       const parsed = new Date(createDto.punchTime)
       if (!isNaN(parsed.getTime())) {
-        // Valid ISO date string
         punchTimeDate = parsed
-      } else if (/^\d{2}:\d{2}:\d{2}$/.test(createDto.punchTime)) {
-        // Time-only string (HH:mm:ss) - combine with today's date
-        const today = new Date()
-        const [hours, minutes, seconds] = createDto.punchTime.split(':').map(Number)
-        today.setHours(hours, minutes, seconds, 0)
-        punchTimeDate = today
+      } else {
+        punchTimeDate = new Date()
       }
+    } else {
+      punchTimeDate = new Date()
     }
 
-    // Extract punchTime from DTO to avoid it being spread as a string
-    const { punchTime: _punchTimeStr, ...restOfDto } = createDto
+    const { punchDateTime: _pd, punchTime: _pt, ...restOfDto } = createDto
 
     this.logger.log(
-      `Creating GPS punch: ${createDto.punchType} at ${punchTimeDate.toISOString()}, selfie: ${this.truncateUrl(createDto.selfieImageUrl)}`,
+      `Creating GPS punch: ${createDto.punchType} at ${punchTimeDate.toISOString()} UTC, selfie: ${this.truncateUrl(createDto.selfieImageUrl)}`,
     )
 
-    return this.prisma.gPSPunch.create({
+    const punch = await this.prisma.gPSPunch.create({
       data: {
         ...restOfDto,
         punchTime: punchTimeDate,
@@ -53,6 +90,8 @@ export class GPSPunchesService {
         geofenceArea: true,
       },
     })
+
+    return this.formatPunchResponse(punch)
   }
 
   async findAll(
@@ -182,6 +221,7 @@ export class GPSPunchesService {
       designationName = designation?.designationName || 'Not assigned'
     }
 
+    const ist = utcToIST(punch.punchTime)
     return {
       id: punch.id,
       employeeId: punch.employeeMasterId,
@@ -198,6 +238,8 @@ export class GPSPunchesService {
       geofenceName: punch.geofenceArea?.geofenceName,
       punchType: punch.punchType,
       punchTime: punch.punchTime.toISOString(),
+      punchDateIST: ist.dateStr,
+      punchTimeIST: ist.timeStr,
       latitude: punch.latitude,
       longitude: punch.longitude,
       location: punch.location,
@@ -220,17 +262,20 @@ export class GPSPunchesService {
     }
 
     const updateData: any = { ...updateDto }
+    delete updateData.punchDateTime
+    delete updateData.punchTime
 
-    // Parse punchTime if provided
-    if (updateDto.punchTime) {
+    // Canonical punch time: punchDateTime (UTC) only
+    if (updateDto.punchDateTime) {
+      const parsed = parseUTCISO(updateDto.punchDateTime)
+      if (!parsed) {
+        throw new BadRequestException('punchDateTime must be a valid UTC ISO 8601 string')
+      }
+      updateData.punchTime = parsed
+    } else if (updateDto.punchTime) {
       const parsed = new Date(updateDto.punchTime)
       if (!isNaN(parsed.getTime())) {
         updateData.punchTime = parsed
-      } else if (/^\d{2}:\d{2}:\d{2}$/.test(updateDto.punchTime)) {
-        const today = new Date()
-        const [hours, minutes, seconds] = updateDto.punchTime.split(':').map(Number)
-        today.setHours(hours, minutes, seconds, 0)
-        updateData.punchTime = today
       }
     }
 
@@ -329,7 +374,7 @@ export class GPSPunchesService {
       orderBy: { punchTime: 'desc' },
     })
 
-    // Fetch department and designation data for each employee
+    // Fetch department and designation data for each employee, then format with IST
     const punchesWithDetails = await Promise.all(
       punches.map(async (punch) => {
         let departmentName = 'Not assigned'
@@ -349,6 +394,7 @@ export class GPSPunchesService {
           designationName = designation?.designationName || 'Not assigned'
         }
 
+        const ist = utcToIST(punch.punchTime)
         return {
           id: punch.id,
           employeeId: punch.employeeMasterId,
@@ -365,6 +411,8 @@ export class GPSPunchesService {
           geofenceName: punch.geofenceArea?.geofenceName,
           punchType: punch.punchType,
           punchTime: punch.punchTime.toISOString(),
+          punchDateIST: ist.dateStr,
+          punchTimeIST: ist.timeStr,
           latitude: punch.latitude,
           longitude: punch.longitude,
           location: punch.location,

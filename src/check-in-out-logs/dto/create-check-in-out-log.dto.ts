@@ -17,8 +17,20 @@ export class CreateCheckInOutLogDto {
   @IsString()
   employeeMasterId: string
 
+  /** When provided, server computes logDate and checkInTime in IST from this UTC ISO. Overrides client logDate/checkInTime. */
+  @IsOptional()
+  @IsString()
+  checkInPunchDateTime?: string
+
+  /** When provided, server computes checkOutTime (and logDate if not set) in IST from this UTC ISO. Overrides client checkOutTime. */
+  @IsOptional()
+  @IsString()
+  checkOutPunchDateTime?: string
+
+  /** IST date (YYYY-MM-DD). Ignored if checkInPunchDateTime or checkOutPunchDateTime is provided. */
+  @IsOptional()
   @IsDateString()
-  logDate: string
+  logDate?: string
 
   @IsOptional()
   @IsString()

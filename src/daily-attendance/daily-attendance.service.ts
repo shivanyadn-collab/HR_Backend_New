@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateDailyAttendanceDto, AttendanceStatus } from './dto/create-daily-attendance.dto'
 import { UpdateDailyAttendanceDto } from './dto/update-daily-attendance.dto'
+import { parseUTCISO, utcToIST } from '../common/timezone.util'
 
 @Injectable()
 export class DailyAttendanceService {
@@ -53,7 +54,7 @@ export class DailyAttendanceService {
       },
     })
 
-    const holidayDates = new Set(holidays.map((h) => h.holidayDate.toISOString().split('T')[0]))
+    const holidayDates = new Set(holidays.map((h) => utcToIST(h.holidayDate).dateStr))
 
     // Get existing GPS punches for the date range
     const gpsPunches = await this.prisma.gPSPunch.findMany({
@@ -70,10 +71,10 @@ export class DailyAttendanceService {
       orderBy: { punchTime: 'asc' },
     })
 
-    // Group punches by date
+    // Group punches by IST date (server is source of truth; device timezone must not affect stored time)
     const punchesByDate: Record<string, any[]> = {}
     gpsPunches.forEach((punch) => {
-      const dateStr = punch.punchTime.toISOString().split('T')[0]
+      const dateStr = utcToIST(punch.punchTime).dateStr
       if (!punchesByDate[dateStr]) {
         punchesByDate[dateStr] = []
       }
@@ -91,16 +92,18 @@ export class DailyAttendanceService {
       },
     })
 
-    const existingDates = new Set(existingRecords.map((r) => r.date.toISOString().split('T')[0]))
+    const existingDates = new Set(existingRecords.map((r) => utcToIST(r.date).dateStr))
 
     const results: any[] = []
     const currentDate = new Date(start)
     const today = new Date()
     today.setHours(23, 59, 59, 999)
 
-    // Loop through each date from start to end (or today, whichever is earlier)
+    // Loop through each date from start to end (or today) using IST calendar date
     while (currentDate <= end && currentDate <= today) {
-      const dateStr = currentDate.toISOString().split('T')[0]
+      const dateStr = utcToIST(
+        new Date(currentDate.getFullYear(), currentDate.getMonth(), currentDate.getDate(), 12, 0, 0),
+      ).dateStr
       const datePunches = punchesByDate[dateStr] || []
 
       // Determine the status for this date
@@ -113,7 +116,7 @@ export class DailyAttendanceService {
       // Check if it's a holiday
       if (holidayDates.has(dateStr)) {
         status = AttendanceStatus.HOLIDAY
-        const holiday = holidays.find((h) => h.holidayDate.toISOString().split('T')[0] === dateStr)
+        const holiday = holidays.find((h) => utcToIST(h.holidayDate).dateStr === dateStr)
         remarks = holiday?.holidayName || 'Holiday'
       }
       // Check if it's a weekoff
@@ -131,7 +134,7 @@ export class DailyAttendanceService {
         const lastOut = [...sortedPunches].reverse().find((p) => p.punchType === 'OUT')
 
         if (firstIn) {
-          checkIn = firstIn.punchTime.toTimeString().split(' ')[0]
+          checkIn = utcToIST(firstIn.punchTime).timeStr
           status = AttendanceStatus.PRESENT
           remarks = firstIn.geofenceArea?.geofenceName || 'GPS Punch'
         } else {
@@ -139,7 +142,7 @@ export class DailyAttendanceService {
         }
 
         if (lastOut) {
-          checkOut = lastOut.punchTime.toTimeString().split(' ')[0]
+          checkOut = utcToIST(lastOut.punchTime).timeStr
         }
 
         // Calculate working hours
@@ -158,7 +161,7 @@ export class DailyAttendanceService {
       if (existingDates.has(dateStr)) {
         // Update existing record
         const existingRecord = existingRecords.find(
-          (r) => r.date.toISOString().split('T')[0] === dateStr,
+          (r) => utcToIST(r.date).dateStr === dateStr,
         )
         if (existingRecord) {
           const updated = await this.prisma.dailyAttendance.update({
@@ -201,6 +204,51 @@ export class DailyAttendanceService {
     }
   }
 
+  /** Resolve date, checkIn, checkOut from UTC punch date times (server is source of truth). */
+  private resolveAttendanceTimesFromUTC(dto: {
+    checkInPunchDateTime?: string
+    checkOutPunchDateTime?: string
+    date?: string
+    checkIn?: string
+    checkOut?: string
+  }): { date: Date; checkIn: string | null; checkOut: string | null } {
+    let date: Date | undefined
+    let checkIn: string | null = dto.checkIn ?? null
+    let checkOut: string | null = dto.checkOut ?? null
+
+    if (dto.checkInPunchDateTime) {
+      const parsed = parseUTCISO(dto.checkInPunchDateTime)
+      if (!parsed) {
+        throw new BadRequestException('checkInPunchDateTime must be a valid UTC ISO 8601 string')
+      }
+      const ist = utcToIST(parsed)
+      date = new Date(ist.dateStr)
+      checkIn = ist.timeStr
+    }
+
+    if (dto.checkOutPunchDateTime) {
+      const parsed = parseUTCISO(dto.checkOutPunchDateTime)
+      if (!parsed) {
+        throw new BadRequestException('checkOutPunchDateTime must be a valid UTC ISO 8601 string')
+      }
+      const ist = utcToIST(parsed)
+      if (!date) {
+        date = new Date(ist.dateStr)
+      }
+      checkOut = ist.timeStr
+    }
+
+    if (!date) {
+      if (dto.date) {
+        date = new Date(dto.date)
+      } else {
+        throw new BadRequestException('Provide date or checkInPunchDateTime or checkOutPunchDateTime')
+      }
+    }
+
+    return { date, checkIn, checkOut }
+  }
+
   async create(createDto: CreateDailyAttendanceDto) {
     // Verify employee exists
     const employee = await this.prisma.employeeMaster.findUnique({
@@ -211,12 +259,20 @@ export class DailyAttendanceService {
       throw new NotFoundException('Employee not found')
     }
 
+    const { date, checkIn, checkOut } = this.resolveAttendanceTimesFromUTC({
+      checkInPunchDateTime: createDto.checkInPunchDateTime,
+      checkOutPunchDateTime: createDto.checkOutPunchDateTime,
+      date: createDto.date,
+      checkIn: createDto.checkIn,
+      checkOut: createDto.checkOut,
+    })
+
     const attendance = await this.prisma.dailyAttendance.create({
       data: {
         employeeMasterId: createDto.employeeMasterId,
-        date: new Date(createDto.date),
-        checkIn: createDto.checkIn,
-        checkOut: createDto.checkOut,
+        date,
+        checkIn,
+        checkOut,
         workingHours: createDto.workingHours,
         status: createDto.status || 'ABSENT',
         location: createDto.location,
@@ -304,17 +360,38 @@ export class DailyAttendanceService {
       throw new NotFoundException('Daily attendance not found')
     }
 
-    const updated = await this.prisma.dailyAttendance.update({
-      where: { id },
-      data: {
+    const hasPunchDateTimes =
+      updateDto.checkInPunchDateTime !== undefined || updateDto.checkOutPunchDateTime !== undefined
+    let data: any = {
+      ...(updateDto.workingHours !== undefined && { workingHours: updateDto.workingHours }),
+      ...(updateDto.status && { status: updateDto.status }),
+      ...(updateDto.location !== undefined && { location: updateDto.location }),
+      ...(updateDto.remarks !== undefined && { remarks: updateDto.remarks }),
+    }
+
+    if (hasPunchDateTimes) {
+      const resolved = this.resolveAttendanceTimesFromUTC({
+        checkInPunchDateTime: updateDto.checkInPunchDateTime,
+        checkOutPunchDateTime: updateDto.checkOutPunchDateTime,
+        date: updateDto.date ?? attendance.date.toISOString().split('T')[0],
+        checkIn: updateDto.checkIn ?? attendance.checkIn ?? undefined,
+        checkOut: updateDto.checkOut ?? attendance.checkOut ?? undefined,
+      })
+      data.date = resolved.date
+      data.checkIn = resolved.checkIn
+      data.checkOut = resolved.checkOut
+    } else {
+      data = {
+        ...data,
         ...(updateDto.date && { date: new Date(updateDto.date) }),
         ...(updateDto.checkIn !== undefined && { checkIn: updateDto.checkIn }),
         ...(updateDto.checkOut !== undefined && { checkOut: updateDto.checkOut }),
-        ...(updateDto.workingHours !== undefined && { workingHours: updateDto.workingHours }),
-        ...(updateDto.status && { status: updateDto.status }),
-        ...(updateDto.location !== undefined && { location: updateDto.location }),
-        ...(updateDto.remarks !== undefined && { remarks: updateDto.remarks }),
-      },
+      }
+    }
+
+    const updated = await this.prisma.dailyAttendance.update({
+      where: { id },
+      data,
       include: {
         employeeMaster: true,
       },

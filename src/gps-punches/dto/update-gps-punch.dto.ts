@@ -18,6 +18,12 @@ export class UpdateGPSPunchDto {
   @IsEnum(GPSPunchType)
   punchType?: GPSPunchType
 
+  /** UTC ISO string. Canonical punch moment; server converts to IST. */
+  @IsOptional()
+  @IsString()
+  punchDateTime?: string
+
+  /** @deprecated Prefer punchDateTime (UTC). */
   @IsOptional()
   punchTime?: string
 
