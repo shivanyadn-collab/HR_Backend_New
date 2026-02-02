@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 import { CreateFaceEnrollmentDto } from './dto/create-face-enrollment.dto'
 import { UpdateFaceEnrollmentDto } from './dto/update-face-enrollment.dto'
@@ -6,12 +6,69 @@ import { UploadFaceImageDto } from './dto/upload-face-image.dto'
 import { FaceEnrollmentStatus } from './dto/create-face-enrollment.dto'
 import { BucketService } from '../bucket/bucket.service'
 
+/** S3 folder for face enrollment images (same pattern as employee-documents). */
+const FACE_ENROLLMENTS_FOLDER = 'face-enrollments'
+
 @Injectable()
 export class FaceEnrollmentsService {
   constructor(
     private prisma: PrismaService,
     private bucketService: BucketService,
   ) {}
+
+  /**
+   * If imageUrl is a base64 data URL, upload to S3 and return { imageUrl, imageKey, imageSize, imageName }.
+   * Otherwise returns undefined (caller uses existing imageUrl/imageKey).
+   */
+  private async normalizeImageUrlToS3(
+    imageUrl: string,
+    imageName: string,
+  ): Promise<{ imageUrl: string; imageKey: string; imageSize: number; imageName: string } | undefined> {
+    if (!imageUrl?.trim()) return undefined
+    const match = imageUrl.match(/^data:([^;]+);base64,(.+)$/i)
+    if (!match) {
+      if (/^https?:\/\//i.test(imageUrl) || imageUrl.startsWith('/uploads/')) return undefined
+      throw new BadRequestException(
+        'imageUrl must be an S3/HTTP URL or a base64 data URL (data:...;base64,...). Use POST :id/upload-image for file uploads.',
+      )
+    }
+    const mimeType = match[1].trim()
+    if (!['image/jpeg', 'image/jpg'].includes(mimeType)) {
+      throw new BadRequestException('Face image must be JPEG (image/jpeg or image/jpg)')
+    }
+    let buffer: Buffer
+    try {
+      buffer = Buffer.from(match[2], 'base64')
+    } catch {
+      throw new BadRequestException('Invalid base64 in imageUrl')
+    }
+    if (!buffer.length) throw new BadRequestException('Empty image content in imageUrl')
+
+    const ext = mimeType.includes('jpeg') || mimeType.includes('jpg') ? '.jpg' : '.jpg'
+    const safeName = (imageName || 'face').replace(/[^a-zA-Z0-9.-]/g, '_').slice(0, 80) || 'face'
+    const customFileName = `${safeName}-${Date.now()}${ext}`
+
+    const file: Express.Multer.File = {
+      buffer,
+      mimetype: mimeType,
+      originalname: customFileName,
+      size: buffer.length,
+      fieldname: 'file',
+      encoding: '7bit',
+      stream: null as any,
+      destination: '',
+      filename: '',
+      path: '',
+    }
+
+    const uploadResult = await this.bucketService.uploadFile(file, FACE_ENROLLMENTS_FOLDER, customFileName)
+    return {
+      imageUrl: uploadResult.url,
+      imageKey: uploadResult.key,
+      imageSize: uploadResult.size,
+      imageName: customFileName,
+    }
+  }
 
   async create(createDto: CreateFaceEnrollmentDto) {
     const employee = await this.prisma.employeeMaster.findUnique({
@@ -172,13 +229,26 @@ export class FaceEnrollmentsService {
       throw new NotFoundException('Face enrollment not found')
     }
 
+    // If imageUrl is base64, upload to S3 first (same pattern as employee-documents)
+    let imageUrl = uploadDto.imageUrl
+    let imageKey = uploadDto.imageKey
+    let imageName = uploadDto.imageName
+    let imageSize = uploadDto.imageSize
+    const s3Result = await this.normalizeImageUrlToS3(uploadDto.imageUrl, uploadDto.imageName)
+    if (s3Result) {
+      imageUrl = s3Result.imageUrl
+      imageKey = s3Result.imageKey
+      imageName = s3Result.imageName
+      imageSize = s3Result.imageSize
+    }
+
     const faceImage = await this.prisma.faceImage.create({
       data: {
         faceEnrollmentId: uploadDto.faceEnrollmentId,
-        imageUrl: uploadDto.imageUrl,
-        imageKey: uploadDto.imageKey, // Store the bucket key for signed URL generation
-        imageName: uploadDto.imageName,
-        imageSize: uploadDto.imageSize,
+        imageUrl,
+        imageKey,
+        imageName,
+        imageSize,
         qualityScore: uploadDto.qualityScore,
       },
     })
